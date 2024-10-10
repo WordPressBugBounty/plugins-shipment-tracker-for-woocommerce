@@ -14,8 +14,26 @@
                 <div>
                     <label for="">Courier:</label>
                 </div>
-                <select name="bt_sst_ship24_couriers_list" id="bt_sst_ship24_couriers_name" class="bt_sst_ship24_input">
+                <select style="width:100%" name="bt_sst_ship24_couriers_list" id="bt_sst_ship24_couriers_name" class="bt_sst_ship24_input">
                     <option value="">Select Courier</option>
+                    <?php
+                    $coriure_name = get_option('_bt_sst_ship24_active_courier_companies');
+
+                    if(is_array($coriure_name) && count($coriure_name)>1){
+$courierCodeName = [];
+foreach ($coriure_name as $key => $courier) {
+    $courierCodeName = [
+        'corier_code' => $courier['courierCode'],
+        'corier_name' => $courier['courierName'],
+    ];
+    $courierCodeAndName = json_encode($courierCodeName);
+    ?>
+    <option value='<?php echo $courierCodeAndName?>' data-courierName='<?php echo $courier['courierName']?>'><?php echo $courier['courierName']?></option>
+<?php } }else{?>
+                    <option value="">Loading.........</option>  
+                    <?php } ?>                                   
+                </select>
+            
                     <option value="">Loading.........</option>                                     
                 </select>
             </div>
@@ -25,6 +43,11 @@
     </div>
 </div>
 <script>
+    jQuery('#bt_sst_ship24_couriers_name').select2({
+        placeholder: "Select Courier",
+        allowClear: true
+    });
+        
         // jQuery('#sync_manual').click(function () {
         //     jQuery('#sync_manual').addClass("disabled");
         //     jQuery('#bt_sync-box .spinner').addClass("is-active");
@@ -163,6 +186,9 @@
             jQuery('#save_manual').text('Loading...').prop('disabled', true);
             var current_awb = jQuery("#bt_sst_ship24_awb_field").val();
             var corier_code_and_name = jQuery("#bt_sst_ship24_couriers_name_select").val();
+            if(!corier_code_and_name){
+                var corier_code_and_name = jQuery("#bt_sst_ship24_couriers_name").val();
+            }
             var courierObject = JSON.parse(corier_code_and_name);
             var corier_code = courierObject.corier_code;
             var corier_name = courierObject.corier_name;

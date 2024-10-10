@@ -384,21 +384,38 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
         }
         $phoneNumber = $this->extractPhoneNumber($order->get_billing_phone());
         $warehouseid = carbon_get_theme_option('bt_sst_shipmozo_warehouseid');
-        
+        $destination_postcode = $order->get_shipping_postcode();
+        $get_shipping_first_name = $order->get_shipping_first_name();
+        $get_shipping_last_name = $order->get_shipping_last_name();
+        $get_shipping_address_1 = $order->get_shipping_address_1();
+        $get_shipping_address_2 = $order->get_shipping_address_2();
+        $get_shipping_city = $order->get_shipping_city();
+        $get_shipping_state = $order->get_shipping_state();
+        $get_shipping_email = $order->get_shipping_email();
+        if(!$destination_postcode){
+            $destination_postcode = $order->get_billing_postcode();
+            $get_shipping_first_name = $order->get_billing_first_name();
+            $get_shipping_last_name = $order->get_billing_last_name();
+            $get_shipping_address_1 = $order->get_billing_address_1();
+            $get_shipping_address_2 = $order->get_billing_address_2();
+            $get_shipping_city = $order->get_billing_city();
+            $get_shipping_state = $order->get_billing_state();
+            $get_shipping_email = $order->get_billing_email();
+        }
         
         
         $so = array(
             "order_id"=> $order->get_id(),
             "order_date"=> $order->get_date_created()->date("Y-m-d H:i:s"),
             "order_type"=> "NON_ESSENTIALS",
-            "consignee_name"=> $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
+            "consignee_name"=> $get_shipping_first_name . ' ' . $get_shipping_last_name,
             "consignee_phone"=> $phoneNumber,
-            "consignee_email"=>  $order->get_billing_email(),
-            "consignee_address_line_one"=> $order->get_billing_address_1(),
-            "consignee_address_line_two"=> $order->get_billing_address_2(),
-            "consignee_pin_code"=> $order->get_billing_postcode(),
-            "consignee_city"=> $order->get_billing_city(), 
-            "consignee_state"=> $order->get_billing_state(),
+            "consignee_email"=>  $get_shipping_email,
+            "consignee_address_line_one"=> $get_shipping_address_1,
+            "consignee_address_line_two"=> $get_shipping_address_2,
+            "consignee_pin_code"=> $destination_postcode,
+            "consignee_city"=> $get_shipping_city, 
+            "consignee_state"=> $get_shipping_state,
             "product_detail"=> array(),
             "payment_type"=> $order->get_payment_method()=="cod"?"COD":"PREPAID",
             "cod_amount"=>$order->get_total(),

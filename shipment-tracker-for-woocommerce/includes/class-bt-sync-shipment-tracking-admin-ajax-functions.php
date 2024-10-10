@@ -86,8 +86,8 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
             wp_die();
         }
 
-        // $shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
-		$shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_sst_custom_shipping_mode', true);
+        $shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
+		// $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_sst_custom_shipping_mode', true);
 		$shipping_provider = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_shipping_provider', true);
 
         if($shipping_mode_is_manual_or_ship24=='ship24' && $shipping_provider == "manual"){

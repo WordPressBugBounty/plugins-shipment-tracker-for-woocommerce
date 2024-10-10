@@ -2234,10 +2234,18 @@ class Bt_Sync_Shipment_Tracking_Public
 			wp_enqueue_script('bt-sync-shipment-tracking-leaflet');
 			wp_enqueue_style('bt-sync-shipment-tracking-customer-shortcode-css');
 			wp_enqueue_style('bt-sync-shipment-tracking-leaflet-css');
-			ob_start();
-			include plugin_dir_path(dirname(__FILE__)) . 'public/partials/bt_shipping_tracking_form_2.php';
-			$result = ob_get_clean();
-			return $result;
+			$shipping_tracking_template = carbon_get_theme_option('bt_sst_tracking_page_template');
+			if($shipping_tracking_template=="trackingmaster" && false){
+				ob_start();
+				include plugin_dir_path(dirname(__FILE__)) . 'public/partials/bt_shipping_tracking_page_template_second.php';
+				$result = ob_get_clean();
+				return $result;
+			}else{
+				ob_start();
+				include plugin_dir_path(dirname(__FILE__)) . 'public/partials/bt_shipping_tracking_form_2.php';
+				$result = ob_get_clean();
+				return $result;
+			}
 		}
 	
 		
@@ -2468,6 +2476,35 @@ class Bt_Sync_Shipment_Tracking_Public
 			echo do_shortcode('[bt_shipping_tracking_form_2]');
 		}
 	}
+
+	// function custom_dokan_order_details( $order ) {
+	// 	// Check if the order object exists
+	// 	if ( ! is_a( $order, 'WC_Order' ) ) {
+	// 		return;
+	// 	}
+	// 	echo '<h3>Shipment Tracking</h3>';
+	// 	$post_id = $order->get_id();
+	// 	$order_id = $order->get_id();
+	// 	if(empty($post_id)){
+	// 		$post_id = $_GET["id"];
+	// 	}	
+
+    //     $bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($post_id);
+	// 	$bt_shipping_provider = $bt_shipment_tracking->shipping_provider;
+	// 	$bt_shipping_awb_number = $bt_shipment_tracking->awb;
+
+	// 	// $shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
+	// 	$shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($post_id, '_bt_sst_custom_shipping_mode', true);
+
+	// 	include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-woocommerce-order-actions-end.php';
+
+    //     if($bt_shipping_provider == 'manual' && $shipping_mode_is_manual_or_ship24 =="manual"){
+    //         include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-manual-metabox.php';
+    //     } else if($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite'|| $bt_shipping_provider == 'nimbuspost'|| $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo'|| $bt_shipping_provider == 'nimbuspost_new'|| $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24=="ship24") {
+    //         include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-metabox.php';
+    //     }
+		
+	// }
 
 
 }

@@ -70,7 +70,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
     public function get_order_tracking_by_awb_number($awb_number){
         $args ="";
         $this->init_params();
-        // echo "<pre>"; echo($awb_number); die;
+        // echo "<pre>"; echo($this->public_key); die;
 
         if(!empty($this->public_key)){
     
@@ -149,7 +149,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
             // die("dsfsd");
             $resp = $this->get_order_tracking($order_id);     
         }
-        // var_dump($order_id);
+        // var_dump($resp);
         //  die;
 
         if($resp!=null && isset($resp["ShipmentData"])){
@@ -204,19 +204,33 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         $phoneNumber = $this->extractPhoneNumber($order->get_billing_phone());
         $pickup_location = carbon_get_theme_option( 'bt_sst_delhivery_warehouse_name' );
         $destination_postcode = $order->get_shipping_postcode();
+        $get_shipping_first_name = $order->get_shipping_first_name();
+        $get_shipping_last_name = $order->get_shipping_last_name();
+        $get_shipping_address_1 = $order->get_shipping_address_1();
+        $get_shipping_address_2 = $order->get_shipping_address_2();
+        $get_shipping_city = $order->get_shipping_city();
+        $get_shipping_state = $order->get_shipping_state();
+        $get_shipping_country = $order->get_shipping_country();
         if(!$destination_postcode){
             $destination_postcode = $order->get_billing_postcode();
+            $get_shipping_first_name = $order->get_billing_first_name();
+            $get_shipping_last_name = $order->get_billing_last_name();
+            $get_shipping_address_1 = $order->get_billing_address_1();
+            $get_shipping_address_2 = $order->get_billing_address_2();
+            $get_shipping_city = $order->get_billing_city();
+            $get_shipping_state = $order->get_billing_state();
+            $get_shipping_country = $order->get_billing_country();
         }
     
         $postData = array(
             "shipments" => array(
                 array(
-                    "name" => $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name(),
-                    "add" =>   $order->get_shipping_address_1().' '.$order->get_shipping_address_2(),
+                    "name" => $get_shipping_first_name . ' ' . $get_shipping_last_name,
+                    "add" =>   $get_shipping_address_1.' '.$get_shipping_address_2,
                     "pin" =>  $destination_postcode,
-                    "city" =>  $order->get_shipping_city(), 
-                    "state" => $order->get_shipping_state(),
-                    "country" => $order->get_shipping_country(),
+                    "city" =>  $get_shipping_city, 
+                    "state" => $get_shipping_state,
+                    "country" => $get_shipping_country,
                     "phone" => $phoneNumber,
                     "order" => $order->get_id(),
                     "payment_mode" => $order->get_payment_method()=="cod"?"COD":"PREPAID",
@@ -424,6 +438,39 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
 
 
     }
+    // public function get_order_label_by_awb_numbers($awbs) {
+    //     $this->init_params();
+        
+    //     if (!empty($this->public_key) && !empty($awbs)) {
+    //         $args = array(
+    //             'body' => json_encode(array(
+    //                 'wbns' => $awbs,
+    //                 'pdf' => true
+    //             )),
+    //             'headers' => array(
+    //                 'Content-Type' => 'application/json',
+    //                 'Authorization' => 'Token ' . $this->public_key,
+    //             ),
+    //         );
+    
+    //         $url = 'https://track.delhivery.com/api/p/packing_slip';
+    
+    //         $response = wp_remote_post($url, $args);
+    //         echo "<pre>"; print_r($response); die;
+    
+    //         if (is_wp_error($response)) {
+    //             return array('error' => $response->get_error_message());
+    //         }
+    
+    //         $body = wp_remote_retrieve_body($response);
+    //         $resp = json_decode($body, true);
+            
+    //         return $resp;
+    //     } else {
+    //         return null;
+    //     }
+    // }
+    
 
     
 }

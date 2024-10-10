@@ -165,7 +165,6 @@ class Bt_Sync_Shipment_Tracking_Ship24 {
             Bt_Sync_Shipment_Tracking_Shipment_Model::save_tracking($order_id,$shipment_obj);                           
             return $shipment_obj;
         }
-// echo "<pre>"; print_r($resp); die;
         if(isset($resp['errors'])){
             return $resp;
         }
@@ -252,7 +251,7 @@ class Bt_Sync_Shipment_Tracking_Ship24 {
             return false;
         }
     }
-    public function get_coriers_name(){
+    public function get_coriers_name_and_test_connectin(){
         
         $this->init_params();
         $auth_token = $this->public_key;
@@ -273,6 +272,7 @@ class Bt_Sync_Shipment_Tracking_Ship24 {
  
             $resp = $response['data'];
             if(!empty($resp) && !empty($resp['couriers'])){
+                update_option('_bt_sst_ship24_active_courier_companies', $resp['couriers']);
                 return $resp['couriers'];
             }else{
                 return $response['errors'];
@@ -282,4 +282,32 @@ class Bt_Sync_Shipment_Tracking_Ship24 {
             return false;
         }
     }
+    // public function test_ship24_connection(){
+    //     $this->init_params();
+    //     $auth_token = $this->public_key;
+    //     if(!empty($auth_token)){
+
+    //         $args = array(
+    //             'headers' => array(
+    //                 'Authorization' => "Bearer " . $this->public_key,
+    //             )
+    //         );
+    
+    //         $url = 'https://api.ship24.com/public/v1/couriers';
+
+    //         $response = wp_remote_get($url, $args);
+    //         $body     = wp_remote_retrieve_body( $response );
+    //         $response = json_decode($body,true);
+ 
+    //         $resp = $response['data'];
+    //         if(!empty($resp) && !empty($resp['couriers'])){
+    //             return true;
+    //         }else{
+    //             return false;
+    //         }
+
+    //     }else{
+    //         return false;
+    //     }
+    // }
 }

@@ -1,8 +1,12 @@
 
 <?php
-$order_id=isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
-// $shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
-$shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_sst_custom_shipping_mode', true);
+if(!$order_id){
+    $order_id=isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
+}
+$shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
+// $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_sst_custom_shipping_mode', true);
+$coriure_name = get_option('_bt_sst_ship24_active_courier_companies');
+// echo "vishnu<pre>"; print_r($coriure_name); echo "</pre>";
 
 ?>
 <div id="bt_sst_check_already_exist">
@@ -22,9 +26,22 @@ $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order
                 <div>
                     <label for="">Courier:</label>
                 </div>
-                <select name="bt_sst_ship24_couriers_list" id="bt_sst_ship24_couriers_name" class="bt_sst_ship24_input">
+                <select style="width:100%" name="bt_sst_ship24_couriers_list" id="bt_sst_ship24_couriers_name" class="bt_sst_ship24_input">
                     <option value="">Select Courier</option>
-                    <option value="">Loading.........</option>                                     
+                    <?php
+                    if(is_array($coriure_name) && count($coriure_name)>1){
+$courierCodeName = [];
+foreach ($coriure_name as $key => $courier) {
+    $courierCodeName = [
+        'corier_code' => $courier['courierCode'],
+        'corier_name' => $courier['courierName'],
+    ];
+    $courierCodeAndName = json_encode($courierCodeName);
+    ?>
+    <option value='<?php echo $courierCodeAndName?>' data-courierName='<?php echo $courier['courierName']?>'><?php echo $courier['courierName']?></option>
+<?php } }else{?>
+                    <option value="">Loading.........</option>  
+                    <?php } ?>                                                                       
                 </select>
             </div>
             <br>
@@ -96,6 +113,10 @@ $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order
     <?php }} ?>
     <?php add_thickbox(); ?>
     <script>
+            jQuery('#bt_sst_ship24_couriers_name').select2({
+                                placeholder: "Select Courier",
+                                allowClear: true
+                            });
         jQuery('#bt_sst_awbPopup').hide();
         jQuery('#sync_manual').click(function () {
             jQuery('#sync_manual').addClass("disabled");
@@ -121,7 +142,7 @@ $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order
                             bt_st_show_info("Tracking Synced.");
                         }
                     } else {
-                        alert("Enter The Ship24 API");
+                        alert(response.response);
                     }
                 }, error: function (jqXHR, textStatus, errorThrown) {
                     jQuery('#sync_manual').removeClass("disabled");
@@ -240,6 +261,9 @@ $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order
 
             var current_awb = jQuery("#bt_sst_ship24_awb_field").val();
             var corier_code_and_name = jQuery("#bt_sst_ship24_couriers_name_select").val();
+            if(!corier_code_and_name){
+                var corier_code_and_name = jQuery("#bt_sst_ship24_couriers_name").val();
+            }
             var courierObject = JSON.parse(corier_code_and_name);
             var corier_code = courierObject.corier_code;
             var corier_name = courierObject.corier_name;

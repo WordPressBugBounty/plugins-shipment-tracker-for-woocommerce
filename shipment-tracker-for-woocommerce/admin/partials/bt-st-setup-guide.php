@@ -44,9 +44,9 @@
                         <div class="notification is-info is-light  is-7">
                             What to Expect: <br>
                                 <span class="tag">1. Carrier Integration:</span> <span class="is-size-7">Connect your preferred carriers for seamless shipment updates.</span>
-                                <span class="tag">2. Tracking Configuration:</span> <span class="is-size-7">Customize how tracking information is displayed to your customers.</span>
-                                <span class="tag">3. Notifications Setup:</span> <span class="is-size-7">Enable email/sms notifications for timely shipment updates.</span>
-                                <span class="tag">3. Advanced Features:</span> <span class="is-size-7">Explore features like "Estimated Delivery Checker" and "Dynamic Shipping Methods".</span>
+                                <br><span class="tag">2. Tracking Configuration:</span> <span class="is-size-7">Customize how tracking information is displayed to your customers.</span>
+                                <br><span class="tag">3. Notifications Setup:</span> <span class="is-size-7">Enable email/sms notifications for timely shipment updates.</span>
+                                <br><span class="tag">3. Advanced Features:</span> <span class="is-size-7">Explore features like "Estimated Delivery Checker" and "Dynamic Shipping Methods".</span>
                         </div>
                         <div class="is-size-6">
                             Click "Get Started" to begin the simple setup process. If you need help at any step, our support documentation and team are available to assist you.

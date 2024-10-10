@@ -539,9 +539,29 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             return false;
         }
       
+        $phoneNumber = $this->extractPhoneNumber($order->get_billing_phone());
+        $warehouseid = carbon_get_theme_option('bt_sst_shipmozo_warehouseid');
         $shipping_postcode = $order->get_shipping_postcode();
+        $get_shipping_first_name = $order->get_shipping_first_name();
+        $get_shipping_last_name = $order->get_shipping_last_name();
+        $get_shipping_address_1 = $order->get_shipping_address_1();
+        $get_shipping_address_2 = $order->get_shipping_address_2();
+        $get_shipping_city = $order->get_shipping_city();
+        $get_shipping_state = $order->get_shipping_state();
+        $get_shipping_email = $order->get_shipping_email();
+        $get_shippping_phone = $order->get_shippping_phone();
+        $get_shipping_country = $order->get_shipping_country();
         if(!$shipping_postcode){
             $shipping_postcode = $order->get_billing_postcode();
+            $get_shipping_first_name = $order->get_billing_first_name();
+            $get_shipping_last_name = $order->get_billing_last_name();
+            $get_shipping_address_1 = $order->get_billing_address_1();
+            $get_shipping_address_2 = $order->get_billing_address_2();
+            $get_shipping_city = $order->get_billing_city();
+            $get_shipping_state = $order->get_billing_state();
+            $get_shipping_email = $order->get_billing_email();
+            $get_shippping_phone = $order->get_billing_phone();
+            $get_shipping_country = $order->get_billing_country();
         }
         $so = array(
             "order_id"=> $order->get_id(),
@@ -559,17 +579,17 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             "billing_country"=> $order->get_billing_country(),
             "billing_email"=> $order->get_billing_email(),
             "billing_phone"=> $order->get_billing_phone(),
-            "shipping_is_billing"=> $order->get_billing_address_1() == $order->get_shipping_address_1() ,//quick fix to check if billing and shipping address are same.
-            "shipping_customer_name"=> $order->get_shipping_first_name(),
-            "shipping_last_name"=> $order->get_shipping_last_name(),
-            "shipping_address"=> $order->get_shipping_address_1(),
-            "shipping_address_2"=> $order->get_shipping_address_2(),
-            "shipping_city"=> $order->get_shipping_city(),
+            "shipping_is_billing"=> $order->get_billing_address_1() == $get_shipping_address_1 ,//quick fix to check if billing and shipping address are same.
+            "shipping_customer_name"=> $get_shipping_first_name,
+            "shipping_last_name"=> $get_shipping_last_name,
+            "shipping_address"=> $get_shipping_address_1,
+            "shipping_address_2"=> $get_shipping_address_2,
+            "shipping_city"=> $get_shipping_city,
             "shipping_pincode"=> $shipping_postcode,
-            "shipping_country"=> $order->get_shipping_country(),
-            "shipping_state"=> $order->get_shipping_state(),
-            "shipping_email"=>  $order->get_billing_email(),
-            "shipping_phone"=> $order->get_billing_phone(),
+            "shipping_country"=> $get_shipping_country,
+            "shipping_state"=> $get_shipping_state,
+            "shipping_email"=>  $get_shipping_email,
+            "shipping_phone"=> $get_shippping_phone,
             "order_items"=> array(),
             "payment_method"=> $order->get_payment_method()=="cod"?"cod":"prepaid",
             "shipping_charges"=> $order->get_total_shipping(),

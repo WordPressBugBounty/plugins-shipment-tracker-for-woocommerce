@@ -261,15 +261,27 @@ class Bt_Sync_Shipment_Tracking_Nimbuspost_New {
         $phone=$this->extractPhoneNumber(carbon_get_theme_option( 'bt_sst_nimpuspost_phone' ));
 
         $destination_postcode = $order->get_shipping_postcode();
+        $get_shipping_first_name = $order->get_shipping_first_name();
+        $get_shipping_last_name = $order->get_shipping_last_name();
+        $get_shipping_address_1 = $order->get_shipping_address_1();
+        $get_shipping_address_2 = $order->get_shipping_address_2();
+        $get_shipping_city = $order->get_shipping_city();
+        $get_shipping_state = $order->get_shipping_state();
         if(!$destination_postcode){
             $destination_postcode = $order->get_billing_postcode();
+            $get_shipping_first_name = $order->get_billing_first_name();
+            $get_shipping_last_name = $order->get_billing_last_name();
+            $get_shipping_address_1 = $order->get_billing_address_1();
+            $get_shipping_address_2 = $order->get_billing_address_2();
+            $get_shipping_city = $order->get_billing_city();
+            $get_shipping_state = $order->get_billing_state();
         }
         $consignee=array(
-            "name"=> $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name(),
-            "address"=> $order->get_shipping_address_1(),
-            "address_2"=> $order->get_shipping_address_2(),
-            "city"=> $order->get_shipping_city(),
-            "state"=> $order->get_shipping_state(),
+            "name"=> $get_shipping_first_name . ' ' . $get_shipping_last_name,
+            "address"=> $get_shipping_address_1,
+            "address_2"=> $get_shipping_address_2,
+            "city"=> $get_shipping_city,
+            "state"=> $get_shipping_state,
             "pincode"=> $destination_postcode,
             "phone"=>  $this->extractPhoneNumber($order->get_billing_phone()),
         );

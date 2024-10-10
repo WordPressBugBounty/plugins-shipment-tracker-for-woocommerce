@@ -335,6 +335,7 @@ class Bt_Sync_Shipment_Tracking {
 	private function define_admin_hooks() {
 
 		$plugin_admin = new Bt_Sync_Shipment_Tracking_Admin( $this->get_plugin_name(), $this->get_version(),$this->shiprocket,$this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->shipmozo, $this->nimbuspost_new, $this->delhivery, $this->ship24 );
+		$this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_admin, 'custom_dokan_order_details', 10, 1 );
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
@@ -387,6 +388,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'wp_ajax_check_user_data_for_premium_features', $plugin_admin, 'check_user_data_for_premium_features' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_test_connection', $plugin_admin, 'api_call_for_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_delhivery_test_connection', $plugin_admin, 'api_call_for_delhivery_test_connection' );
+		$this->loader->add_action( 'wp_ajax_api_call_for_ship24_test_connection', $plugin_admin, 'api_call_for_ship24_test_connection' );
 		$this->loader->add_action( 'wp_ajax_get_sms_trial', $plugin_admin, 'get_sms_trial' );
 		$this->loader->add_action( 'wp_ajax_get_bt_sst_email_trial', $plugin_admin, 'get_bt_sst_email_trial' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_sync_order_by_order_id', $plugin_admin, 'api_call_for_sync_order_by_order_id' );
@@ -464,6 +466,7 @@ class Bt_Sync_Shipment_Tracking {
 				</div>
 			';
 		}
+		$parentDirectory = plugin_dir_url(dirname(__FILE__));
 
 		$shipping_provides_with_premium = array();
 		foreach (BT_SHIPPING_PROVIDERS as $key => $value) {
@@ -640,7 +643,8 @@ class Bt_Sync_Shipment_Tracking {
 											<div class="modal-card">
 												<header class="modal-card-head">
 													<p id="register_get_api_key_tc-m-content" class="modal-content"></p>
-												</header>
+												
+													</header>
 											</div>
 									</div> 
 								</div>
@@ -750,7 +754,8 @@ class Bt_Sync_Shipment_Tracking {
 																<div class="modal-card">
 																	<header class="modal-card-head">
 																		<p id="get_sms_trial_tc-m-content" class="modal-content"></p>
-																	</header>
+																		<button type="button" id="api_tc_m_close_btn" class="delete" aria-label="close"></button>
+																		</header>
 																</div>
 															</div> 
 														</div>
@@ -849,6 +854,16 @@ class Bt_Sync_Shipment_Tracking {
 						'value' => true,
 					)
 				) ),
+			Field::make( 'select', 'bt_sst_tracking_page_template', __( 'Choose Tracking Page template:' ) )
+				->set_options( array(
+					'classic' => 'Classic Template',
+					'trackingmaster' => 'Tracking Master Template (coming soon)',
+				) )
+				->set_default_value('classic')
+				->set_help_text('Preview:<div id="tracking_page_template_preview">
+					<input type="hidden" value="'.$parentDirectory.'" id="bt_sst_tracking_page_template_preview_img">
+                            <img id="tracking-template-preview-img" src="" style="display: none;" alt="Tracking Template Preview">
+                         </div>'),
 			Field::make( 'html', 'bt_sst_tracking_shortcode_html', __( 'Tracking Widget Shortcode' ) )
 				->set_html(
 					 '
@@ -1491,7 +1506,7 @@ class Bt_Sync_Shipment_Tracking {
 						->set_help_text(''),
 					Field::make( 'text', 'bt_sst_manual_awb_number', __( 'Default awb number format' ) )
 						->set_attribute( 'placeholder', 'abc-#order_id#' )
-						// ->set_default_value( 'abc-#order_id#' )
+					    ->set_default_value( '#order_id#' )
 						->set_help_text( 'Available variables- #order_id#.' ),
                     Field::make( 'text', 'bt_sst_manual_tracking_url', __( 'Global Tracking URL' ) )
 						->set_attribute( 'placeholder', 'https://yourdomain.com/track/#awb#' )
@@ -1509,7 +1524,6 @@ class Bt_Sync_Shipment_Tracking {
 		// $login_html = str_replace("##csrf##", $csrf, $login_html);
 		$woocommerce_settings_url = admin_url('admin.php?page=wc-settings');
 		
-		$parentDirectory = plugin_dir_url(dirname(__FILE__));
 		$container = $container->add_tab( __( 'Product Page  (Premium Only)' ), array(
 			Field::make( 'checkbox', 'bt_sst_shiprocket_pincode_checker', __( 'Enable "Estimated Delivery Date Checker" widget.') )
 				->set_classes( 'title is-6' )
@@ -1859,7 +1873,7 @@ class Bt_Sync_Shipment_Tracking {
 					Field::make( 'html', 'bt_sst_ship24_webhook_html', __( 'Ship24 Webhook URL' ) )
 					->set_html(
 						sprintf( '
-							<p><b>Shiprocket Webhook URL: [<a target="_blank" href="https://dashboard.ship24.com/integrations/webhook">Configure Webhook Here</a>] </b></p>
+							<p><b>Ship24 Webhook URL: [<a target="_blank" href="https://dashboard.ship24.com/integrations/webhook">Configure Webhook Here</a>] </b></p>
 							<p>'.get_site_url(null, '/wp-json/bt-sync-shipment-tracking-ship24/v1.0.0/webhook_receiver') . '<a href="#" class="bt_sst_copy_link" > Copy Link</a> </p>
 							<p>Last Webhook Called On: '.$ship24_webhook_time.'</p>
 						'),
@@ -1869,6 +1883,21 @@ class Bt_Sync_Shipment_Tracking {
 							<a target="_blank" href="https://dashboard.ship24.com/integrations/api-keys">[Click here to get API Token]</a>
 							'
 					),
+					Field::make('html', 'api_test_connection_html', __('Test API Connection'))
+						->set_html(sprintf('
+							<button type="button" class="button" id="api_test_connection_btn_ship24">Test Connection</button><br>
+							<em class="cf-field__help">Please click "Save Changes" to save API credentials before testing the connection.</em>
+							<div id="api_test_connection_modal_ship24" class="modal" style="display:none;">
+								<div class="modal-background"></div>
+								<div class="modal-card">
+									<header class="modal-card-head">
+										<p id="api_tc-m-content_ship24" class="modal-content"></p>
+										<button type="button" id="api_tc_m_close_btn_ship24" class="delete" aria-label="close"></button>
+									</header>
+								</div>
+							</div>')
+				),
+										
 			) );
 		}
 
@@ -2407,6 +2436,7 @@ class Bt_Sync_Shipment_Tracking {
 		$plugin_public = new Bt_Sync_Shipment_Tracking_Public( $this->get_plugin_name(), $this->get_version() ,$this->shiprocket, $this->shipmozo, $this->nimbuspost_new, $this->licenser, $this->delhivery);
 
 		// $pincode_checker_location_hook = carbon_get_theme_option( 'bt_sst_pincode_checker_location' );
+		// $this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_public, 'custom_dokan_order_details', 10, 1 );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );

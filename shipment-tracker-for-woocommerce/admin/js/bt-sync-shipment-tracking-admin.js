@@ -1,13 +1,18 @@
 (function ($) {
   "use strict";
-	$(document).on('carbonFields.apiLoaded', function(e, api) {
-		//alert("ok");
-		if ($('.cf-field__body .cf-set__list:first').find('li input[type="checkbox"]:checked').length < 1) {
-			$("#form-wizard-modal").addClass("is-active");
-			// $(".close-modal-btn").hide();
-		}
-	});
-	$(document).ready(function () {
+  
+  $(document).ready(function () {
+	setTimeout(() => {
+		// $(document).on('carbonFields.apiLoaded', function(e, api) {
+			//alert("ok");
+			if ($('.cf-field__body .cf-set__list:first').find('li input[type="checkbox"]:checked').length < 1) {
+				$("#form-wizard-modal").addClass("is-active");
+				// $(".close-modal-btn").hide();
+			}
+		// });
+	}, 3000);
+	
+		
 		jQuery(document).on('change', 'input[name="carbon_fields_compact_input[_bt_sst_message_text_template]"]', function() {
 			var selectedValue = $(this).val();
 			const replacements = {
@@ -33,33 +38,33 @@
 		    jQuery("input[name='carbon_fields_compact_input[_bt_sst_message_text_template]']").trigger('change');
 		});
 		
-	
-		var previewImage = jQuery('#template-preview-img');
-
-		var imageFilenames = {
-			'classic':  'admin/images/classic-template.jpg', // Escaped backslashes
-			'realistic':  'admin/images/realistic-template.jpg' // Escaped backslashes
-		};
-		var selectedValue = $('select[name="carbon_fields_compact_input[_bt_sst_pincode_box_template]"]').val();
-		if (imageFilenames[selectedValue]) {
-			var previewImage_basepath = jQuery('#bt_sst_template_preview_img').val();
-			previewImage.attr('src',previewImage_basepath +  imageFilenames[selectedValue]);
-			previewImage.show();
-		} else {
-			previewImage.hide();
-		}
-	
-		jQuery(document).on('change', 'select[name="carbon_fields_compact_input[_bt_sst_pincode_box_template]"]', function() {
-			var previewImage_basepath = jQuery('#bt_sst_template_preview_img').val();
-			var selectedValue = jQuery(this).val();
-			// var previewImage = jQuery('#template-preview-img');
+		setTimeout(() => {
+			var previewImage = jQuery('#template-preview-img');
+			var imageFilenames = {
+				'classic':  'admin/images/classic-template.jpg', // Escaped backslashes
+				'realistic':  'admin/images/realistic-template.jpg' // Escaped backslashes
+			};
+			var selectedValue = $('select[name="carbon_fields_compact_input[_bt_sst_pincode_box_template]"]').val();
 			if (imageFilenames[selectedValue]) {
-				previewImage.attr('src', previewImage_basepath + imageFilenames[selectedValue]);
+				var previewImage_basepath = jQuery('#bt_sst_template_preview_img').val();
+				previewImage.attr('src',previewImage_basepath +  imageFilenames[selectedValue]);
 				previewImage.show();
 			} else {
 				previewImage.hide();
 			}
-		});
+			jQuery(document).on('change', 'select[name="carbon_fields_compact_input[_bt_sst_pincode_box_template]"]', function() {
+				var previewImage_basepath = jQuery('#bt_sst_template_preview_img').val();
+				var selectedValue = jQuery(this).val();
+				// var previewImage = jQuery('#template-preview-img');
+				if (imageFilenames[selectedValue]) {
+					previewImage.attr('src', previewImage_basepath + imageFilenames[selectedValue]);
+					previewImage.show();
+				} else {
+					previewImage.hide();
+				}
+			});
+		}, 3000);
+		
 
 		jQuery('#bt_sst_sync_now_awb').click(function () {
             jQuery('#bt_sst_awbPopup').show();
@@ -68,52 +73,54 @@
 			save_tracking_data(order_id,this,"ship24");	
         });
 	
-
-		var company_name = localStorage.getItem('triggerCompanyTab');
-		if ( company_name === 'delhivery') {
-			jQuery(".cf-container__tabs-list li").each(function() {
-				if (jQuery(this).text().trim() === "Delhivery") {
-					jQuery(this).find('button').trigger('click');
-				}
-			});
-		}else if(company_name === 'nimbuspost'){
-			jQuery(".cf-container__tabs-list li").each(function() {
-				if (jQuery(this).text().trim() === "Nimbuspost (NEW) (Premium Only)") {
-					jQuery(this).find('button').trigger('click');
-				}
-			});
-		}else if(company_name === 'shipmozo'){
-			jQuery(".cf-container__tabs-list li").each(function() {
-				if (jQuery(this).text().trim() === "Shipmozo (Premium Only)") {
-					jQuery(this).find('button').trigger('click');
-				}
-			});
-		}else if(company_name === 'shiprocket'){
-			jQuery(".cf-container__tabs-list li").each(function() {
-				if (jQuery(this).text().trim() === "Shiprocket") {
-					jQuery(this).find('button').trigger('click');
-				}
-			});
-		}else if(company_name === 'xpressbees'){
-			jQuery(".cf-container__tabs-list li").each(function() {
-				if (jQuery(this).text().trim() === "Xpressbees") {
-					jQuery(this).find('button').trigger('click');
-				}
-			});
-		}else if(company_name === 'manual'){
-			jQuery(".cf-container__tabs-list li").each(function() {
-				if (jQuery(this).text().trim() === "Custom Shipping") {
-					jQuery(this).find('button').trigger('click');
-				}
-			});
-		}else if(company_name === 'ship24'){
-			jQuery(".cf-container__tabs-list li").each(function() {
-				if (jQuery(this).text().trim() === "Ship24") {
-					jQuery(this).find('button').trigger('click');
-				}
-			});
-		}
-		localStorage.removeItem('triggerCompanyTab');
+		setTimeout(() => {
+			var company_name = localStorage.getItem('triggerCompanyTab');
+			if ( company_name === 'delhivery') {
+				jQuery(".cf-container__tabs-list li").each(function() {
+					if (jQuery(this).text().trim() === "Delhivery") {
+						jQuery(this).find('button').trigger('click');
+					}
+				});
+			}else if(company_name === 'nimbuspost'){
+				jQuery(".cf-container__tabs-list li").each(function() {
+					if (jQuery(this).text().trim() === "Nimbuspost (NEW) (Premium Only)") {
+						jQuery(this).find('button').trigger('click');
+					}
+				});
+			}else if(company_name === 'shipmozo'){
+				jQuery(".cf-container__tabs-list li").each(function() {
+					if (jQuery(this).text().trim() === "Shipmozo (Premium Only)") {
+						jQuery(this).find('button').trigger('click');
+					}
+				});
+			}else if(company_name === 'shiprocket'){
+				jQuery(".cf-container__tabs-list li").each(function() {
+					if (jQuery(this).text().trim() === "Shiprocket") {
+						jQuery(this).find('button').trigger('click');
+					}
+				});
+			}else if(company_name === 'xpressbees'){
+				jQuery(".cf-container__tabs-list li").each(function() {
+					if (jQuery(this).text().trim() === "Xpressbees") {
+						jQuery(this).find('button').trigger('click');
+					}
+				});
+			}else if(company_name === 'manual'){
+				jQuery(".cf-container__tabs-list li").each(function() {
+					if (jQuery(this).text().trim() === "Custom Shipping") {
+						jQuery(this).find('button').trigger('click');
+					}
+				});
+			}else if(company_name === 'ship24'){
+				jQuery(".cf-container__tabs-list li").each(function() {
+					if (jQuery(this).text().trim() === "Ship24") {
+						jQuery(this).find('button').trigger('click');
+					}
+				});
+			}
+			localStorage.removeItem('triggerCompanyTab');
+		}, 3000);
+		
 
 		$(document).on('click', '#api_test_connection_btn', function (e) {
 			e.preventDefault();
@@ -125,6 +132,11 @@
 			e.preventDefault();
 			$(this).addClass('is-loading');
 			api_test_connection_delh();
+		});
+		$(document).on('click', '#api_test_connection_btn_ship24', function (e) {
+			e.preventDefault();
+			$(this).addClass('is-loading');
+			api_test_connection_ship24();
 		});
 
 		$(document).on('click', '#btn-bt-sync-now-shyplite', function (e) {
@@ -235,10 +247,17 @@
 
 		$('#api_tc_m_close_btn').click(function (e){
 			$('#api_test_connection_modal').removeClass('is-active');
+			$('#get_sms_trial_test_connection_modal').removeClass('is-active');
+
 		});
 
 		$('#api_tc_m_close_btn_delh').click(function (e){
 			$('#api_test_connection_modal_delh').removeClass('is-active');
+		});
+		$('#api_tc_m_close_btn_ship24').click(function (e){
+			$('#api_test_connection_modal_ship24').removeClass('is-active');
+			$('#api_test_connection_modal_ship24').css('display','none');
+
 		});
 	
 		$('#api_shipmozo_tc_m_close_btn').click(function (e){
@@ -480,6 +499,21 @@
 				$('#api_tc-m-content_delh').html(res.message);
 				$('#api_test_connection_modal_delh').addClass('is-active');
 				$('#api_test_connection_btn_delh').removeClass('is-loading');
+				
+			}
+		)		
+	}
+	function api_test_connection_ship24() {
+		// console.log(bt_sync_shipment_track_data.test_conn_nonce);		
+		var nonce = bt_sync_shipment_track_data.test_conn_nonce;
+		$.get(
+			bt_sync_shipment_track_data.ajax_url,
+			{ action: 'api_call_for_ship24_test_connection', value: nonce },
+			function (res) {
+				$('#api_tc-m-content_ship24').html(res.message);
+				$('#api_test_connection_modal_ship24').addClass('is-active');
+				$('#api_test_connection_modal_ship24').css('display','flex');
+				$('#api_test_connection_btn_ship24').removeClass('is-loading');
 				
 			}
 		)		

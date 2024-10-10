@@ -8,6 +8,7 @@
     if(!isset($order_id)){
         $order_id=isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
     }
+    $awb_n = isset($awb_n) ? $awb_n : '';
     $awb_n = str_replace('#order_id#', $order_id, $awb_n);
 
 ?>
@@ -22,6 +23,10 @@
 </p>
 <p class="form-field ">
     <?php
+    if (class_exists('WooCommerce')) {
+        require_once ABSPATH . 'wp-content/plugins/woocommerce/includes/admin/wc-meta-box-functions.php';
+    }
+    
         woocommerce_wp_select([
             'class'             => 'select short',
             'style'             => 'width:100%;',

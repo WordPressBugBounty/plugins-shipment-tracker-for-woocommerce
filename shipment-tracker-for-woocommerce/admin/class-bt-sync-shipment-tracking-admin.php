@@ -135,6 +135,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 				"create_tracking_page" => wp_create_nonce('get_st_form_with_data'),
 				"test_conn_shipmozo_nonce" 	=> wp_create_nonce('api_call_for_shipmozo_test_connection'),
 				"test_conn_delhivery_nonce" 	=> wp_create_nonce('api_call_for_delhivery_test_connection'),
+				"test_conn_ship24_nonce" 	=> wp_create_nonce('api_call_for_ship24_test_connection'),
 				"test_conn_nimbuspost_nonce" 	=> wp_create_nonce('api_check_for_nimbuspost_test_connection'),
 				"buy_credit_balance_nonce" 	=> wp_create_nonce('buy_credit_balance'),
 				"credit_balance_details_nonce" 	=> wp_create_nonce('credit_balance_details'),
@@ -692,15 +693,16 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		$bt_shipping_provider = $bt_shipment_tracking->shipping_provider;
 		$bt_shipping_awb_number = $bt_shipment_tracking->awb;
 
-		// $shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
-		$shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($post_id, '_bt_sst_custom_shipping_mode', true);
+		$shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
+		// $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($post_id, '_bt_sst_custom_shipping_mode', true);
 
 		include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-woocommerce-order-actions-end.php';
 
         if($bt_shipping_provider == 'manual' && $shipping_mode_is_manual_or_ship24 =="manual"){
             include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-manual-metabox.php';
         } else if($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite'|| $bt_shipping_provider == 'nimbuspost'|| $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo'|| $bt_shipping_provider == 'nimbuspost_new'|| $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24=="ship24") {
-            include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-metabox.php';
+			$order_id=isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
+			include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-metabox.php';
         }
 		
     }
@@ -857,6 +859,31 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		$api_call = $this->delhivery->test_delhivery();
 		// var_dump($this->delhivery);
 		if ($api_call == true) {
+			$response = array(
+				"status" => true,
+				"data" => null,
+				"message" => "Test Connection Successful. Great work!!"
+			);
+		}
+		// $response = "idfugdf";
+		wp_send_json($response);
+		die();
+	}
+	public function api_call_for_ship24_test_connection() {
+
+		$nonce = $_GET["value"];
+		if ( ! wp_verify_nonce( $nonce, 'api_call_for_ship24_test_connection' ) ) {
+			// $response = "idfugdf";
+		}
+		$response = array(
+			"status" => false,
+			"data" => null,
+			"message" => "Test Connection Failed. Please verify api credentials and try again."
+		); 
+		// die("fdfrgdrg");
+		$api_call = $this->ship24->get_coriers_name_and_test_connectin();
+		// var_dump($this->delhivery);
+		if (sizeof($api_call) >1) {
 			$response = array(
 				"status" => true,
 				"data" => null,
@@ -1636,7 +1663,68 @@ class Bt_Sync_Shipment_Tracking_Admin {
 							| <a href="#" class=' stw_wizard_button' id='open-modal'>Launch Setup Wizard</a>
 						</div>
 					</div>
+					<div class="notice notice-warning is-dismissible bt-sst-review-notice">
+						<p>We're actively developing this plugin. <b>Help us make it better</b> by <a id="bt-feedback" href="" target="_blank">sharing your feedback</a>. Liked this plugin? Spread the word, <a href="https://wordpress.org/support/plugin/shipment-tracker-for-woocommerce/reviews/#new-post" target="_blank">give ⭐⭐⭐⭐⭐ on wordress.</a></p>
+					</div>
+					 <!-- The Modal -->
+					 <div id="bt-feedback-modal" style="display:none;"  title="Shipment Tracker for Woocommerce">
+						<div class="bt-sst-review-step bt-sst-review-step-2">
+							<p> We would love a chance to improve. Could you take a minute and let us know what we can do better?</p>
+							<textarea class="bt-textarea" name="bt-feedback-text" id="bt-feedback-text" placeholder="Please write your concern here" rows="5" style="width: 100%"></textarea>
+							<small>Note: This site's address, admin email and your name will be sent to us along with your feedback.</small>
+							<span class="spinner"></span> 
+						</div>                
+					</div>
+					<script type="text/javascript">
+						jQuery( document ).ready( function ( $ ) {
+						
+							$(document).on('click','#bt-feedback',function(e){
+								e.preventDefault();
+								$('#bt-feedback-modal').dialog({
+									resizable: false,
+									height: "auto",
+									width: 400,
+									modal: true,
+									buttons:[
+										{
+											text: "Submit",
+											"class": 'bt_btn_sst_feedback_submit',
+											click: function() {
+												
+												var feedback = '';
+												if((feedback = $("#bt-feedback-text").val()) != '') {
+													$('.bt_btn_sst_feedback_submit').addClass("disabled");
+													$('#bt-feedback-modal .spinner').addClass("is-active");
+													$(this).addClass('disabled');
+													$.post(ajaxurl, {action: 'post_customer_feedback_to_sever', feedback: feedback}, function( data ) {
+													
+														alert("Thank you for your valuable feedback.");
+														$('.bt_btn_sst_feedback_submit').removeClass("disabled");
+														$('#bt-feedback-modal .spinner').removeClass("is-active");
 
+														$('#bt-feedback-modal').dialog( "close" );  
+													
+														
+													});
+												}else{
+													alert("Sharing is caring... please share your feedback...");
+												}
+											}
+										},
+										{
+											text: "Cancel",
+											"class": 'bt_btn_sst_feedback_cancel',
+											click: function() {
+												$( this ).dialog( "close" );
+											}
+										},
+
+									]
+									});
+							});
+
+						} );
+					</script>
 			<?php
 		}
 	}
@@ -1704,8 +1792,8 @@ class Bt_Sync_Shipment_Tracking_Admin {
         $bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($order_id);
 		$bt_shipping_provider = $bt_shipment_tracking->shipping_provider;
 		$bt_shipping_awb_number = $bt_shipment_tracking->awb;
-		// $shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
-		$shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_sst_custom_shipping_mode', true);
+		$shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
+		// $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_sst_custom_shipping_mode', true);
 
 		if($bt_shipping_provider == 'manual'){
 			if($shipping_mode_is_manual_or_ship24 == "ship24"){
@@ -1886,7 +1974,39 @@ class Bt_Sync_Shipment_Tracking_Admin {
 			}
 		//}
 	}
+	function custom_dokan_order_details( $order ) {
+		// Check if the order object exists
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return;
+		}
+		echo '<h3>Shipment Tracking</h3>';
+		$post_id = $order->get_id();
+		$order_id = $order->get_id();
+		if(empty($post_id)){
+			$post_id = $_GET["id"];
+		}	
 
+        $bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($post_id);
+		$bt_shipping_provider = $bt_shipment_tracking->shipping_provider;
+		$bt_shipping_awb_number = $bt_shipment_tracking->awb;
+
+		$shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
+		// $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($post_id, '_bt_sst_custom_shipping_mode', true);
+		if(current_user_can("manage_options" )){
+			include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-woocommerce-order-actions-end.php';
+		}else{
+			echo '<div style="pointer-events: none; opacity: 0.5;">'; // Makes it non-clickable and visually indicates it's disabled
+			include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-woocommerce-order-actions-end.php';
+			echo "</div>";
+		}
+
+        if($bt_shipping_provider == 'manual' && $shipping_mode_is_manual_or_ship24 =="manual"){
+            include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-manual-metabox.php';
+        } else if($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite'|| $bt_shipping_provider == 'nimbuspost'|| $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo'|| $bt_shipping_provider == 'nimbuspost_new'|| $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24=="ship24") {
+			include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-metabox.php';
+        }
+		
+	}
 	// public function post_customer_feedback_to_sever() {
 	
 	// 	$current_user = wp_get_current_user();
@@ -2121,7 +2241,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	function get_coriers_name_for_ship24(){
 		
 		if($_POST['status']){
-			$response = $this->ship24->get_coriers_name();
+			$response = $this->ship24->get_coriers_name_and_test_connectin();
 			wp_send_json_success($response);
 		}
 		return "faild";
@@ -2180,8 +2300,8 @@ function bt_force_sync_order_tracking($order_id){
         $response = $obj->update_order_shipment_status($order_id);
     }else if($bt_shipping_provider == "manual"){
 		
-		// $shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
-		$shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_sst_custom_shipping_mode', true);
+		$shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
+		// $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_sst_custom_shipping_mode', true);
 		if($shipping_mode_is_manual_or_ship24 == "ship24"){
 			$obj = new Bt_Sync_Shipment_Tracking_ship24();
 			$response = $obj->update_order_shipment_status($order_id);
