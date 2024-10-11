@@ -16,7 +16,7 @@
  * Plugin Name:       Shipment Tracker for Woocommerce
  * Plugin URI:        https://shipment-tracker-for-woocommerce.bitss.tech/
  * Description:       Most comprehensive shipment tracking plugin that extends your woocommerce store with shipment related features. Keeps you & your customers informed about shipment movement.
- * Version:           1.4.21.1
+ * Version:           1.4.21.2
  * Author:            Bitss Techniques
  * Author URI:        https://shipment-tracker-for-woocommerce.bitss.tech
  * License:           GPL-2.0+
@@ -37,7 +37,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Rename this for your plugin and update it as you release new versions.
  */
 define( 'Carbon_Fields\URL', trailingslashit( plugin_dir_url( __FILE__ ) ) . 'vendor/htmlburger/carbon-fields/' );//fix for Bitnami installations.
-define( 'BT_SYNC_SHIPMENT_TRACKING_VERSION', '1.4.21.1' );
+define( 'BT_SYNC_SHIPMENT_TRACKING_VERSION', '1.4.21.2' );
 define( 'BT_SHIPPING_PROVIDERS', array('delhivery' =>'Delhivery','nimbuspost' => 'Nimbuspost (Deprecated)','nimbuspost_new' => 'Nimbuspost','shipmozo'=>'Shipmozo','shiprocket' => 'Shiprocket', 'xpressbees' => 'Xpressbees', 'manual' =>'Custom Shipping') );
 define( 'BT_SHIPPING_PROVIDERS_WITH_NONE', array('none' =>'none','delhivery' =>'Delhivery', 'nimbuspost' => 'Nimbuspost (OLD)','nimbuspost_new' => 'Nimbuspost(NEW)','shipmozo'=>'Shipmozo','shiprocket' => 'Shiprocket', 'xpressbees' => 'Xpressbees','manual' =>'Custom Shipping') );
 define( 'BT_SHIPPING_STATUS', array('pending-pickup' => 'Pending pickup', 'out-for-pickup' => 'Out for pickup', 'in-transit' =>'In Transit', 'out-for-delivery' => 'Out for delivery', 'delivered' => 'Delivered', 'canceled' =>'Canceled', 'rto-in-transit' =>'RTO in Transit', 'rto-delivered' =>'RTO Delivered') );

@@ -231,287 +231,365 @@ if(empty($bt_sst_review_subheading_text)){
             if($order_status !='cancelled' || $order_status!='refunded' || $order_status!='failed' ){
             $whatsapp_url .= $estimated_delivery_date . "\n";
             }
+            if(!$estimated_delivery_date){
+                $estimated_delivery_date = "Deliverd on: Arriving Soon";
+            }
                             
             $whatsapp_url .= 'Track Your Shipment: ' . $current_url . "\n" .
                             'Thank you for shopping with us! If you have any questions, feel free to reach out.' ;
         ?>
-        <div class="fl-module-subscribe-form snipcss-oLzae obscure-5eL1eW3kd obscure-1wJ5wR9d8" data-node="krpof3agj2mn">
-            <div class="">
-                <div class="">
-                    <div class="">
-                        <?php
-                        $bt_sst_navigation_map = carbon_get_theme_option('bt_sst_navigation_map');
-                        if($is_premium && $bt_sst_navigation_map == 'yes'){ 
-                            $delivery_pincode = $the_order->get_shipping_postcode();
-                            // $delivery_pincode = "";
-                            $billing_pincode = $the_order->get_billing_postcode();
-                            // $billing_pincode = "";
-                            $delivery_country = $the_order->get_shipping_country();
-                            $billing_country = $the_order->get_billing_country();
-                            $pickup_pincode = WC()->countries->get_base_postcode() ;
-                            // $pickup_pincode = "";
-                            $base_country = WC()->countries->get_base_country() ;
-
-                            if($billing_pincode && !$delivery_pincode){
-                                $delivery_country = $billing_country;
-                                $delivery_pincode = $billing_pincode;
-                            }else if(!$delivery_pincode && $pickup_pincode){
-                                $delivery_country = $base_country;
-                                $delivery_pincode = $pickup_pincode;
-                            }
-                            // var_dump($delivery_pincode); die;
-                            if($delivery_pincode || $pickup_pincode){
-                            ?>
-                            <div class="">
-                                <div id="bt_sst_leaflet_map_location" class="bt_sst_leaflet_map_location_shipment" style="width:100%"></div>
-                            </div>
-                        <?php }
-                        }
-                        ?>
-                    </div>
-                    <div class="">
-                        <div class="">
-                            <div class="">
-                                    <div>
-                                        <?php 
-                                            foreach ( $the_order->get_items() as $item_id => $item ) {
-                                                $product = $item->get_product();
-                                                if ( $product ) {
-                                                    $image_id = $product->get_image_id();
-                                                    $image_url = wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' );
-                                        
-                                                    echo '<img style="height:100px" src="' . esc_url( $image_url ) . '" alt="' . esc_attr( $product->get_name() ) . '" />';
-                                                }
-                                            }
-                                        
-                                        ?>
-                                    </div>                                                    
-                                    <div class="bt_sst_location_del_bar_icone_child">
-                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAADuElEQVR4nO2ZWYiOURjHfzRkmbHPZOJCWYZCiNwoW7JEGtkaV24VuZG9xnZBcodsxYWILJESLiQiDLIklEhqLFnGvoxPR/+3TtN8531f3znffCO/euvr/f7vc/bnOec58J9G6QBUAbuAq8BL4Luel3q3E5gLlFCAVAB7gM9AJuHzCdgN9KUAaAdsBn6ocr/U6yuB0Wpgez0VercKuCZtRqO1CWjTVI0wPXlHlakH9gO9U3zfBzhgNegyUE6eGao5byrwABiWg63hwEPZegYMJo8jETXiDNDZg80uwFmrMeX5WBN3rEYUebTdCjhnTbOga2azNZ18jERjI/NIZawhEBXyTvU5rok4RsgBfAS6hyhgj3rKeKfQHFRZ20JE7E/qqSQutgxYB9xUz5rnBrAWKE3oUH7pu2I8UqUeMsEujplAnSOivwdmJLBzXfo5eGSXjJqIHdeIKMAdUySPIvsY4LgVQCtjbK2WdofHdvwZiYwq5ppO0UgsceiWSvMO6ObQjZXuCh55JaP9HJp11kjEcSKBi+0nzQs88k1GXVvvWwlGrWFvGweQjRJpvuKRLzLqirYfpEniZaJKmqno2kVkdDTwRq2MugJUXYqGdLA8WDZ6SPMcj9yX0YEOzU1pjHeKY5y0NQ7NEGnu4pGTMjrboVkrzfEU9qodmnnSHMUjG2R0vUNTqqmSkYvNxnJp3gJdHbqNCRqbmtkyarbZLmYo2GXkYsdqzRRrOkUjYTTTY2xdlDZOl4oyFf5V3sRFpYJdti3K2wSV66Sdtnk64pkbqsiUBNpuCnY1cst12jtVx0yniFkqy4yKd6LIvZfwHEmw1v6a/pbvj5teudBRAdhsPnuFKqRGjTGuMRQLVcb5gGWwwEoOhKAIeKwyzBkoGMWWRzJna9/MtbYlJqsSlC0q7HDAqbuCPFBuLcZBHu1OsA5cJo7kha0BRsUs7qD5rMboaWVVRnmwV6lGvA6U+HNSbZ3yWuZgp7WVxF5AE9AWeKIKzM/BzhLZuOc5l/xX+a5anfrSUmq584k0IS2AS6qISXCnZZ++Ndv7Jmeors9+AiNTfDfJuktMc9MVlOiYez/hvYbJojzVN4soIFoDtxMchyO2W+eNXDxeEIZoitXHZFImKf6Y0+YACpQ16uknWbYZZUqBGs1iCpgi4IKVxjFeLcJModP671SD/wqSnlbSe2UjR+XaUFdqIZimdWDWy2Rgqn4bFz2eZka1RuCNUkDm9zKaIS2AQ1Y+q+GaaVaU6Mbpsu9LTf5VfgNttDSN+ivn8AAAAABJRU5ErkJggg=="><p> <?= $order_delivery_address ?> </p>
+        <div class="fl-row-content-wrap snipcss-FI8zt">
+            <div class="fl-row-content fl-row-fixed-width fl-node-content">
+                <div class="fl-col-group fl-node-h34zioj6ygep" data-node="h34zioj6ygep">
+                    <div class="" data-node="pt7e19gljyuh" id="style-IBgKo">
+                        <div class="fl-col-content fl-node-content ui-sortable">
+                            <div class="fl-module fl-module-heading fl-node-0z7h1ugnboap" data-node="0z7h1ugnboap" data-parent="pt7e19gljyuh" data-type="heading" data-name="Heading">
+                                <div class="fl-module-content fl-node-content">
+                                    <div class="fl-heading" style="font-size: 20px;">
+                                        <?php echo $estimated_delivery_date; ?>
                                     </div>
-                                    <div class="bt_sst_location_del_bar_icone_child">
-                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB+0lEQVR4nO2YOUsDQRiGHzAmWphYiGjAQksre8XSxsKjyl/wwtouXRpttLPS1s4fYOcNHo1XHVQ8SgVBdGXgi6whGXZ39sjKPPBB2G923n13vjk2YLFYLBaLGU7M8QJsAJ1pN+JIrJNyJsTIM/8ARyKSTh3DsEbSjBNFaSVp5NFDyT4BO8Cw106jnhemmu/AdKsaKWlyNYaAXbn2AYzTQuhehNMg1wZsy/UHoJeUGlFkgH3J7Ym5P8RVTo00/eYGgFfJr6TZiGIS+AY+gTESxsSIYk3aVIEeUmykHTiWdlv1N0ZdTl4f1vGoOSh7yxcwkmYjilVpu0lC6B62qtks6xmVtne0oJFygJVUrWCRlY8OnWZGzFT9bgutZsQv1kgY2BExLa0OYBk4lU1IxQmwBORMxEPQcrwaKQKXmtXiAugPyUgxgJYnIzlXx1fAFNAloT47byR3DmQNjQTV8mRkSXLXQKFBvuASmDc0ElTrt697+aG2+3oOJafeTjNmpM2BoZEgWiXXcZ6Kh11TDW8z8gGOFGFrlZF6q7hGxm/nhRiNFOraVsWEOtZoqQ237v+k2QClFbvWotx402QCdssRWrWZ89t5nFpZWbvVzbcy2fISs66Oz3wuv4loFV0CjUKt632GJmLTysnQqw/+N4kjYCGEkUhSy2KxkDJ+ANIID7KqwJZkAAAAAElFTkSuQmCC"><p> <?= $courier_name ?> </p>
-                                    </div>
-                                    <div class="bt_sst_location_del_bar_icone_child">
-                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABiklEQVR4nMWVsUrEQBCGY6do5zMoB76Dd4JYauUj2OQssv+/geuCrTa+hFernShY2V9lY+MJIjZXCFZHUIabQNzkNskZceDnZi+z8+1mZkgQ/LcZY3ZIDgHcenQJoLNQcgApgLEn+YTkF4C3xhA9+ThJkuV5MQDuST4poBlENovqxADYBPAK4D2Koq02ATckH9TvNLpJTcAJgCmAvrV2l+SxrqshAK5FvhiSqyTvpNCuqvYGg8FgXRRU25LUQG6QieSo6va/MtR4ve0CjE6sqpf9b609EpWt5Tc/dCTPwjBcKwByE/usU5tmEDgnya/VnyhA/KlACvt0Yj8B7FtrD9S/yAfGcbwhcgFSTC3sHskXklcFgAa6LZZP8igTKlI//8xtT84DjMpaDJoEwIeoBF7vBr73zFnSQ5ELcGsA4LSQ09cpAPok4+yZ+CTDsi6S5DLZpW3atqEOgOS56C8Bw6oPTpkZY1ak4Fmr+wA9HToJ9n2Tf0jjU2NMt85punKSJgCJJ7nd5NYL2zenX/kTY8xhFQAAAABJRU5ErkJggg=="><p> <?= $awb_number ?></p>
-                                    </div>
-                            </div>
-                        </div>
-                        <div class="">
-                            <ul class="snipcss0-11-32-33 obscure-jzEBz173V obscure-AdqVd1LWL bt_sst">
-                                <li class="info-list-item-dynamic0 snipcss0-12-33-34 obscure-z0xQ0E4nw">
-                                    <div class="snipcss0-13-34-35 obscure-jzEBz173V obscure-MMkaMW93B obscure-vMapMwZlb">
-                                        <div class="snipcss0-14-35-36 obscure-38P18aqL4 obscure-P7W378aLr obscure-x03Z0E85r obscure-VXzbXRgej">
-                                            <div class="snipcss0-15-36-37 obscure-8zZkzlygz obscure-BEzVENpmn"> <span class="snipcss0-16-37-38 obscure-5eLBea7qK">
-                                                    <span class="snipcss0-17-38-39 obscure-Wb9zbk739">
-                                                        <i class="snipcss0-18-39-40 obscure-geN8ev7qP obscure-avzpv6m4P <?= $current_step>=1?"bt_sst_step_completed":"" ?>"></i>
-                                                    </span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="info-list-content-dynamic0 snipcss0-14-35-41 obscure-jzEBz173V obscure-LzqyzR5gW">
-                                            <h4 class="uabb-info-list-title bt_sst snipcss0-15-41-42">Order Placed</h4>
-                                            <div class="info-list-description-dynamic0 snipcss0-15-41-43 obscure-9aVkarqgw obscure-n0EW0n7or">
-                                                <p class="snipcss0-16-43-44 bt_sst"><?= $order_placed_message ?></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="snipcss0-13-34-45 obscure-jzEBz173V obscure-kzaezq7PL <?= $current_step>1?"bt_sst_step_completed":"" ?>"></div>
-                                </li>
-                                <li class="info-list-item-dynamic1 snipcss0-12-33-46 obscure-z0xQ0E4nw">
-                                    <div class="snipcss0-13-46-47 obscure-jzEBz173V obscure-MMkaMW93B obscure-vMapMwZlb">
-                                        <div class="snipcss0-14-47-48 obscure-38P18aqL4 obscure-P7W378aLr obscure-x03Z0E85r obscure-4BxzBaq0J">
-                                            <div class="snipcss0-15-48-49 obscure-8zZkzlygz obscure-BEzVENpmn"> <span class="snipcss0-16-49-50 obscure-5eLBea7qK">
-                                                    <span class="snipcss0-17-50-51 obscure-Wb9zbk739">
-                                                    <?php
-                                                            if ($order_status == "cancelled" || $shipped_string == "canceled" ||  $order_status == "refunded" || $order_status == "failed") {
-                                                                echo '<span class="bt_st_order_canceled_icone">⚠</span>';
-                                                            } else {
-                                                                echo '<i class="snipcss0-18-51-52 obscure-geN8ev7qP obscure-avzpv6m4P ' . ($current_step >= 2 ? "bt_sst_step_completed" : "") . '"></i>';
-                                                            }
-                                                        ?>
-                                                    </span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="info-list-content-dynamic1 snipcss0-14-47-53 obscure-jzEBz173V obscure-LzqyzR5gW">
-                                            <h4 class="uabb-info-list-title bt_sst snipcss0-15-53-54"><?= $shipped_string  ?></h4>
-                                            <div class="info-list-description-dynamic1 snipcss0-15-53-55 obscure-9aVkarqgw obscure-n0EW0n7or">
-                                                <p class="snipcss0-16-55-56 bt_sst"><?= $shipped_message ?></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="snipcss0-13-46-57 obscure-jzEBz173V obscure-kzaezq7PL <?= $current_step>2?"bt_sst_step_completed":"" ?>"></div>
-                                </li>
-                                <li style="<?= $show_delivery_states?'':'display:none' ?>" class="info-list-item-dynamic2 snipcss0-12-33-58 obscure-z0xQ0E4nw">
-                                    <div class="snipcss0-13-58-59 obscure-jzEBz173V obscure-MMkaMW93B obscure-vMapMwZlb">
-                                        <div class="snipcss0-14-59-60 obscure-38P18aqL4 obscure-P7W378aLr obscure-x03Z0E85r obscure-KEqMElRvl">
-                                            <div class="snipcss0-15-60-61 obscure-8zZkzlygz obscure-BEzVENpmn"> <span class="snipcss0-16-61-62 obscure-5eLBea7qK">
-                                                    <span class="snipcss0-17-62-63 obscure-Wb9zbk739">
-                                                        <i class="snipcss0-18-63-64 obscure-geN8ev7qP obscure-avzpv6m4P <?= $current_step>=3?"bt_sst_step_completed":"" ?>"></i>
-                                                    </span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="info-list-content-dynamic2 snipcss0-14-59-65 obscure-jzEBz173V obscure-LzqyzR5gW">
-                                            <h4 class="uabb-info-list-title bt_sst snipcss0-15-65-66">Out for delivery</h4>
-                                            <div class="info-list-description-dynamic2 snipcss0-15-65-67 obscure-9aVkarqgw obscure-n0EW0n7or">
-                                                <p class="snipcss0-16-67-68 bt_sst">
-                                                <?php if($current_step>=3){
-                                                    echo "Package is going to arrive anytime now.";
-                                                }       
-                                                ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="snipcss0-13-58-69 obscure-jzEBz173V obscure-kzaezq7PL <?= $current_step>3?"bt_sst_step_completed":"" ?>"></div>
-                                </li>
-                                <li style="<?= $show_delivery_states?'':'display:none' ?>"  class="info-list-item-dynamic3 snipcss0-12-33-70 obscure-z0xQ0E4nw">
-                                    <div class="snipcss0-13-70-71 obscure-jzEBz173V obscure-MMkaMW93B obscure-vMapMwZlb">
-                                        <div class="snipcss0-14-71-72 obscure-38P18aqL4 obscure-P7W378aLr obscure-x03Z0E85r obscure-l0E90NdXQ">
-                                            <div class="snipcss0-15-72-73 obscure-8zZkzlygz obscure-BEzVENpmn"> <span class="snipcss0-16-73-74 obscure-5eLBea7qK">
-                                                    <span class="snipcss0-17-74-75 obscure-Wb9zbk739">
-                                                        <i class="snipcss0-18-75-76 obscure-geN8ev7qP obscure-avzpv6m4P <?= $current_step>=4?"bt_sst_step_completed":"" ?>"></i>
-                                                    </span>
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="info-list-content-dynamic3 snipcss0-14-71-77 obscure-jzEBz173V obscure-LzqyzR5gW">
-                                            <h4 class="uabb-info-list-title bt_sst snipcss0-15-77-78">Delivered</h4>
-                                            <div class="info-list-description-dynamic3 snipcss0-15-77-79 obscure-9aVkarqgw obscure-n0EW0n7or">
-                                                <p class="snipcss0-16-79-80 bt_sst">
-                                                    <?php if($current_step>=4){
-                                                            echo 'Yay! You should have already received your package.';
-                                                        }   
-                                                        echo $estimated_delivery_date;
-                                                    ?>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="snipcss0-13-70-81 obscure-jzEBz173V obscure-kzaezq7PL <?= $current_step>4?"bt_sst_step_completed":"" ?>"></div>
-                                </li>
-                            </ul>
-                        </div>
-                        <?php if($is_premium && carbon_get_theme_option('bt_sst_enable_rating')=='yes'): ?>
-                            <div class="bt_sst_tracking_product_rating">
-                                <div>
-                                    <strong><?php echo esc_html($bt_sst_review_heading_text); ?></strong>
-                                    <p><?php echo esc_html($bt_sst_review_subheading_text); ?></p>
-                                </div>
-                                <div>
-                                    <a target="_blank" href="<?php echo esc_url(carbon_get_theme_option('bt_sst_rating_page_url')); ?>" class="bt_sst_tracking_rating_url_btn">
-                                        <button>Rate Us </button>
-                                    </a>
                                 </div>
                             </div>
-                        <?php endif;?>
-                        <?php
-                            $shipping_provider = strtolower($tracking['tracking_data']['shipping_provider']);
-                        ?>
-                        <div>
-                            <?php if($shipping_provider=="delhivery" && isset($tracking['tracking_data']['scans']) && sizeof($tracking['tracking_data']['scans'])>0){ ?>
-                                <div class="bt_sst_tracking_product_trackong">
-                                <input type="checkbox" id="toggle" class="bt_sst_toggle-checkbox">
-                                <label for="toggle" class="bt_sst_toggle-label">Show More</label>
-        
-                                <div class="bt_sst_toggle-content">
-                                    <table>
-                                        <tr>
-                                            <th>Date:</th>
-                                            <th>Scan:</th>
-                                            <th>Scanned Location:</th>
-                                        </tr>
-                                            <?php foreach ($tracking['tracking_data']['scans'] as $scan) : 
-                                            $dateandtime_obj = new DateTime($scan['ScanDetail']['ScanDateTime'])
-                                            ?>
-                                            <tr>
-                                                <td><?php echo $dateandtime_obj->format('F j Y') ?></td>
-                                                <td><?php echo htmlspecialchars($scan['ScanDetail']['Scan']); ?></td>
-                                                <td><?php echo htmlspecialchars($scan['ScanDetail']['ScannedLocation']); ?></td>
-                                            </tr>
-                                            <?php endforeach; ?>
-                                        </table>
-                                    </div>
-                                </div>
-
-                            <?php }else if($shipping_provider=="shiprocket" && isset($tracking['tracking_data']['scans']) && sizeof($tracking['tracking_data']['scans'])>0){ ?>
-                                <div class="bt_sst_tracking_product_trackong">
-                                <input type="checkbox" id="toggle" class="bt_sst_toggle-checkbox">
-                                <label for="toggle" class="bt_sst_toggle-label">Show More</label>
-        
-                                <div class="bt_sst_toggle-content">
-                                    <table>
-                                        <tr>
-                                            <th>Date:</th>
-                                            <th>Status:</th>
-                                            <th>Location:</th>
-                                        </tr>
-                                            <?php foreach ($tracking['tracking_data']['scans'] as $scan) : 
-                                            $dateandtime_obj = new DateTime($scan['date'])
-                                            ?>
-                                            <tr>
-                                                <td><?php echo $dateandtime_obj->format('F j Y') ?></td>
-                                                <td><?php echo htmlspecialchars($scan['sr-status-label']); ?></td>
-                                                <td><?php echo htmlspecialchars($scan['location']); ?></td>
-                                            </tr>
-                                            <?php endforeach; ?>
-                                        </table>
-                                    </div>
-                                </div>
-                            <?php }else if($shipping_provider=="nimbuspost" && isset($tracking['tracking_data']['scans']) && sizeof($tracking['tracking_data']['scans'])>0){ ?>
-                                <div class="bt_sst_tracking_product_trackong">
-                                <input type="checkbox" id="toggle" class="bt_sst_toggle-checkbox">
-                                <label for="toggle" class="bt_sst_toggle-label">Show More</label>
-        
-                                <div class="bt_sst_toggle-content">
-                                    <table>
-                                        <tr>
-                                            
-                                            <th>Status:</th>
-                                            <th>Location:</th>
-                                        </tr>
-                                            <?php foreach ($tracking['tracking_data']['scans'] as $scan) : 
-                                            $dateandtime_obj = new DateTime($scan['date'])
-                                            ?>
-                                            <tr>
-                                                
-                                                <td><?php echo htmlspecialchars($scan['message']); ?></td>
-                                                <td><?php echo htmlspecialchars($scan['location']); ?></td>
-                                            </tr>
-                                            <?php endforeach; ?>
-                                        </table>
-                                    </div>
-                                </div>
-                            <?php }?>
                         </div>
                     </div>
                 </div>
-                <div class="">
-                    <span class="">ORDER SUMMARY</span>
-                    <span class="">order on</span>
-                    <p class=""><?= $order_number ?></p>
-                    <span class="">Placed on</span>
-                    <p class=""> <?=  $ordering_date ?> <strong class="">at</strong> <?=  $ordering_time ?></p>
-                    <span class="">Order Total</span>
-                    <p class=""><?= $order_total ?></p>
-                    <span class="">Payment via</span>
-                    <p class=""><?= $payment_method_name ?></p>
-                    <span class="">Shipping</span>
-                    <p class=""><?= $order_sjipping_method  ?></p>
-                    <?php if(is_user_logged_in()){ ?>
-                        <p class=""><a href="<?php echo esc_url( $the_order->get_view_order_url() ); ?>" class="">View</a> order details.</p>
-                    <?php } else { ?>
-                        <p class=""><a href="/my-account" class="">Login</a> to see more details.</p>
-                    <?php } ?>
-                    <p class=""><a href="<?= get_permalink( get_the_ID() ); ?>" class="">Track</a> another order.</p>
-                    <div class="">
-                        <a href="https://api.whatsapp.com/send?text=<?php echo urlencode($whatsapp_url); ?>" target="_blank"> Share 
-                         </a> on WhatsApp
+                <div class="fl-col-group fl-node-huo20iqjn8rc" data-node="huo20iqjn8rc" style="display:flex; align-items: center;">
+                    <div class="fl-col fl-node-fi95nkgz4uvt fl-col-small style-QHQxh" data-node="fi95nkgz4uvt" id="style-QHQxh">
+                        <div class="fl-col-content fl-node-content ui-sortable">
+                            <div class="fl-module fl-module-photo fl-node-j7vr109hbw3x" data-node="j7vr109hbw3x" data-parent="fi95nkgz4uvt" data-type="photo" data-name="Photo">
+                                <div class="">
+                                    <div class="" itemscope="" itemtype="https://schema.org/ImageObject">
+                                        <div class="fl-photo-content fl-photo-img-png">
+                                        <div>
+                                                <?php 
+                                                    foreach ( $the_order->get_items() as $item_id => $item ) {
+                                                        $product = $item->get_product();
+                                                        if ( $product ) {
+                                                            $image_id = $product->get_image_id();
+                                                            $image_url = wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' );
+                                                
+                                                            echo '<img style="height:100px" src="' . esc_url( $image_url ) . '" alt="' . esc_attr( $product->get_name() ) . '" />';
+                                                        }
+                                                    }
+                                                
+                                                ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fl-drop-target fl-col-drop-target ui-sortable" style=""></div>
+                        <div class="fl-drop-target fl-drop-target-last fl-col-drop-target fl-col-drop-target-last ui-sortable" style=""></div>
                     </div>
+                    <div class="fl-drop-target fl-col-group-drop-target ui-sortable" style=""></div>
+                    <div class="fl-drop-target fl-drop-target-last fl-col-group-drop-target fl-col-group-drop-target-last ui-sortable" style=""></div>
+                </div>
+                <div class="fl-col-group fl-node-la6f3q7nhr48" data-node="la6f3q7nhr48">
+                    <div class="fl-col fl-node-udyvigx8l6kb style-choB9" data-node="udyvigx8l6kb" id="style-choB9">
+                        <div class="fl-col-content fl-node-content ui-sortable">
+                            <div class="fl-module fl-module-heading fl-node-kyl50ju6rfct" data-node="kyl50ju6rfct" data-parent="udyvigx8l6kb" data-type="heading" data-name="Heading">
+                                <div class="fl-module-content fl-node-content">
+                                    <div class="">
+                                        <?php
+                                        $bt_sst_navigation_map = carbon_get_theme_option('bt_sst_navigation_map');
+                                        if($is_premium && $bt_sst_navigation_map == 'yes'){ 
+                                            $delivery_pincode = $the_order->get_shipping_postcode();
+                                            // $delivery_pincode = "";
+                                            $billing_pincode = $the_order->get_billing_postcode();
+                                            // $billing_pincode = "";
+                                            $delivery_country = $the_order->get_shipping_country();
+                                            $billing_country = $the_order->get_billing_country();
+                                            $pickup_pincode = WC()->countries->get_base_postcode() ;
+                                            // $pickup_pincode = "";
+                                            $base_country = WC()->countries->get_base_country() ;
+
+                                            if($billing_pincode && !$delivery_pincode){
+                                                $delivery_country = $billing_country;
+                                                $delivery_pincode = $billing_pincode;
+                                            }else if(!$delivery_pincode && $pickup_pincode){
+                                                $delivery_country = $base_country;
+                                                $delivery_pincode = $pickup_pincode;
+                                            }
+                                            // var_dump($delivery_pincode); die;
+                                            if($delivery_pincode || $pickup_pincode){
+                                            ?>
+                                            <div class="">
+                                                <div id="bt_sst_leaflet_map_location" class="bt_sst_leaflet_map_location_shipment" style="width:100%"></div>
+                                            </div>
+                                        <?php }
+                                        }
+                                        ?>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fl-drop-target fl-col-drop-target ui-sortable" style=""></div>
+                        <div class="fl-drop-target fl-drop-target-last fl-col-drop-target fl-col-drop-target-last ui-sortable" style=""></div>
+                    </div>
+                    <div class="fl-drop-target fl-col-group-drop-target ui-sortable" style=""></div>
+                    <div class="fl-drop-target fl-drop-target-last fl-col-group-drop-target fl-col-group-drop-target-last ui-sortable" style=""></div>
+                </div>
+                <div class="fl-col-group fl-node-2abpnsxkt394" data-node="2abpnsxkt394">
+                    <div class="fl-col fl-node-gt9f8nkh6wuq style-ixo3P" data-node="gt9f8nkh6wuq" id="style-ixo3P">
+                        <div class="fl-col-content fl-node-content ui-sortable">
+                            <div class="fl-module fl-module-uabb-timeline fl-node-nyo8u0s1p4eh" data-node="nyo8u0s1p4eh" data-parent="gt9f8nkh6wuq" data-type="uabb-timeline" data-name="Advanced Timeline">
+                                <div class="fl-module-content fl-node-content">
+                                    <div style="text-align:center; font-size:20px">
+                                        <p>
+                                            <?php    
+                                                if($current_step==1){
+                                                    echo "Order Placed";
+                                                }else if($current_step==2){
+                                                    echo $order_status;
+                                                }else if($current_step==3){
+                                                    echo "";
+                                                }else if($current_step==3){
+                                                    echo "Delivered";
+                                                }
+                                            ?>
+                                        </p>
+                                    </div>
+                                    <div style="margin: 28px 0;" class="uabb-timeline-horizontal uabb-timeline--center uabb-timeline-arrow-center uabb-timeline-wrapper uabb-timeline-node">
+                                        <div class="uabb-timeline-connector slick-initialized slick-slider">
+                                            <div aria-live="polite" class="slick-list draggable">
+                                                <div class="slick-track style-reSfY" id="style-reSfY">
+                                                    <div class="uabb-timeline-item-0 slick-slide slick-current slick-active style-bBNl2" data-slick-index="0" aria-hidden="false" id="style-bBNl2">
+                                                        <div class="uabb-timeline-marker-wrapper">
+                                                            <div class="uabb-timeline-card-date-wrapper">
+                                                                <div class="uabb-timeline-card-date"> Order Placed </div>
+                                                            </div>
+                                                            <div class="uabb-timeline-marker">
+                                                                    <i class="<?php if($current_step >0) { echo "bt_sst_selected"; } ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABfElEQVR4nN2VWUoDQRCGP6IJisa3jHoBEfUUKoggboh3SNz1EC5X8M31PBo17ngFN9A8GGn4B5pJT/cQfdEfGmZq+au6pqoG/jsKwCJwAlwDb8A78CiZ0eVbJZ8HHoBG4DwBU5ZfBJR9xDlgzyKoAmvAMNAFdAKDwBJwBnwAkxZ5VX6VtAAx+aeMcoFkBhzkVb07yxKTj/qumUAm8oJV88pvk6OOiI3a+Bl5h8v4VIarGclLwLl8akCf5BPAvsvhRsZDlqyccuW0zHvVVXeuAC9yKOq9klJXX82LkpuBbMJrIkCyBP2essToke45a4miRLahbhmR3qyVJhxLuZ6Ql6ys0zKPsSWbA1+bXjjaNLJukNbnxudSHAtpg3Yvg2WHPvINkfaV8b31bdg5a1WMeciSGAfqwBcwHTLetYKsBKa6XZnX5bOdJZucFaShb7KhDunWMc+bVs1N5juBzduEWU1k6Idjaj5Di8irI47UnmYYzbkCDqVr+Zf5N/ANYaON8ELI6uEAAAAASUVORK5CYII="></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="uabb-timeline-item-1 slick-slide slick-active style-KCZZz" data-slick-index="1" aria-hidden="false" id="style-KCZZz">
+                                                        <div class="uabb-timeline-marker-wrapper">
+                                                            <div class="uabb-timeline-card-date-wrapper">
+                                                                <div class="uabb-timeline-card-date"><?= $order_status ?></div>
+                                                            </div>
+                                                            <div class="uabb-timeline-marker">
+                                                            <?php if ($order_status == "cancelled" || $shipped_string == "canceled" ||  $order_status == "refunded" || $order_status == "failed") {
+                                                                    ?><i class="<?php if($current_step >1) { echo "bt_sst_selected_cancelled"; } ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADDUlEQVR4nO1Zy2oUQRRtfC1c+lj5+ABXQs+9TlYDVW1w4XZQdOnadWICBg1ksjdhIn6CqAsTQQX/QdEPMLoyiWiqZuhxHiW3cGZ0ppOu6q7uHmEuFAx00XNO1X2ce9vzpja1qaU2Va0ebXKYkQwXJMNnksMnyeG74PiLFv2WHD/qZwwXGgGW1ZJ3xCvamrOlC4LjquDwVXJUNktw+CIY1hoVPJ878P1rl88KBo8Fw5Yt8DEiDFuCY32/4p/JBbwI4JZksJcW+NhiuCvYlZuZAVe+f1xwfOIcOB9zrQ36L7fgr/snBcdXWYOXQxJb9J8uTz438HLoUm9V9dKJ1ATycBt54E1gPSV4uF0UeDkgUbqRCPxPDqclx52iCUgGe4lSLOX5wsHzQTysW4Gn6mhVpIKyat69YwxI7w3K5m7EsNUM/Ivmp89x1QZ8+/WmUt2uCmtLsfvDh/eU6nRU+90bJWdnbEjUjMCTyCKdYgW+bzEk+uD71rYgQXqLRGMsAa0qLVzhb0DaOh0VLi+Og19ejNzbtHC9BvMxloCWxBYBFj6YHwc2chOjJz/Ys3LfLpgDmDfx/+dWL40h4Qw8pwVP42+AGg/rFx9AotfVYN2AR6oJHwxcKLlUjiThCjzXayfehVI2KZrE6Knr2+ilBa8EwzB7AuTzkQTM6oRMSyCVC0UFbERgZ+pCMmkQR4Hv9aKDOCkJZhDEidLoIanSpE5Ip2nUtpAZ5HlnJBjMxRKgodPESgleAjMxx3A7sZg7JFWO3kSbxNxVM1ktGH42nuaRdE0kpw3yfJ+EDXipCcCKEfgJbWjCBiufMyagb4Fj3SrAMl3wyLO1H7PlU5PR1ONu4rkpzSqLJiAYVhOBH5DgsFGg66x5aY36UMHhRf4nD5uqUjmWmsBwuAtbObrNS2fD3ZEhbw6ZCdacnXyU0awyk+zE8FvqgLWamzJcpwLjwF1CyvOUtr28jaojyQ5j7fQv8G2SB9YVNgsjkUVDJ5rbkGanxoM6O/0BjySJ7vLg/Z9nc6QqJ+Iz69Sm5v3/9htwCyTCs1agAgAAAABJRU5ErkJggg=="></i>
+                                                                <?php } else {?>
+                                                                    <i class="<?php if($current_step >1) { echo "bt_sst_selected"; } ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABfElEQVR4nN2VWUoDQRCGP6IJisa3jHoBEfUUKoggboh3SNz1EC5X8M31PBo17ngFN9A8GGn4B5pJT/cQfdEfGmZq+au6pqoG/jsKwCJwAlwDb8A78CiZ0eVbJZ8HHoBG4DwBU5ZfBJR9xDlgzyKoAmvAMNAFdAKDwBJwBnwAkxZ5VX6VtAAx+aeMcoFkBhzkVb07yxKTj/qumUAm8oJV88pvk6OOiI3a+Bl5h8v4VIarGclLwLl8akCf5BPAvsvhRsZDlqyccuW0zHvVVXeuAC9yKOq9klJXX82LkpuBbMJrIkCyBP2essToke45a4miRLahbhmR3qyVJhxLuZ6Ql6ys0zKPsSWbA1+bXjjaNLJukNbnxudSHAtpg3Yvg2WHPvINkfaV8b31bdg5a1WMeciSGAfqwBcwHTLetYKsBKa6XZnX5bOdJZucFaShb7KhDunWMc+bVs1N5juBzduEWU1k6Idjaj5Di8irI47UnmYYzbkCDqVr+Zf5N/ANYaON8ELI6uEAAAAASUVORK5CYII="></i>
+                                                                <?php }
+                                                            ?>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="uabb-timeline-item-2 slick-slide slick-active style-l3WRx" data-slick-index="2" aria-hidden="false" id="style-l3WRx">
+                                                        <div class="uabb-timeline-marker-wrapper">
+                                                            <div class="uabb-timeline-card-date-wrapper">
+                                                                <div class="uabb-timeline-card-date">Out for delivery</div>
+                                                            </div>
+                                                            <div class="uabb-timeline-marker">
+                                                                    <i class="<?php if($current_step >2) { echo "bt_sst_selected"; } ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABfElEQVR4nN2VWUoDQRCGP6IJisa3jHoBEfUUKoggboh3SNz1EC5X8M31PBo17ngFN9A8GGn4B5pJT/cQfdEfGmZq+au6pqoG/jsKwCJwAlwDb8A78CiZ0eVbJZ8HHoBG4DwBU5ZfBJR9xDlgzyKoAmvAMNAFdAKDwBJwBnwAkxZ5VX6VtAAx+aeMcoFkBhzkVb07yxKTj/qumUAm8oJV88pvk6OOiI3a+Bl5h8v4VIarGclLwLl8akCf5BPAvsvhRsZDlqyccuW0zHvVVXeuAC9yKOq9klJXX82LkpuBbMJrIkCyBP2essToke45a4miRLahbhmR3qyVJhxLuZ6Ql6ys0zKPsSWbA1+bXjjaNLJukNbnxudSHAtpg3Yvg2WHPvINkfaV8b31bdg5a1WMeciSGAfqwBcwHTLetYKsBKa6XZnX5bOdJZucFaShb7KhDunWMc+bVs1N5juBzduEWU1k6Idjaj5Di8irI47UnmYYzbkCDqVr+Zf5N/ANYaON8ELI6uEAAAAASUVORK5CYII="></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="uabb-timeline-item-3 slick-slide slick-active style-iMPqq" data-slick-index="3" aria-hidden="false" id="style-iMPqq">
+                                                        <div class="uabb-timeline-marker-wrapper">
+                                                            <div class="uabb-timeline-card-date-wrapper">
+                                                                <div class="uabb-timeline-card-date">Delivered</div>
+                                                            </div>
+                                                            <div class="uabb-timeline-marker">
+                                                                    <i class="<?php if($current_step >3) { echo "bt_sst_selected"; } ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABfElEQVR4nN2VWUoDQRCGP6IJisa3jHoBEfUUKoggboh3SNz1EC5X8M31PBo17ngFN9A8GGn4B5pJT/cQfdEfGmZq+au6pqoG/jsKwCJwAlwDb8A78CiZ0eVbJZ8HHoBG4DwBU5ZfBJR9xDlgzyKoAmvAMNAFdAKDwBJwBnwAkxZ5VX6VtAAx+aeMcoFkBhzkVb07yxKTj/qumUAm8oJV88pvk6OOiI3a+Bl5h8v4VIarGclLwLl8akCf5BPAvsvhRsZDlqyccuW0zHvVVXeuAC9yKOq9klJXX82LkpuBbMJrIkCyBP2essToke45a4miRLahbhmR3qyVJhxLuZ6Ql6ys0zKPsSWbA1+bXjjaNLJukNbnxudSHAtpg3Yvg2WHPvINkfaV8b31bdg5a1WMeciSGAfqwBcwHTLetYKsBKa6XZnX5bOdJZucFaShb7KhDunWMc+bVs1N5juBzduEWU1k6Idjaj5Di8irI47UnmYYzbkCDqVr+Zf5N/ANYaON8ELI6uEAAAAASUVORK5CYII="></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="uabb-timeline-main uabb-timeline-responsive-tablet ">
+                                            <div class="uabb-days slick-initialized slick-slider">
+                                                <div aria-live="polite" class="slick-list draggable">
+                                                    <div class="slick-track style-wOjsN" id="style-wOjsN"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; width:100%">
+                                        <div style="padding:15px; width:50%; border: 1px solid; margin: 5px; border-radius:5px; text-align:center;">
+                                            Courier: <?= $courier_name ?>
+                                        </div>
+                                        <div style="padding:15px; width:50%; border: 1px solid; margin: 5px; border-radius:5px; text-align:center;">
+                                            AWB: <?= $awb_number ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fl-drop-target fl-col-drop-target ui-sortable" style=""></div>
+                        <div class="fl-drop-target fl-drop-target-last fl-col-drop-target fl-col-drop-target-last ui-sortable" style=""></div>
+                    </div>
+                    <div class="fl-drop-target fl-col-group-drop-target ui-sortable" style=""></div>
+                    <div class="fl-drop-target fl-drop-target-last fl-col-group-drop-target fl-col-group-drop-target-last ui-sortable" style=""></div>
+                </div>
+                <div class="fl-col-group fl-node-ik86evf7ojdb" data-node="ik86evf7ojdb">
+                    <div class="fl-col fl-node-l0va2due3kcy style-tbbFm" data-node="l0va2due3kcy" id="style-tbbFm">
+                        <div class="fl-col-content fl-node-content ui-sortable">
+                            <!-- <div class="fl-module fl-module-heading fl-node-gkempq53la7v" data-node="gkempq53la7v" data-parent="l0va2due3kcy" data-type="heading" data-name="Heading">
+                                <div class="fl-module-content fl-node-content">
+                                    <h6 class="fl-heading"> -->
+                                        <div>
+                                            <?php
+                                                $shipping_provider = strtolower($tracking['tracking_data']['shipping_provider']);
+                                            ?>
+                                            <?php if($shipping_provider=="delhivery" && isset($tracking['tracking_data']['scans']) && sizeof($tracking['tracking_data']['scans'])>0){ ?>
+                                                <div class="bt_sst_tracking_product_trackong">
+                                                <input type="checkbox" id="toggle" class="bt_sst_toggle-checkbox">
+                                                <label for="toggle" class="bt_sst_toggle-label">Show More</label>
+                        
+                                                <div class="bt_sst_toggle-content">
+                                                    <table>
+                                                        <tr>
+                                                            <th>Date:</th>
+                                                            <th>Scan:</th>
+                                                            <th>Scanned Location:</th>
+                                                        </tr>
+                                                            <?php foreach ($tracking['tracking_data']['scans'] as $scan) : 
+                                                            $dateandtime_obj = new DateTime($scan['ScanDetail']['ScanDateTime'])
+                                                            ?>
+                                                            <tr>
+                                                                <td><?php echo $dateandtime_obj->format('F j Y') ?></td>
+                                                                <td><?php echo htmlspecialchars($scan['ScanDetail']['Scan']); ?></td>
+                                                                <td><?php echo htmlspecialchars($scan['ScanDetail']['ScannedLocation']); ?></td>
+                                                            </tr>
+                                                            <?php endforeach; ?>
+                                                        </table>
+                                                    </div>
+                                                </div>
+
+                                            <?php }else if($shipping_provider=="shiprocket" && isset($tracking['tracking_data']['scans']) && sizeof($tracking['tracking_data']['scans'])>0){ ?>
+                                                <div class="bt_sst_tracking_product_trackong">
+                                                <input type="checkbox" id="toggle" class="bt_sst_toggle-checkbox">
+                                                <label for="toggle" class="bt_sst_toggle-label">Show More</label>
+                        
+                                                <div class="bt_sst_toggle-content">
+                                                    <table>
+                                                        <tr>
+                                                            <th>Date:</th>
+                                                            <th>Status:</th>
+                                                            <th>Location:</th>
+                                                        </tr>
+                                                            <?php foreach ($tracking['tracking_data']['scans'] as $scan) : 
+                                                            $dateandtime_obj = new DateTime($scan['date'])
+                                                            ?>
+                                                            <tr>
+                                                                <td><?php echo $dateandtime_obj->format('F j Y') ?></td>
+                                                                <td><?php echo htmlspecialchars($scan['sr-status-label']); ?></td>
+                                                                <td><?php echo htmlspecialchars($scan['location']); ?></td>
+                                                            </tr>
+                                                            <?php endforeach; ?>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            <?php }else if($shipping_provider=="nimbuspost" && isset($tracking['tracking_data']['scans']) && sizeof($tracking['tracking_data']['scans'])>0){ ?>
+                                                <div class="bt_sst_tracking_product_trackong">
+                                                <input type="checkbox" id="toggle" class="bt_sst_toggle-checkbox">
+                                                <label for="toggle" class="bt_sst_toggle-label">Show More</label>
+                        
+                                                <div class="bt_sst_toggle-content">
+                                                    <table>
+                                                        <tr>
+                                                            
+                                                            <th>Status:</th>
+                                                            <th>Location:</th>
+                                                        </tr>
+                                                            <?php foreach ($tracking['tracking_data']['scans'] as $scan) : 
+                                                            $dateandtime_obj = new DateTime($scan['date'])
+                                                            ?>
+                                                            <tr>
+                                                                
+                                                                <td><?php echo htmlspecialchars($scan['message']); ?></td>
+                                                                <td><?php echo htmlspecialchars($scan['location']); ?></td>
+                                                            </tr>
+                                                            <?php endforeach; ?>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            <?php }?>
+                                        </div>
+                                    <!-- </h6> -->
+                                <!-- </div> -->
+                            <!-- </div> -->
+                        </div>
+                        <div class="fl-drop-target fl-col-drop-target ui-sortable" style=""></div>
+                        <div class="fl-drop-target fl-drop-target-last fl-col-drop-target fl-col-drop-target-last ui-sortable" style=""></div>
+                    </div>
+                    <div class="fl-drop-target fl-col-group-drop-target ui-sortable" style=""></div>
+                    <div class="fl-drop-target fl-drop-target-last fl-col-group-drop-target fl-col-group-drop-target-last ui-sortable" style=""></div>
+                </div>
+                <div class="fl-col-group fl-node-6pot3hxjwag4" data-node="6pot3hxjwag4">
+                    <div class="fl-col fl-node-p1khazx03f9c style-38So3" data-node="p1khazx03f9c" id="style-38So3">
+                        <div class="fl-col-content fl-node-content ui-sortable">
+                            <div class="fl-module fl-module-heading fl-node-y2qxf7tea6o5" data-node="y2qxf7tea6o5" data-parent="p1khazx03f9c" data-type="heading" data-name="Heading">
+                                <div class="">
+                                    <h2 class="fl-heading">
+                                        <?php if($is_premium && carbon_get_theme_option('bt_sst_enable_rating')=='yes'): ?>
+                                            <div class="bt_sst_tracking_product_rating">
+                                                <div>
+                                                    <strong><?php echo esc_html($bt_sst_review_heading_text); ?></strong>
+                                                    <p><?php echo esc_html($bt_sst_review_subheading_text); ?></p>
+                                                </div>
+                                                <div>
+                                                    <a target="_blank" href="<?php echo esc_url(carbon_get_theme_option('bt_sst_rating_page_url')); ?>" class="bt_sst_tracking_rating_url_btn">
+                                                        <button>Rate Us </button>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        <?php endif;?>
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fl-drop-target fl-col-drop-target ui-sortable" style=""></div>
+                        <div class="fl-drop-target fl-drop-target-last fl-col-drop-target fl-col-drop-target-last ui-sortable" style=""></div>
+                    </div>
+                    <div class="fl-drop-target fl-col-group-drop-target ui-sortable" style=""></div>
+                    <div class="fl-drop-target fl-drop-target-last fl-col-group-drop-target fl-col-group-drop-target-last ui-sortable" style=""></div>
+                </div>
+                <div class="fl-col-group fl-node-78xaz0hcqfk4" data-node="78xaz0hcqfk4">
+                    <div class="fl-col fl-node-ai83xde9bp2o style-pfWUf" data-node="ai83xde9bp2o" id="style-pfWUf">
+                        <div class="fl-col-content fl-node-content ui-sortable">
+                            <div class="fl-module fl-module-heading fl-node-j728vexgl5yw" data-node="j728vexgl5yw" data-parent="ai83xde9bp2o" data-type="heading" data-name="Heading">
+                                <div class="fl-module-content fl-node-content">
+                                    <div class="fl-heading">
+                                        <div class="">
+                                            <div style="">
+                                                <div>
+                                                    <?php if(is_user_logged_in()){ ?>
+                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid; border-radius:8px; padding:7px;"
+                                                         href="<?php echo esc_url( $the_order->get_view_order_url() ); ?>" class="">View order details
+                                                        </a>
+                                                    <?php } else { ?>
+                                                        <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid; border-radius:8px; padding:7px;"
+                                                            href="/my-account" class="">Login to see more details
+                                                        </a>
+                                                    <?php } ?>
+                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid; border-radius:8px; padding:7px;"
+                                                         href="<?= get_permalink( get_the_ID() ); ?>" class="">Track another order
+                                                    </a>
+                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid; border-radius:8px; padding:7px;"
+                                                         href="https://api.whatsapp.com/send?text=<?php echo urlencode($whatsapp_url); ?>" target="_blank">Share on WhatsApp
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fl-drop-target fl-col-drop-target ui-sortable" style=""></div>
+                        <div class="fl-drop-target fl-drop-target-last fl-col-drop-target fl-col-drop-target-last ui-sortable" style=""></div>
+                    </div>
+                    <div class="fl-drop-target fl-col-group-drop-target ui-sortable" style=""></div>
+                    <div class="fl-drop-target fl-drop-target-last fl-col-group-drop-target fl-col-group-drop-target-last ui-sortable" style=""></div>
                 </div>
             </div>
+        </div>
         <?php } ?>
     </div>
     <?php if($auto_post) : ?>
@@ -554,94 +632,69 @@ if(empty($bt_sst_review_subheading_text)){
     if($bt_sst_navigation_map == 'yes'): ?>
         <script>
             // Function to get coordinates from PIN code using Nominatim API
-            async function getCoordinates(pinCode,base_country) {
-                const url = `https://nominatim.openstreetmap.org/search?postalcode=${pinCode}&country=${base_country}&format=json&limit=1`;
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.length > 0) {
-                    const { lat, lon } = data[0];
-                    return [parseFloat(lat), parseFloat(lon)];
-                } else {
-                    //alert(`No coordinates found for PIN code ${pinCode}`);
-                    return null;
-                }
-            }
+async function getCoordinates(pinCode, base_country) {
+    const url = `https://nominatim.openstreetmap.org/search?postalcode=${pinCode}&country=${base_country}&format=json&limit=1`;
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data.length > 0) {
+        const { lat, lon } = data[0];
+        return [parseFloat(lat), parseFloat(lon)];
+    } else {
+        //alert(`No coordinates found for PIN code ${pinCode}`);
+        return null;
+    }
+}
 
-            // Main function to plot the map with PIN codes
-            async function plotMap() {
-                // Retrieve PHP variables inside JavaScript
-                var pickupPin = '<?php echo $pickup_pincode; ?>'; // Pickup PIN code
-                var dropoffPin = '<?php echo $delivery_pincode; ?>'; // Delivery PIN code
-                var order_placed_message = `Order placed on <?php echo $ordering_date; ?>`;
-                var estimated_date = `<?php echo $estimated_delivery_date; ?>`;
-                var base_country = '<?php echo $base_country; ?>';
-                var delivery_country = '<?php echo $delivery_country; ?>';
+// Main function to plot the map with PIN codes
+async function plotMap() {
+    // Retrieve PHP variables inside JavaScript
+    var dropoffPin = '<?php echo $delivery_pincode; ?>'; // Delivery PIN code
+    var estimated_date = `<?php echo $estimated_delivery_date; ?>`;
+    var delivery_country = '<?php echo $delivery_country; ?>';
 
-                const pickupLocation = await getCoordinates(pickupPin,base_country);
-                const dropoffLocation = await getCoordinates(dropoffPin,delivery_country);
+    const dropoffLocation = await getCoordinates(dropoffPin, delivery_country);
 
-                if (dropoffLocation) {
-                    // Initialize the map and center it on the pickup location
-                    // const map = L.map('bt_sst_leaflet_map_location').setView(dropoffLocation, 20); // Center the map on the pickup location
-                    const map = L.map('bt_sst_leaflet_map_location', {
-                        center: dropoffLocation,
-                        zoom: 20,
-                        scrollWheelZoom: false, // Disable scroll wheel zoom
-                        touchZoom: true, // Enable pinch-to-zoom
-                        doubleClickZoom: true // Enable double-click zoom
-                    });
-                    // Use OpenStreetMap tiles
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 14 ,
-                    }).addTo(map);
+    if (dropoffLocation) {
+        // Initialize the map and center it on the drop-off location
+        const map = L.map('bt_sst_leaflet_map_location', {
+            center: dropoffLocation,
+            zoom: 14, // Adjust zoom level as needed
+            scrollWheelZoom: false, // Disable scroll wheel zoom
+            touchZoom: true, // Enable pinch-to-zoom
+            doubleClickZoom: true // Enable double-click zoom
+        });
 
-                    L.marker(dropoffLocation, {
-                        icon: L.divIcon({
-                            className: 'custom-icon', // Use custom class
-                            html: '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEDElEQVR4nO2b34scRRDH61ARjRp/IFE4sts1KxfFB0F8ETQRkqiJYBJ/gT+e/PEH+KxEFO92qvaQoBjii2+Khz6YQ4gxAROffBASBXNeQPGyVeNxMXqnxsQfGendUw8vMTe93TOzt/uBgmVhp6u+U91dUz0L0KdPnz59+gTlptemL8NYNxnSOrKMI+sEsp4wJL9Zs5+R9AiS7kbWEWS91/4Gupo0HbCBIMuYIT2FrGlG+xVJ3olI77HXgm7CUPIQknzuEPTZjfQQsm6DsoPxsRsM6T5vgS8WYm80OlWDMmJIH0CWH4MFP2+GZQ5JHoXSkKYDhuWF0IEvEoK0XvzakKYDhmRn3sH/a/J6oSJge8sqKPi/M0FeKiT4KG4+UnTw/4jQkMcKWO3lp6IDX5AFszWajnITwITc6lyNdG8+wbM+WHiw5xRBtoYvb8ljhec/Cw4F3RWwVdt37OiHpiFPVePm0CpOVlirNGRNleRpm8adXr/akLsDCiBjHTg3YWK543xjVFnvRNKvXMcxpG8HCX4onrnc8anOFiwfV1755sqljrV65NurkOSA4zQ4ef12ubRM6T+RJfiFIhjWSadpQLLRuwCm1cxwSMklpP25iDhZ55gFwyHm/3gRe7NTzUH6PvgGHRYmu9p3Om7U0GccBDgCvjGsxzPPxbg51Om4dovMLDzpDPjGsJ7O6oiPxmaroZpdgFPgG9Pu3uYuQG3H8SsyC8B6GnyDtnVdxBSo640Oa8D34Bts9/K7YxFk+RJ8Y1g+yO6IftTxuCT7HQQYB98g6bCDAGkUJ3e5jlmNda3LmIblxQBTINns4oytH2xZm3W8wdGpqw3pUSfR7WmSb1ZxsgJZf3ETQQ5kEcEGj6wHHcf6OcjDkAVZ3nVyqr01TdraHs6DnTKud35+/o9BKKokG90dmxeCdJ9d2e32ZusEa/az/c5twfvv9ZvrQx+EfNGpkwHtcPCDkojk/hIEeva7Hyf3QR6YXm6LW1ZzYkp1MMIyVxlJqpAnyLoNSc4UHbz1ocrJw7kGX6bDUesDFPxuwJuFpT7pW4W/I3DrrvQiJN2Tf/Cyv7Zj8mIoA0P2zID1sxwFOIz1EyuhTNRe1mtd+/iZjOTrCk1fB2WkRtMRknwXcM7P+OgyBcWw3hakRiA9GTWat0M3gPa1WJbfPab9H1FDtkA3YUgf91IokZwxLE9CN4Kkz3vIgOegm0HSVzsI/g3oesbSCwzJe9mDl/G129MLYTkwODp1CZJ+kiH4T20PEpYTa4ab19gDiyXs9UdtUQXLkVr92KAhnfofAST35/q8QU5uRtIfFt95ma1Q8xboBSJO1i184ar136GGbIBeImq9bC1/tjs6+gT0Iob0WWtF+9GnD/QufwFmrtOpY71Z6gAAAABJRU5ErkJggg==" style="width: 25px;" />',
-                            iconSize: [32, 32],
-                        }),
-                    }).addTo(map).bindTooltip(estimated_date,{
-                        permanent:true,
-                        direction:"center",
-                        offset:[0,-40]
-                    }).openTooltip();
-                
-                    if(pickupPin.length>0){
-                        // Add Markers with Custom Icons
-                        L.marker(pickupLocation, {
-                            icon: L.divIcon({
-                                className: 'custom-icon', // Use custom class
-                                html: '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADGUlEQVR4nO2aS0hVURSG/8pepDWM7AFFBZk1CdTuXeucHko2qAbRpGkkiaLUJCcNgmjeoIggEGleNGkShRSRSJNUGkVBZVH0VkrF/tjn3m5iaXuf1z1CCxZcLpd//9866yz22ecC/6MQVKyloIWKHgoeUfCOggkqxql4S0U/Bd1UHGMO1chKUNBMxV0qJqmgZZrf3qagsbzGBX0Opv+eggepgrARKyi4Ftn4nyDdzKEqWfMeNlHwJHbzWsoh+tiYlPltFLxJ0DyLV2KYHrbEaz6HagpeJG5eS/mKPtbEY34HFgYjMD3zLOZD+qiIDqA4WwbzLOaZaObzWEfBN8cefkwPncxjK5uwLEjz2XwnGHAEGGUDVkep/kUH498paCUwf0a9I1hARRsVYw4QF8KZz6GKii/W5j3sdijMHmsIwSdzFd0BFIcdqnQihH67g/4hdwDBZeuen6Vt/tFOg5YAl8IA2O1zBB3O4r/XOGkJcN9dvLAFtgGoCQ3go9Zyjdfu4ubGtBH3URkaIBcMCqsh4S5uZrCNeIQdJOuw3BLgq7u44FlmWkjxNAxAr5W4h87Eb2LBnTDi5y3FB8xIDDlGhyyvwDl3gDz2W4qbbHPWF3Q46O9zB2jGYio+WC4wRsFeB/ONxdMKWuR71mCRM0CwkOKKQ5XM3qZ9tnYK2qZQeVvzNDuCUOaLlap3APiVg8HNaSaMj8pi1lJwyqHnOSXrQgMEEIp7IRaNJwW9kcwHAB4Olg0gjwORAQIIc/iUfvX7CMyLB0DhpQ7g2T8g2UEIbqQIcD1W81Me8EdSMD9KxfrYAQIIRVcKvX86EfMBgI+KhG/ofnOQlhhAACHYYH1a4Vb5EQo2J2p+CkRLAgDHUzFfglDcjBHgVmwz3xqgHiuDo/DolR82WqmaL0F42Ol4TDg9x+lBy2K+BFE46wxb/VZkIai4GgKgB1kJNmCp40uQfvpYgiwFFauoeG5h/mVsr4/iDnNGRMHHWcx/pmA7shzMY9cMk8lMnCbMhaCHo9P+ejBpvsNcCprXTQXzP8K8AEEWorj97kpykZ+xubp/rAMA/QAAAABJRU5ErkJggg==" style="height:25px;">',
-                                iconSize: [32, 32],
-                            }),
-                        }).addTo(map).bindTooltip(order_placed_message,{
-                            permanent:true,
-                            direction:"center",
-                            offset:[0,-40]
-                        }).openTooltip();
-                        
-                        // Create a straight line between pickup and dropoff locations
-                        const straightLine = L.polyline([pickupLocation, dropoffLocation], {
-                            color: 'blue',
-                            weight: 3,
-                            opacity: 1,
-                            smoothFactor:10
-                        }).addTo(map);
+        // Use OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 14,
+        }).addTo(map);
 
-                        const bounds = straightLine.getBounds();
-                        map.fitBounds(bounds,{padding:[60,60]});
-                    }else{
-                        const bounds = L.latLngBounds([dropoffLocation]);
-                            map.fitBounds(bounds,{padding:[50,50]});
-                    }
-                    map.dragging.disable();
+        // Add a marker for the drop-off location
+        L.marker(dropoffLocation, {
+            icon: L.divIcon({
+                className: 'custom-icon', // Use custom class
+                html: '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEDElEQVR4nO2b34scRRDH61ARjRp/IFE4sts1KxfFB0F8ETQRkqiJYBJ/gT+e/PEH+KxEFO92qvaQoBjii2+Khz6YQ4gxAROffBASBXNeQPGyVeNxMXqnxsQfGendUw8vMTe93TOzt/uBgmVhp6u+U91dUz0L0KdPnz59+gTlptemL8NYNxnSOrKMI+sEsp4wJL9Zs5+R9AiS7kbWEWS91/4Gupo0HbCBIMuYIT2FrGlG+xVJ3olI77HXgm7CUPIQknzuEPTZjfQQsm6DsoPxsRsM6T5vgS8WYm80OlWDMmJIH0CWH4MFP2+GZQ5JHoXSkKYDhuWF0IEvEoK0XvzakKYDhmRn3sH/a/J6oSJge8sqKPi/M0FeKiT4KG4+UnTw/4jQkMcKWO3lp6IDX5AFszWajnITwITc6lyNdG8+wbM+WHiw5xRBtoYvb8ljhec/Cw4F3RWwVdt37OiHpiFPVePm0CpOVlirNGRNleRpm8adXr/akLsDCiBjHTg3YWK543xjVFnvRNKvXMcxpG8HCX4onrnc8anOFiwfV1755sqljrV65NurkOSA4zQ4ef12ubRM6T+RJfiFIhjWSadpQLLRuwCm1cxwSMklpP25iDhZ55gFwyHm/3gRe7NTzUH6PvgGHRYmu9p3Om7U0GccBDgCvjGsxzPPxbg51Om4dovMLDzpDPjGsJ7O6oiPxmaroZpdgFPgG9Pu3uYuQG3H8SsyC8B6GnyDtnVdxBSo640Oa8D34Bts9/K7YxFk+RJ8Y1g+yO6IftTxuCT7HQQYB98g6bCDAGkUJ3e5jlmNda3LmIblxQBTINns4oytH2xZm3W8wdGpqw3pUSfR7WmSb1ZxsgJZf3ETQQ5kEcEGj6wHHcf6OcjDkAVZ3nVyqr01TdraHs6DnTKud35+/o9BKKokG90dmxeCdJ9d2e32ZusEa/az/c5twfvv9ZvrQx+EfNGpkwHtcPCDkojk/hIEeva7Hyf3QR6YXm6LW1ZzYkp1MMIyVxlJqpAnyLoNSc4UHbz1ocrJw7kGX6bDUesDFPxuwJuFpT7pW4W/I3DrrvQiJN2Tf/Cyv7Zj8mIoA0P2zID1sxwFOIz1EyuhTNRe1mtd+/iZjOTrCk1fB2WkRtMRknwXcM7P+OgyBcWw3hakRiA9GTWat0M3gPa1WJbfPab9H1FDtkA3YUgf91IokZwxLE9CN4Kkz3vIgOegm0HSVzsI/g3oesbSCwzJe9mDl/G129MLYTkwODp1CZJ+kiH4T20PEpYTa4ab19gDiyXs9UdtUQXLkVr92KAhnfofAST35/q8QU5uRtIfFt95ma1Q8xboBSJO1i184ar136GGbIBeImq9bC1/tjs6+gT0Iob0WWtF+9GnD/QufwFmrtOpY71Z6gAAAABJRU5ErkJggg==" style="width:35px;" />',
+                iconSize: [32, 32],
+            }),
+        }).addTo(map).bindTooltip(estimated_date, {
+            permanent: true,
+            direction: "center",
+            offset: [0, -40]
+        }).openTooltip();
 
-                }else{
-                    
-                }
-            }
-            plotMap(); // Call the function to plot the map
+        // Adjust map view to fit the drop-off marker
+        const bounds = L.latLngBounds([dropoffLocation]);
+        map.fitBounds(bounds, { padding: [50, 50] });
+
+        // Disable dragging
+        map.dragging.disable();
+    } else {
+        console.error("No coordinates found for the drop-off location.");
+    }
+}
+
+plotMap(); // Call the function to plot the map
+
         </script>
     <?php endif ?>
 </div>
@@ -658,3 +711,769 @@ if(empty($bt_sst_review_subheading_text)){
     font-style: normal;
     }
 </style>
+<style>
+    @font-face { 
+    `font-family:"Font Awesome 5 Free";
+    font-style:normal;
+    font-weight:400;
+    font-display:block;
+    src:url(./fonts/fa-regular-400.eot);
+    src:url(./fonts/fa-regular-400.eot?#iefix) format("embedded-opentype"),url(./fonts/fa-regular-400.woff2) format("woff2"),url(./fonts/fa-regular-400.woff) format("woff"),url(./fonts/fa-regular-400.ttf) format("truetype"),url(./fonts/fa-regular-400.svg#fontawesome) format("svg");
+    } 
+    @font-face { 
+    font-family:"Font Awesome 5 Free";
+    font-style:normal;
+    font-weight:900;
+    font-display:block;
+    src:url(./fonts/fa-solid-900.eot);
+    src:url(./fonts/fa-solid-900.eot?#iefix) format("embedded-opentype"),url(./fonts/fa-solid-900.woff2) format("woff2"),url(./fonts/fa-solid-900.woff) format("woff"),url(./fonts/fa-solid-900.ttf) format("truetype"),url(./fonts/fa-solid-900.svg#fontawesome) format("svg");
+    } 
+    @media all{     
+    body {  
+        font-family:sans-serif;
+        font-size:10px;
+        line-height:1.45;
+        color:#808080;
+        font-weight:400;
+    }  
+    }  
+    @media all{ 
+    * { 
+        -webkit-box-sizing: border-box; 
+        -moz-box-sizing: border-box; 
+        box-sizing: border-box;
+    } 
+    }     
+
+    *  { 
+        -webkit-box-sizing: border-box; 
+        -moz-box-sizing: border-box; 
+        box-sizing: border-box;
+    } 
+
+    .fl-row-fixed-width { 
+        max-width: 1100px;
+    } 
+
+    @media all{ 
+    .fl-post:last-child { 
+        margin-bottom: 0;
+    } 
+
+    body { 
+        margin: 0;
+    } 
+
+    body { 
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; 
+        font-size: 14px; 
+        line-height: 1.42857143; 
+        color: #333; 
+        background-color: #fff;
+    } 
+
+    body { 
+        background-color: #f2f2f2; 
+        color: #808080; 
+        font-family: "Helvetica",Verdana,Arial,sans-serif; 
+        font-size: 14px; 
+        font-weight: 400; 
+        line-height: 1.45; 
+        padding: 0; 
+        word-wrap: break-word;
+    } 
+
+    html { 
+        --wp-admin--admin-bar--height: 32px; 
+        scroll-padding-top: var(--wp-admin--admin-bar--height);
+    } 
+
+    html { 
+        transition-property: margin; 
+        transition-duration: .35s;
+    } 
+
+    html { 
+        font-family: sans-serif; 
+        -ms-text-size-adjust: 100%; 
+        -webkit-text-size-adjust: 100%;
+    } 
+
+    html { 
+        font-size: 10px; 
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+    } 
+    }     
+
+    .fl-row-content-wrap { 
+        position: relative;
+    } 
+
+    .fl-row-content-wrap { 
+        margin: 0px;
+    } 
+
+    .fl-row-content-wrap { 
+        padding: 20px;
+    } 
+
+    .fl-row-content-wrap  { 
+        background-image: linear-gradient(90deg, rgba(170,170,170,0.26) 0%, rgba(7,7,7,0.04) 100%); 
+        border-style: solid; 
+        border-width: 0; 
+        background-clip: border-box; 
+        border-color: #b7b7b7; 
+        border-top-width: 1px; 
+        border-right-width: 1px; 
+        border-bottom-width: 1px; 
+        border-left-width: 1px;
+    } 
+
+    @media all{ 
+    :before,:after { 
+        -webkit-box-sizing: border-box; 
+        -moz-box-sizing: border-box; 
+        box-sizing: border-box;
+    } 
+    }     
+
+    * , .fl-builder-content ::before, .fl-builder-content ::after { 
+        -webkit-box-sizing: border-box; 
+        -moz-box-sizing: border-box; 
+        box-sizing: border-box;
+    } 
+
+    .fl-builder-content *, .fl-builder-content ::before, .fl-builder-content ::after { 
+        -webkit-box-sizing: border-box; 
+        -moz-box-sizing: border-box; 
+        box-sizing: border-box;
+    } 
+
+    .fl-row-content { 
+        margin-left: auto; 
+        margin-right: auto;
+    } 
+
+    .fl-row-fixed-width  { 
+        max-width: 700px;
+    } 
+
+    .fl-row:before,.fl-row:after,.fl-row-content:before,.fl-row-content:after,.fl-col-group:before,.fl-col-group:after,.fl-col:before,.fl-col:after,.fl-module:before,.fl-module:after,.fl-module-content:before,.fl-module-content:after { 
+        display: table; 
+        content: " ";
+    } 
+
+    .fl-row:after,.fl-row-content:after,.fl-col-group:after,.fl-col:after,.fl-module:after,.fl-module-content:after { 
+        clear: both;
+    } 
+
+    .fl-col { 
+        float: left; 
+        min-height: 1px;
+    } 
+
+    .fl-node-pt7e19gljyuh { 
+        width: 50%;
+    } 
+
+    .fl-node-hawcg9nob1yv { 
+        width: 50%;
+    } 
+
+    @media all{ 
+    .fl-col-group-drop-target { 
+        display: none; 
+        left: 8px; 
+        height: 18px; 
+        position: absolute; 
+        right: 8px; 
+        top: -9px; 
+        z-index: 1;
+    } 
+
+    .fl-col-group-drop-target-last { 
+        top: auto; 
+        bottom: -9px;
+    } 
+    }     
+
+    .fl-node-fi95nkgz4uvt { 
+        width: 25%;
+    } 
+
+    .fl-node-m9jah0vqwgcx { 
+        width: 25%;
+    } 
+
+    .fl-node-mgicd7spkbfo { 
+        width: 25%;
+    } 
+
+    .fl-node-vdxgkh9nq8y5 { 
+        width: 25%;
+    } 
+
+    .fl-node-udyvigx8l6kb { 
+        width: 100%;
+    } 
+
+    .fl-node-gt9f8nkh6wuq { 
+        width: 100%;
+    } 
+
+    .fl-node-l0va2due3kcy { 
+        width: 100%;
+    } 
+
+    .fl-node-p1khazx03f9c { 
+        width: 100%;
+    } 
+
+    .fl-node-ai83xde9bp2o { 
+        width: 100%;
+    } 
+
+    .fl-col-content { 
+        margin: 0px;
+    } 
+
+    .fl-col-content { 
+        padding: 0px;
+    } 
+
+    @media all{ 
+    .fl-col-drop-target { 
+        bottom: 8px; 
+        display: none; 
+        left: -9px; 
+        position: absolute; 
+        top: 8px; 
+        width: 18px; 
+        z-index: 1;
+    } 
+
+    .fl-col-drop-target-last { 
+        left: auto; 
+        right: -9px;
+    } 
+    }     
+
+    .fl-node-udyvigx8l6kb > .fl-col-content  { 
+        /* background-color: #c6c6c6; */
+    } 
+
+    .fl-node-udyvigx8l6kb > .fl-col-content  { 
+        min-height: 400px;
+    } 
+
+    .fl-node-gt9f8nkh6wuq > .fl-col-content  { 
+        background-color: #ffFFFF;
+    } 
+
+    .fl-node-gt9f8nkh6wuq > .fl-col-content  { 
+        position: relative;
+        z-index: 9999;
+        margin-top: -100px; 
+        margin-right: 50px; 
+        margin-bottom: 50px; 
+        margin-left: 50px;
+    } 
+
+    .fl-node-gt9f8nkh6wuq > .fl-col-content.fl-node-content  { 
+        -webkit-box-shadow: 5px 5px 7px 5px rgba(168,168,168,0.5); 
+        -moz-box-shadow: 5px 5px 7px 5px rgba(168,168,168,0.5); 
+        -o-box-shadow: 5px 5px 7px 5px rgba(168,168,168,0.5); 
+        box-shadow: 5px 5px 7px 5px rgba(168,168,168,0.5);
+    } 
+
+    .fl-module-content { 
+        margin: 20px;
+    } 
+
+    @media all{ 
+    h5 { 
+        font-family: inherit; 
+        font-weight: 500; 
+        line-height: 1.1; 
+        color: inherit;
+    } 
+
+    h5 { 
+        margin-top: 10px; 
+        margin-bottom: 10px;
+    } 
+
+    h5 { 
+        font-size: 14px;
+    } 
+
+    h5 { 
+        color: #333; 
+        font-family: "Helvetica",Verdana,Arial,sans-serif; 
+        font-weight: 400; 
+        line-height: 1.4; 
+        text-transform: none; 
+        font-style: normal;
+    } 
+
+    h5 { 
+        font-size: 14px; 
+        line-height: 1.4; 
+        letter-spacing: 0px;
+    } 
+    }     
+
+    .fl-module-heading .fl-heading  { 
+        padding: 0 !important; 
+        margin: 0 !important;
+    } 
+
+    .fl-photo { 
+        line-height: 0; 
+        position: relative;
+    } 
+
+    .fl-photo-align-center { 
+        text-align: center;
+    } 
+
+    .fl-node-j7vr109hbw3x .fl-photo  { 
+        text-align: center;
+    } 
+
+    @media all{ 
+    h6 { 
+        font-family: inherit; 
+        font-weight: 500; 
+        line-height: 1.1; 
+        color: inherit;
+    } 
+
+    h6 { 
+        margin-top: 10px; 
+        margin-bottom: 10px;
+    } 
+
+    h6 { 
+        font-size: 12px;
+    } 
+
+    h6 { 
+        color: #333; 
+        font-family: "Helvetica",Verdana,Arial,sans-serif; 
+        font-weight: 400; 
+        line-height: 1.4; 
+        text-transform: none; 
+        font-style: normal;
+    } 
+
+    h6 { 
+        font-size: 12px; 
+        line-height: 1.4; 
+        letter-spacing: 0px;
+    } 
+
+    h2 { 
+        font-family: inherit; 
+        font-weight: 500; 
+        line-height: 1.1; 
+        color: inherit;
+    } 
+
+    h2 { 
+        margin-top: 20px; 
+        margin-bottom: 10px;
+    } 
+
+    h2 { 
+        font-size: 30px;
+    } 
+
+    h2 { 
+        color: #333; 
+        font-family: "Helvetica",Verdana,Arial,sans-serif; 
+        font-weight: 400; 
+        line-height: 1.4; 
+        text-transform: none; 
+        font-style: normal;
+    } 
+
+    h2 { 
+        font-size: 30px; 
+        line-height: 1.4; 
+        letter-spacing: 0px;
+    } 
+    }     
+
+    .uabb-timeline-wrapper { 
+        position: relative;
+    } 
+
+    .fl-photo-content { 
+        display: inline-block; 
+        line-height: 0; 
+        position: relative; 
+        max-width: 100%;
+    } 
+
+    .uabb-timeline-connector { 
+        position: relative;
+    } 
+
+    .uabb-timeline-wrapper .slick-slider  { 
+        position: relative; 
+        display: block; 
+        box-sizing: border-box; 
+        -webkit-user-select: none; 
+        -moz-user-select: none; 
+        -ms-user-select: none; 
+        user-select: none; 
+        -webkit-touch-callout: none; 
+        -khtml-user-select: none; 
+        -ms-touch-action: pan-y; 
+        touch-action: pan-y; 
+        -webkit-tap-highlight-color: transparent;
+    } 
+
+    .uabb-timeline-connector:before { 
+        position: absolute; 
+        content: ''; 
+        height: 4px; 
+        width: 100%; 
+        background: #ccc; 
+        display: block; 
+        bottom: 20px; 
+        top: auto; 
+        -webkit-transform: translateY(2px); 
+        transform: translateY(2px);
+    } 
+
+    .fl-node-nyo8u0s1p4eh .uabb-timeline-connector::before { 
+        height: 15px;
+        content: '';
+        /* background: linear-gradient(to right, 
+            #3498db 25%,
+            #3498db 25%, #3498db 50%,
+            #3498db 50%, #3498db 75%,
+            #3498db 75%, #3498db 100%
+        ); */
+    } 
+
+    .fl-node-nyo8u0s1p4eh .uabb-timeline-connector::before { 
+        bottom: 12px;
+        border-radius: 15px;    } 
+
+    @media all{ 
+    :where(img[class*="wp-image-"])  { 
+        height: auto; 
+        max-width: 100%;
+    } 
+
+    img { 
+        border: 0;
+    } 
+
+    img { 
+        vertical-align: middle;
+    } 
+
+    img { 
+        max-width: 100%; 
+        height: auto;
+    } 
+    }     
+
+    .fl-module img  { 
+        max-width: 100%;
+    } 
+
+    .fl-photo-content img  { 
+        display: inline; 
+        height: auto; 
+        max-width: 100%;
+    } 
+
+    @media all{ 
+    img[class*="wp-image-"]  { 
+        height: auto; 
+        max-width: 100%;
+    } 
+    }     
+
+    .uabb-timeline-wrapper .slick-list  { 
+        position: relative; 
+        display: block; 
+        overflow: hidden; 
+        margin: 0; 
+        padding: 0;
+    } 
+
+    .uabb-timeline-connector .slick-list  { 
+        padding-left: 0!important; 
+        padding-right: 0!important;
+    } 
+
+    .uabb-timeline-wrapper .slick-slider .slick-list  { 
+        -webkit-transform: translate3d(0,0,0); 
+        -moz-transform: translate3d(0,0,0); 
+        -ms-transform: translate3d(0,0,0); 
+        -o-transform: translate3d(0,0,0); 
+        transform: translate3d(0,0,0);
+    } 
+
+    .fl-node-nyo8u0s1p4eh .uabb-timeline-horizontal .slick-list  { 
+        margin: 0 -10px;
+    } 
+
+    .uabb-timeline-wrapper .slick-track  { 
+        position: relative; 
+        top: 0; 
+        left: 0; 
+        display: block;
+    } 
+
+    .uabb-timeline-wrapper .slick-slider .slick-track  { 
+        -webkit-transform: translate3d(0,0,0); 
+        -moz-transform: translate3d(0,0,0); 
+        -ms-transform: translate3d(0,0,0); 
+        -o-transform: translate3d(0,0,0); 
+        transform: translate3d(0,0,0);
+    } 
+
+    .uabb-timeline-wrapper .slick-track::before, .uabb-timeline-wrapper .slick-track::after { 
+        display: table; 
+        content: '';
+    } 
+
+    .uabb-timeline-wrapper .slick-track::after { 
+        clear: both;
+    } 
+
+    .uabb-timeline-wrapper .slick-slide  { 
+        display: none; 
+        float: left; 
+        height: 100%; 
+        min-height: 1px;
+    } 
+
+    .uabb-timeline-wrapper .slick-initialized .slick-slide  { 
+        display: block;
+    } 
+
+    .uabb-timeline-connector .uabb-timeline-marker-wrapper  { 
+        cursor: pointer; 
+        text-align: center;
+    } 
+
+    .fl-node-nyo8u0s1p4eh .uabb-timeline--center .uabb-timeline-marker-wrapper  { 
+        margin-left: 10px; 
+        margin-right: 10px;
+    } 
+
+    .fl-node-nyo8u0s1p4eh .uabb-timeline-marker  { 
+        min-height: 40px; 
+        min-width: 40px; 
+        line-height: 40px;
+    } 
+
+    .uabb-timeline-card-date { 
+        display: inline-block;
+    } 
+
+    .fl-node-nyo8u0s1p4eh .uabb-timeline-connector .slick-current .uabb-timeline-marker .timeline-icon-new  { 
+        color: #ffffff;
+    } 
+
+    @media all{ 
+    .fas { 
+        -moz-osx-font-smoothing: grayscale; 
+        -webkit-font-smoothing: antialiased; 
+        display: inline-block; 
+        font-style: normal; 
+        font-variant: normal; 
+        text-rendering: auto; 
+        line-height: 1;
+    } 
+
+    .fas { 
+        font-family: "Font Awesome 5 Free";
+    } 
+
+    .fas { 
+        font-weight: 900;
+    } 
+    }     
+
+    .uabb-timeline-connector .uabb-timeline-marker i  { 
+        background: #eee; 
+        border-radius: 50%;
+    } 
+
+    .fl-node-nyo8u0s1p4eh .uabb-timeline-connector .uabb-timeline-marker i  { 
+        min-height: 40px; 
+        min-width: 40px; 
+        line-height: 40px;
+    } 
+
+    .fl-node-nyo8u0s1p4eh .uabb-timeline-connector .uabb-timeline-marker .bt_sst_selected  { 
+        /* font-size: 18px; */
+        background-color: #1e88e5;
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+    } 
+    .fl-node-nyo8u0s1p4eh .uabb-timeline-connector .uabb-timeline-marker .bt_sst_selected_cancelled  { 
+        /* font-size: 18px; */
+        background-color: #f44336;
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+    } 
+
+    .fl-node-nyo8u0s1p4eh .uabb-timeline-connector .slick-current .uabb-timeline-marker i  { 
+        /* background-color: #1e88e5; */
+    } 
+
+    @media all{ 
+    .fa-check-circle:before { 
+        content: "\f058";
+    } 
+    }     
+
+
+    /* These were inline style tags. Uses id+class to override almost everything */
+    #style-oDppl.style-oDppl {  
+    width: 50%;  
+    }  
+    #style-fCL95.style-fCL95 {  
+    width: 50%;  
+    }  
+    #style-IGLsO.style-IGLsO {  
+    width: 25%;  
+    }  
+    #style-VzOGe.style-VzOGe {  
+    width: 25%;  
+    }  
+    #style-7N9Xr.style-7N9Xr {  
+    width: 25%;  
+    }  
+    #style-rrUx9.style-rrUx9 {  
+    width: 25%;  
+    }  
+    #style-ej5mo.style-ej5mo {  
+    width: 100%;  
+    }  
+    #style-Itlq5.style-Itlq5 {  
+    width: 100%;  
+    }  
+    #style-XLk1O.style-XLk1O {  
+    opacity: 1;  
+        width: 540px;  
+        transform: translate3d(0px, 0px, 0px);  
+    }  
+    #style-6a74r.style-6a74r {  
+    width: 135px;  
+    }  
+    #style-hYIM6.style-hYIM6 {  
+    width: 135px;  
+    }  
+    #style-UlfLR.style-UlfLR {  
+    width: 135px;  
+    }  
+    #style-Tj9pr.style-Tj9pr {  
+    width: 135px;  
+    }  
+    #style-GYFdo.style-GYFdo {  
+    opacity: 1;  
+        width: 0px;  
+        transform: translate3d(0px, 0px, 0px);  
+    }  
+    #style-Lwnwg.style-Lwnwg {  
+    width: 100%;  
+    }  
+    #style-yTsEp.style-yTsEp {  
+    width: 100%;  
+    }  
+    #style-Gad2v.style-Gad2v {  
+    width: 100%;  
+    }  
+    /* These were inline style tags. Uses id+class to override almost everything */
+    #style-IBgKo.style-IBgKo {  
+    width: 50%;  
+    }  
+    #style-Dxnoq.style-Dxnoq {  
+    width: 50%;  
+    }  
+    #style-QHQxh.style-QHQxh {  
+    width: 25%;  
+    }  
+    #style-NNR4U.style-NNR4U {  
+    width: 25%;  
+    }  
+    #style-vrqKn.style-vrqKn {  
+    width: 25%;  
+    }  
+    #style-Q4ZMX.style-Q4ZMX {  
+    width: 25%;  
+    }  
+    #style-choB9.style-choB9 {  
+    width: 100%;  
+    }  
+    #style-ixo3P.style-ixo3P {  
+    width: 100%;  
+    }  
+    #style-reSfY.style-reSfY {  
+    opacity: 1;  
+        width: 540px;  
+        transform: translate3d(0px, 0px, 0px);  
+    }  
+    #style-bBNl2.style-bBNl2 {  
+    width: 135px;  
+    }  
+    #style-KCZZz.style-KCZZz {  
+    width: 135px;  
+    }  
+    #style-l3WRx.style-l3WRx {  
+    width: 135px;  
+    }  
+    #style-iMPqq.style-iMPqq {  
+    width: 135px;  
+    }  
+    #style-wOjsN.style-wOjsN {  
+    opacity: 1;  
+        width: 0px;  
+        transform: translate3d(0px, 0px, 0px);  
+    }  
+    #style-tbbFm.style-tbbFm {  
+    width: 100%;  
+    }  
+    #style-38So3.style-38So3 {  
+    width: 100%;  
+    }  
+    #style-pfWUf.style-pfWUf {  
+    width: 100%;  
+    }  
+
+</style>
+
+<script>
+    
+// let count = parseInt(<?php echo $current_step; ?>);
+// let progressPercent = count * 25;
+
+// setTimeout(function() {
+//     let $connector = jQuery('.fl-node-nyo8u0s1p4eh .uabb-timeline-connector');
+
+//     if (progressPercent === 25) {
+//         $connector.css('background', 'linear-gradient(to right, #3498db 25%, #e0e0e0 25%)');
+//     } else if (progressPercent === 50) {
+//         $connector.css('background', 'linear-gradient(to right, #3498db 50%, #e0e0e0 50%)');
+//     } else if (progressPercent === 75) {
+//         $connector.css('background', 'linear-gradient(to right, #3498db 75%, #e0e0e0 75%)');
+//     } else if (progressPercent === 100) {
+//         $connector.css('background', 'linear-gradient(to right, #3498db 100%, #e0e0e0 100%)');
+//     }
+// }, 2000); // 2 seconds delay
+
+
+</script>

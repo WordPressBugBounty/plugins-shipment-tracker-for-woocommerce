@@ -391,7 +391,7 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
         $get_shipping_address_2 = $order->get_shipping_address_2();
         $get_shipping_city = $order->get_shipping_city();
         $get_shipping_state = $order->get_shipping_state();
-        $get_shipping_email = $order->get_shipping_email();
+        $get_shipping_email = $order->get_billing_email();
         if(!$destination_postcode){
             $destination_postcode = $order->get_billing_postcode();
             $get_shipping_first_name = $order->get_billing_first_name();

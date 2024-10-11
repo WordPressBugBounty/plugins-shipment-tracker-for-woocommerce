@@ -510,6 +510,8 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             if(false == $body = $this->get_shiprocket_order_object($order_id)){
                 return;
             }
+            // echo "<pre>"; print_r($body); die;
+
             //$body = json_encode($body);
             //echo json_encode($body );exit;
             $args = array(
@@ -533,7 +535,17 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             return null;
         }
 	}
+    private function extractPhoneNumber( $billing_phone) {
+        $digitsOnly = preg_replace('/\D/', '', $billing_phone);
+        
+        if (strlen($digitsOnly) > 10) {
+            $phoneNumber = substr($digitsOnly, -10);
+        } else {
+            $phoneNumber = str_pad($digitsOnly, 10, '0', STR_PAD_LEFT);
+        }
 
+        return $phoneNumber;
+    }
     public function get_shiprocket_order_object($order_id){
         if(false == $order = wc_get_order( $order_id )){
             return false;
@@ -548,8 +560,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
         $get_shipping_address_2 = $order->get_shipping_address_2();
         $get_shipping_city = $order->get_shipping_city();
         $get_shipping_state = $order->get_shipping_state();
-        $get_shipping_email = $order->get_shipping_email();
-        $get_shippping_phone = $order->get_shippping_phone();
+        $get_shipping_email = $order->get_billing_email();
         $get_shipping_country = $order->get_shipping_country();
         if(!$shipping_postcode){
             $shipping_postcode = $order->get_billing_postcode();
@@ -560,7 +571,6 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             $get_shipping_city = $order->get_billing_city();
             $get_shipping_state = $order->get_billing_state();
             $get_shipping_email = $order->get_billing_email();
-            $get_shippping_phone = $order->get_billing_phone();
             $get_shipping_country = $order->get_billing_country();
         }
         $so = array(
@@ -578,7 +588,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             "billing_state"=> $order->get_billing_state(),
             "billing_country"=> $order->get_billing_country(),
             "billing_email"=> $order->get_billing_email(),
-            "billing_phone"=> $order->get_billing_phone(),
+            "billing_phone"=> $phoneNumber,
             "shipping_is_billing"=> $order->get_billing_address_1() == $get_shipping_address_1 ,//quick fix to check if billing and shipping address are same.
             "shipping_customer_name"=> $get_shipping_first_name,
             "shipping_last_name"=> $get_shipping_last_name,
@@ -589,7 +599,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             "shipping_country"=> $get_shipping_country,
             "shipping_state"=> $get_shipping_state,
             "shipping_email"=>  $get_shipping_email,
-            "shipping_phone"=> $get_shippping_phone,
+            "shipping_phone"=> $phoneNumber,
             "order_items"=> array(),
             "payment_method"=> $order->get_payment_method()=="cod"?"cod":"prepaid",
             "shipping_charges"=> $order->get_total_shipping(),
