@@ -18,7 +18,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
     private const API_TRACK_BY_ORDER_ID = "/v1/external/orders?search=";
     private const API_TRACK_BY_AWB_NUMBER = "/v1/external/courier/track/awb/";
     private const API_Check_Courier_Serviceability = "/v1/external/courier/serviceability/";
-    private const API_Check_Courier_Serviceability_International = "/v1/external/courier/international/serviceability";
+    private const API_Check_Courier_Serviceability_International = "/v1/external/international/courier/serviceability";
     private const API_COURIER_COMPANIES_NAME = "/v1/external/courier/courierListWithCounts?type=active";
 
     private $auth_token;
@@ -132,7 +132,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
         }
     }
 
-    public function get_courier_serviceability_international($delivery_country,$weight_in_kg){
+    public function get_courier_serviceability_international($delivery_country,$weight_in_kg,$pickup_pincode){
         $this->init_params();
         $auth_token = $this->get_token();
 
@@ -146,11 +146,12 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
                 ),
             );
             if(!$weight_in_kg){
-                $weight_in_kg=0.1;
+                $weight_in_kg=1;
             }
+            $weight_in_kg = ceil($weight_in_kg);
 
             $params = "?delivery_country=" . $delivery_country;
-            $params .= "&cod=" . $is_cod . "&weight=" . $weight_in_kg;
+            $params .= "&cod=" . $is_cod . "&weight=" . $weight_in_kg . '&pickup_postcode='.$pickup_pincode;
           
             //echo $params;exit;
             $response = wp_remote_get( self::API_BASE_URL . self::API_Check_Courier_Serviceability_International . $params, $args );

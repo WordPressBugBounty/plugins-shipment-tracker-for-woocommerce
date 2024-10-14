@@ -857,12 +857,12 @@ class Bt_Sync_Shipment_Tracking {
 			Field::make( 'select', 'bt_sst_tracking_page_template', __( 'Choose Tracking Page template:' ) )
 				->set_options( array(
 					'classic' => 'Classic Template',
-					'trackingmaster' => 'Tracking Master Template (coming soon)',
+					'trackingmaster' => 'Tracking Master Template (Premium)',
 				) )
 				->set_default_value('classic')
 				->set_help_text('Preview:<div id="tracking_page_template_preview">
 					<input type="hidden" value="'.$parentDirectory.'" id="bt_sst_tracking_page_template_preview_img">
-                            <img id="tracking-template-preview-img" src="" style="display: none;" alt="Tracking Template Preview">
+                            <a target="blank" id="tracking_page_template_preview_img_href" href=""><img width="100px" id="tracking-template-preview-img" src="" style="display: none;" alt="Tracking Template Preview"></a>
                          </div>'),
 			Field::make( 'html', 'bt_sst_tracking_shortcode_html', __( 'Tracking Widget Shortcode' ) )
 				->set_html(
@@ -918,7 +918,16 @@ class Bt_Sync_Shipment_Tracking {
 					->set_attribute( 'placeholder', 'Rate your experience.' )
 					->set_default_value( 'WRate your experience.' ),
 				
-				Field::make('text', 'bt_sst_rating_page_url', __('Rating Page URL'))
+				Field::make('text', 'bt_sst_rating_page_url', __('Nagetive Rating Page URL'))
+					->set_conditional_logic(array(
+						array(
+							'field' => 'bt_sst_enable_rating',
+							'value' => true,
+						)
+					))
+					->set_attribute( 'placeholder', 'Enter url of your rating/reviews page.' )
+					->set_help_text('Enter full url starting with "https". Can be url of your Google Reviews, Yelp etc.'),
+				Field::make('text', 'bt_sst_rating_page_url_pos', __('Positive Rating Page URL'))
 					->set_conditional_logic(array(
 						array(
 							'field' => 'bt_sst_enable_rating',

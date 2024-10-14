@@ -1309,13 +1309,14 @@ class Bt_Sync_Shipment_Tracking_Public
 			}else{
 				//international
 
+				$pickup_pincode = carbon_get_theme_option( "bt_sst_shiprocket_pickup_pincode_courier" );
 			
-				$cached_pincode_key = $delivery_country . '_' .  $weight_in_kg;
+				$cached_pincode_key = $delivery_country . '_11' .  $weight_in_kg . '_' .  $pickup_pincode;
 
 				if(isset($bt_sst_cached_delivery_estimates[$cached_pincode_key])){
 					$push_resp = $bt_sst_cached_delivery_estimates[$cached_pincode_key];
 				}else{
-					$push_resp = $this->shiprocket->get_courier_serviceability_international($delivery_country, $weight_in_kg);
+					$push_resp = $this->shiprocket->get_courier_serviceability_international($delivery_country, $weight_in_kg,$pickup_pincode);
 					//echo json_encode($push_resp);exit;
 					if ($push_resp != null && !empty($push_resp )) {
 						$bt_sst_cached_delivery_estimates[$cached_pincode_key] = $push_resp;
@@ -2235,7 +2236,7 @@ class Bt_Sync_Shipment_Tracking_Public
 			wp_enqueue_style('bt-sync-shipment-tracking-customer-shortcode-css');
 			wp_enqueue_style('bt-sync-shipment-tracking-leaflet-css');
 			$shipping_tracking_template = carbon_get_theme_option('bt_sst_tracking_page_template');
-			if($shipping_tracking_template=="trackingmaster" && false){
+			if($shipping_tracking_template=="trackingmaster" && $is_premium){
 				ob_start();
 				include plugin_dir_path(dirname(__FILE__)) . 'public/partials/bt_shipping_tracking_page_template_second.php';
 				$result = ob_get_clean();

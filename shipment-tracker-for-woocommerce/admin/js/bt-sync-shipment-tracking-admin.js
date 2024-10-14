@@ -64,6 +64,34 @@
 				}
 			});
 		}, 3000);
+		setTimeout(() => {
+			var previewImage = jQuery('#tracking-template-preview-img');
+			var imageFilenames = {
+				'classic':  'admin/images/classic-tracking-template.png', // Escaped backslashes
+				'trackingmaster':  'admin/images/trackingmaster-template.png' // Escaped backslashes
+			};
+			var selectedValue = $('select[name="carbon_fields_compact_input[_bt_sst_tracking_page_template]"]').val();
+			if (imageFilenames[selectedValue]) {
+				var previewImage_basepath = jQuery('#bt_sst_tracking_page_template_preview_img').val();
+				previewImage.attr('src',previewImage_basepath +  imageFilenames[selectedValue]);
+				jQuery('#tracking_page_template_preview_img_href').attr('href', previewImage_basepath + imageFilenames[selectedValue]);
+				previewImage.show();
+			} else {
+				previewImage.hide();
+			}
+			jQuery(document).on('change', 'select[name="carbon_fields_compact_input[_bt_sst_tracking_page_template]"]', function() {
+				var previewImage_basepath = jQuery('#bt_sst_tracking_page_template_preview_img').val();
+				var selectedValue = jQuery(this).val();
+				// var previewImage = jQuery('#template-preview-img');
+				if (imageFilenames[selectedValue]) {
+					previewImage.attr('src', previewImage_basepath + imageFilenames[selectedValue]);
+					jQuery('#tracking_page_template_preview_img_href').attr('href', previewImage_basepath + imageFilenames[selectedValue]);
+					previewImage.show();
+				} else {
+					previewImage.hide();
+				}
+			});
+		}, 3000);
 		
 
 		jQuery('#bt_sst_sync_now_awb').click(function () {

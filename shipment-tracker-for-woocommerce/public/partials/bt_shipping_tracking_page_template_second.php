@@ -16,7 +16,7 @@ if(empty($bt_sst_review_subheading_text)){
 ?>
 <div class="snipcss0-0-0-1 snipcss-GDYrP obscure-kzaezq7Gp">
     
-    <div class="fl-node-content snipcss0-1-1-2 obscure-MMkaMW9Lx obscure-JkAnk9l33">
+    <div class="fl-node-content snipcss0-1-1-2 obscure-MMkaMW9Lx obscure-JkAnk9l33" style="">
     <?php 
       if ($auto_post) {
         echo "<div style='width: 100%;'>
@@ -131,11 +131,12 @@ if(empty($bt_sst_review_subheading_text)){
                 
                 // echo $shipment_status; die;
                 // extrect data 
+                // echo $shipment_status; die;
          
                 if (strtolower($shipment_status) != 'delivered') {
-                    $delivery_status = "Estimated Delivery:";
+                    $delivery_status = "Arriving ";
                 }else {
-                    $delivery_status = " Delivered On:";
+                    $delivery_status = " Delivered On ";
                 }
 
                 if ($estimated_delivery_date && !$estimated_delivery_date instanceof DateTime) {
@@ -166,16 +167,16 @@ if(empty($bt_sst_review_subheading_text)){
 
                     if($days_remaining>0){
                         if($days_remaining==1){
-                            $days_remaining = "In ".$days_remaining." Day"; 
+                            $days_remaining = "in ".$days_remaining." day"; 
                         }else{
-                            $days_remaining = "In ".$days_remaining." Days"; 
+                            $days_remaining = "in ".$days_remaining." days"; 
                         }
                     }else if($days_remaining===0){
                         $days_remaining = " Today ";
                     }
                     
                     if ($delivery_status !="" && $shipment_status != "canceled"):    
-                        $estimated_delivery_date = $delivery_status." ".$estimated_delivery_date." (".$days_remaining.")"; 
+                        $estimated_delivery_date = $delivery_status." ".$days_remaining." (".$estimated_delivery_date.")"; 
                     endif;
                 }
 
@@ -232,69 +233,9 @@ if(empty($bt_sst_review_subheading_text)){
             $whatsapp_url .= $estimated_delivery_date . "\n";
             }
             if(!$estimated_delivery_date){
-                $estimated_delivery_date = "Deliverd on: Arriving Soon";
+                $estimated_delivery_date = "Arriving Soon";
             }
-                            
-            $whatsapp_url .= 'Track Your Shipment: ' . $current_url . "\n" .
-                            'Thank you for shopping with us! If you have any questions, feel free to reach out.' ;
-        ?>
-        <div class="fl-row-content-wrap snipcss-FI8zt">
-            <div class="fl-row-content fl-row-fixed-width fl-node-content">
-                <div class="fl-col-group fl-node-h34zioj6ygep" data-node="h34zioj6ygep">
-                    <div class="" data-node="pt7e19gljyuh" id="style-IBgKo">
-                        <div class="fl-col-content fl-node-content ui-sortable">
-                            <div class="fl-module fl-module-heading fl-node-0z7h1ugnboap" data-node="0z7h1ugnboap" data-parent="pt7e19gljyuh" data-type="heading" data-name="Heading">
-                                <div class="fl-module-content fl-node-content">
-                                    <div class="fl-heading" style="font-size: 20px;">
-                                        <?php echo $estimated_delivery_date; ?>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="fl-col-group fl-node-huo20iqjn8rc" data-node="huo20iqjn8rc" style="display:flex; align-items: center;">
-                    <div class="fl-col fl-node-fi95nkgz4uvt fl-col-small style-QHQxh" data-node="fi95nkgz4uvt" id="style-QHQxh">
-                        <div class="fl-col-content fl-node-content ui-sortable">
-                            <div class="fl-module fl-module-photo fl-node-j7vr109hbw3x" data-node="j7vr109hbw3x" data-parent="fi95nkgz4uvt" data-type="photo" data-name="Photo">
-                                <div class="">
-                                    <div class="" itemscope="" itemtype="https://schema.org/ImageObject">
-                                        <div class="fl-photo-content fl-photo-img-png">
-                                        <div>
-                                                <?php 
-                                                    foreach ( $the_order->get_items() as $item_id => $item ) {
-                                                        $product = $item->get_product();
-                                                        if ( $product ) {
-                                                            $image_id = $product->get_image_id();
-                                                            $image_url = wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' );
-                                                
-                                                            echo '<img style="height:100px" src="' . esc_url( $image_url ) . '" alt="' . esc_attr( $product->get_name() ) . '" />';
-                                                        }
-                                                    }
-                                                
-                                                ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="fl-drop-target fl-col-drop-target ui-sortable" style=""></div>
-                        <div class="fl-drop-target fl-drop-target-last fl-col-drop-target fl-col-drop-target-last ui-sortable" style=""></div>
-                    </div>
-                    <div class="fl-drop-target fl-col-group-drop-target ui-sortable" style=""></div>
-                    <div class="fl-drop-target fl-drop-target-last fl-col-group-drop-target fl-col-group-drop-target-last ui-sortable" style=""></div>
-                </div>
-                <div class="fl-col-group fl-node-la6f3q7nhr48" data-node="la6f3q7nhr48">
-                    <div class="fl-col fl-node-udyvigx8l6kb style-choB9" data-node="udyvigx8l6kb" id="style-choB9">
-                        <div class="fl-col-content fl-node-content ui-sortable">
-                            <div class="fl-module fl-module-heading fl-node-kyl50ju6rfct" data-node="kyl50ju6rfct" data-parent="udyvigx8l6kb" data-type="heading" data-name="Heading">
-                                <div class="fl-module-content fl-node-content">
-                                    <div class="">
-                                        <?php
-                                        $bt_sst_navigation_map = carbon_get_theme_option('bt_sst_navigation_map');
-                                        if($is_premium && $bt_sst_navigation_map == 'yes'){ 
-                                            $delivery_pincode = $the_order->get_shipping_postcode();
+            $delivery_pincode = $the_order->get_shipping_postcode();
                                             // $delivery_pincode = "";
                                             $billing_pincode = $the_order->get_billing_postcode();
                                             // $billing_pincode = "";
@@ -311,11 +252,149 @@ if(empty($bt_sst_review_subheading_text)){
                                                 $delivery_country = $base_country;
                                                 $delivery_pincode = $pickup_pincode;
                                             }
+                            
+            $whatsapp_url .= 'Track Your Shipment: ' . $current_url . "\n" .
+                            'Thank you for shopping with us! If you have any questions, feel free to reach out.' ;
+        ?>
+        <div class="bt_sst_tmp_mster_progressbar_container" style="">
+            <div class="fl-row-content fl-row-fixed-width fl-node-content">
+                <div class="fl-col-group fl-node-h34zioj6ygep" data-node="h34zioj6ygep">
+                    <div class="" data-node="pt7e19gljyuh" id="style-IBgKo">
+                        <div class="fl-col-content fl-node-content ui-sortable">
+                            <div class="fl-module fl-module-heading fl-node-0z7h1ugnboap" data-node="0z7h1ugnboap" data-parent="pt7e19gljyuh" data-type="heading" data-name="Heading">
+                                <div class="fl-module-content fl-node-content" >
+                                    <div class="fl-heading">
+                                        <h1 style="margin:0"><?php echo $estimated_delivery_date; ?></h1>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="fl-col-group fl-node-huo20iqjn8rc" data-node="huo20iqjn8rc" style="display:flex; align-items: center;">
+                    <div class="fl-col fl-node-fi95nkgz4uvt fl-col-small style-QHQxh" data-node="fi95nkgz4uvt" id="style-QHQxh">
+                        <div class="fl-col-content fl-node-content ui-sortable">
+                            <div class="fl-module fl-module-photo fl-node-j7vr109hbw3x" data-node="j7vr109hbw3x" data-parent="fi95nkgz4uvt" data-type="photo" data-name="Photo">
+                                <div class="">
+                                    <div class="" itemscope="" itemtype="https://schema.org/ImageObject">
+                                        <div class="fl-photo-content fl-photo-img-png">
+                                        <div style="display:flex; align-items: center;">
+                                                <?php
+                                                    $i=1;
+                                                    foreach ( $the_order->get_items() as $item_id => $item ) {
+                                                        $product = $item->get_product();
+                                                        if ( $product ) {
+                                                            $image_id = $product->get_image_id();
+                                                            $image_url = wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' );
+                                                            if($i<4){
+                                                                echo '<img style="height:77px; margin:5px;" src="' . esc_url( $image_url ) . '" alt="' . esc_attr( $product->get_name() ) . '" />';
+                                                            }else if($i==4){
+                                                                echo "<pMore</p>";
+                                                            }
+                                                            $i++;
+                                                        }
+                                                    }
+                                                
+                                                ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="fl-drop-target fl-col-drop-target ui-sortable" style=""></div>
+                        <div class="fl-drop-target fl-drop-target-last fl-col-drop-target fl-col-drop-target-last ui-sortable" style=""></div>
+                    </div>
+                    <div class="fl-drop-target fl-col-group-drop-target ui-sortable" style=""></div>
+                    <div class="fl-drop-target fl-drop-target-last fl-col-group-drop-target fl-col-group-drop-target-last ui-sortable" style=""></div>
+                </div>
+                <?php 
+                    $map_dive_height="";
+                    $bt_sst_navigation_map = carbon_get_theme_option('bt_sst_navigation_map');
+                    if($bt_sst_navigation_map != 'yes'){
+                        $map_dive_height = 'height: 100px';
+                    }
+                ?>
+                <div class="fl-col-group fl-node-la6f3q7nhr48" data-node="la6f3q7nhr48">
+                    <div class="fl-col fl-node-udyvigx8l6kb style-choB9" data-node="udyvigx8l6kb" id="style-choB9" style="<?php echo $map_dive_height ?>">
+                        <div class="fl-col-content fl-node-content ui-sortable">
+                            <div class="fl-module fl-module-heading fl-node-kyl50ju6rfct" data-node="kyl50ju6rfct" data-parent="udyvigx8l6kb" data-type="heading" data-name="Heading">
+                                <div class="fl-module-content fl-node-content">
+                                    <div class="">
+                                        <?php
+                                       
+                                        if($is_premium && $bt_sst_navigation_map == 'yes'){
                                             // var_dump($delivery_pincode); die;
                                             if($delivery_pincode || $pickup_pincode){
                                             ?>
+                                            <script>
+                                                // Function to get coordinates from PIN code using Nominatim API
+                                                async function getCoordinates(pinCode, base_country) {
+                                                    const url = `https://nominatim.openstreetmap.org/search?postalcode=${pinCode}&country=${base_country}&format=json&limit=1`;
+                                                    const response = await fetch(url);
+                                                    const data = await response.json();
+                                                    if (data.length > 0) {
+                                                        const { lat, lon } = data[0];
+                                                        return [parseFloat(lat), parseFloat(lon)];
+                                                    } else {
+                                                        //alert(`No coordinates found for PIN code ${pinCode}`);
+                                                        return null;
+                                                    }
+                                                }
+
+                                                // Main function to plot the map with PIN codes
+                                                async function plotMap() {
+                                                    // Retrieve PHP variables inside JavaScript
+                                                    var dropoffPin = '<?php echo $delivery_pincode; ?>'; // Delivery PIN code
+                                                    var estimated_date = `<?php echo $estimated_delivery_date; ?>`;
+                                                    var delivery_country = '<?php echo $delivery_country; ?>';
+
+                                                    const dropoffLocation = await getCoordinates(dropoffPin, delivery_country);
+
+                                                    if (dropoffLocation) {
+                                                        // Initialize the map and center it on the drop-off location
+                                                        const map = L.map('bt_sst_leaflet_map_location', {
+                                                            center: dropoffLocation,
+                                                            zoom: 14, // Adjust zoom level as needed
+                                                            scrollWheelZoom: false, // Disable scroll wheel zoom
+                                                            touchZoom: true, // Enable pinch-to-zoom
+                                                            doubleClickZoom: true // Enable double-click zoom
+                                                        });
+
+                                                        // Use OpenStreetMap tiles
+                                                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                                            maxZoom: 14,
+                                                        }).addTo(map);
+
+                                                        // Add a marker for the drop-off location
+                                                        L.marker(dropoffLocation, {
+                                                            icon: L.divIcon({
+                                                                className: 'custom-icon', // Use custom class
+                                                                html: '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEDElEQVR4nO2b34scRRDH61ARjRp/IFE4sts1KxfFB0F8ETQRkqiJYBJ/gT+e/PEH+KxEFO92qvaQoBjii2+Khz6YQ4gxAROffBASBXNeQPGyVeNxMXqnxsQfGendUw8vMTe93TOzt/uBgmVhp6u+U91dUz0L0KdPnz59+gTlptemL8NYNxnSOrKMI+sEsp4wJL9Zs5+R9AiS7kbWEWS91/4Gupo0HbCBIMuYIT2FrGlG+xVJ3olI77HXgm7CUPIQknzuEPTZjfQQsm6DsoPxsRsM6T5vgS8WYm80OlWDMmJIH0CWH4MFP2+GZQ5JHoXSkKYDhuWF0IEvEoK0XvzakKYDhmRn3sH/a/J6oSJge8sqKPi/M0FeKiT4KG4+UnTw/4jQkMcKWO3lp6IDX5AFszWajnITwITc6lyNdG8+wbM+WHiw5xRBtoYvb8ljhec/Cw4F3RWwVdt37OiHpiFPVePm0CpOVlirNGRNleRpm8adXr/akLsDCiBjHTg3YWK543xjVFnvRNKvXMcxpG8HCX4onrnc8anOFiwfV1755sqljrV65NurkOSA4zQ4ef12ubRM6T+RJfiFIhjWSadpQLLRuwCm1cxwSMklpP25iDhZ55gFwyHm/3gRe7NTzUH6PvgGHRYmu9p3Om7U0GccBDgCvjGsxzPPxbg51Om4dovMLDzpDPjGsJ7O6oiPxmaroZpdgFPgG9Pu3uYuQG3H8SsyC8B6GnyDtnVdxBSo640Oa8D34Bts9/K7YxFk+RJ8Y1g+yO6IftTxuCT7HQQYB98g6bCDAGkUJ3e5jlmNda3LmIblxQBTINns4oytH2xZm3W8wdGpqw3pUSfR7WmSb1ZxsgJZf3ETQQ5kEcEGj6wHHcf6OcjDkAVZ3nVyqr01TdraHs6DnTKud35+/o9BKKokG90dmxeCdJ9d2e32ZusEa/az/c5twfvv9ZvrQx+EfNGpkwHtcPCDkojk/hIEeva7Hyf3QR6YXm6LW1ZzYkp1MMIyVxlJqpAnyLoNSc4UHbz1ocrJw7kGX6bDUesDFPxuwJuFpT7pW4W/I3DrrvQiJN2Tf/Cyv7Zj8mIoA0P2zID1sxwFOIz1EyuhTNRe1mtd+/iZjOTrCk1fB2WkRtMRknwXcM7P+OgyBcWw3hakRiA9GTWat0M3gPa1WJbfPab9H1FDtkA3YUgf91IokZwxLE9CN4Kkz3vIgOegm0HSVzsI/g3oesbSCwzJe9mDl/G129MLYTkwODp1CZJ+kiH4T20PEpYTa4ab19gDiyXs9UdtUQXLkVr92KAhnfofAST35/q8QU5uRtIfFt95ma1Q8xboBSJO1i184ar136GGbIBeImq9bC1/tjs6+gT0Iob0WWtF+9GnD/QufwFmrtOpY71Z6gAAAABJRU5ErkJggg==" style="width:35px;" />',
+                                                                iconSize: [32, 32],
+                                                            }),
+                                                        }).addTo(map).bindTooltip(estimated_date, {
+                                                            permanent: true,
+                                                            direction: "center",
+                                                            offset: [0, -40]
+                                                        }).openTooltip();
+
+                                                        // Adjust map view to fit the drop-off marker
+                                                        const bounds = L.latLngBounds([dropoffLocation]);
+                                                        map.fitBounds(bounds, { padding: [50, 50] });
+
+                                                        // Disable dragging
+                                                        map.dragging.disable();
+                                                    } else {
+                                                        console.error("No coordinates found for the drop-off location.");
+                                                    }
+                                                }
+
+                                                plotMap(); // Call the function to plot the map
+
+                                            </script>
                                             <div class="">
-                                                <div id="bt_sst_leaflet_map_location" class="bt_sst_leaflet_map_location_shipment" style="width:100%"></div>
+                                                <div id="bt_sst_leaflet_map_location" class="bt_sst_leaflet_map_location_shipment" style="width:100%; border:unset;"></div>
                                             </div>
                                         <?php }
                                         }
@@ -336,19 +415,19 @@ if(empty($bt_sst_review_subheading_text)){
                             <div class="fl-module fl-module-uabb-timeline fl-node-nyo8u0s1p4eh" data-node="nyo8u0s1p4eh" data-parent="gt9f8nkh6wuq" data-type="uabb-timeline" data-name="Advanced Timeline">
                                 <div class="fl-module-content fl-node-content">
                                     <div style="text-align:center; font-size:20px">
-                                        <p>
+                                        <h1>
                                             <?php    
                                                 if($current_step==1){
                                                     echo "Order Placed";
                                                 }else if($current_step==2){
-                                                    echo $order_status;
+                                                    echo  ucfirst($shipped_string);
                                                 }else if($current_step==3){
-                                                    echo "";
-                                                }else if($current_step==3){
+                                                    echo "Out For Delivery";
+                                                }else if($current_step==4){
                                                     echo "Delivered";
                                                 }
                                             ?>
-                                        </p>
+                                        </h1>
                                     </div>
                                     <div style="margin: 28px 0;" class="uabb-timeline-horizontal uabb-timeline--center uabb-timeline-arrow-center uabb-timeline-wrapper uabb-timeline-node">
                                         <div class="uabb-timeline-connector slick-initialized slick-slider">
@@ -360,20 +439,20 @@ if(empty($bt_sst_review_subheading_text)){
                                                                 <div class="uabb-timeline-card-date"> Order Placed </div>
                                                             </div>
                                                             <div class="uabb-timeline-marker">
-                                                                    <i class="<?php if($current_step >0) { echo "bt_sst_selected"; } ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABfElEQVR4nN2VWUoDQRCGP6IJisa3jHoBEfUUKoggboh3SNz1EC5X8M31PBo17ngFN9A8GGn4B5pJT/cQfdEfGmZq+au6pqoG/jsKwCJwAlwDb8A78CiZ0eVbJZ8HHoBG4DwBU5ZfBJR9xDlgzyKoAmvAMNAFdAKDwBJwBnwAkxZ5VX6VtAAx+aeMcoFkBhzkVb07yxKTj/qumUAm8oJV88pvk6OOiI3a+Bl5h8v4VIarGclLwLl8akCf5BPAvsvhRsZDlqyccuW0zHvVVXeuAC9yKOq9klJXX82LkpuBbMJrIkCyBP2essToke45a4miRLahbhmR3qyVJhxLuZ6Ql6ys0zKPsSWbA1+bXjjaNLJukNbnxudSHAtpg3Yvg2WHPvINkfaV8b31bdg5a1WMeciSGAfqwBcwHTLetYKsBKa6XZnX5bOdJZucFaShb7KhDunWMc+bVs1N5juBzduEWU1k6Idjaj5Di8irI47UnmYYzbkCDqVr+Zf5N/ANYaON8ELI6uEAAAAASUVORK5CYII="></i>
+                                                                    <i class="<?php if($current_step >0) { echo "bt_sst_selected"; }else{ echo "bt_sst_not_selected";} ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAgUlEQVR4nO2UwQqAIBBE/Ymi/v9LuhRhpzr0Hxm7Bwc2vElYdFhBwgHxoDxnh0FjqqqKkRNpGRgZGLLACdgYEAZmVfgh0hCwBjh5v58iXYWbsmNhYGJgCc24n8VtCXvqzpcHbArgNOAPEfTqmd/dkobzt0k4R1ui/8WGpea86n+6APYsDy07b57jAAAAAElFTkSuQmCC"></i>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div class="uabb-timeline-item-1 slick-slide slick-active style-KCZZz" data-slick-index="1" aria-hidden="false" id="style-KCZZz">
                                                         <div class="uabb-timeline-marker-wrapper">
                                                             <div class="uabb-timeline-card-date-wrapper">
-                                                                <div class="uabb-timeline-card-date"><?= $order_status ?></div>
+                                                                <div class="uabb-timeline-card-date"><?= ucfirst($shipped_string) ?></div>
                                                             </div>
                                                             <div class="uabb-timeline-marker">
-                                                            <?php if ($order_status == "cancelled" || $shipped_string == "canceled" ||  $order_status == "refunded" || $order_status == "failed") {
+                                                            <?php if ($order_status == "cancelled" || $order_status == "canceled" ||  $order_status == "refunded" || $order_status == "failed") {
                                                                     ?><i class="<?php if($current_step >1) { echo "bt_sst_selected_cancelled"; } ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADDUlEQVR4nO1Zy2oUQRRtfC1c+lj5+ABXQs+9TlYDVW1w4XZQdOnadWICBg1ksjdhIn6CqAsTQQX/QdEPMLoyiWiqZuhxHiW3cGZ0ppOu6q7uHmEuFAx00XNO1X2ce9vzpja1qaU2Va0ebXKYkQwXJMNnksMnyeG74PiLFv2WHD/qZwwXGgGW1ZJ3xCvamrOlC4LjquDwVXJUNktw+CIY1hoVPJ878P1rl88KBo8Fw5Yt8DEiDFuCY32/4p/JBbwI4JZksJcW+NhiuCvYlZuZAVe+f1xwfOIcOB9zrQ36L7fgr/snBcdXWYOXQxJb9J8uTz438HLoUm9V9dKJ1ATycBt54E1gPSV4uF0UeDkgUbqRCPxPDqclx52iCUgGe4lSLOX5wsHzQTysW4Gn6mhVpIKyat69YwxI7w3K5m7EsNUM/Ivmp89x1QZ8+/WmUt2uCmtLsfvDh/eU6nRU+90bJWdnbEjUjMCTyCKdYgW+bzEk+uD71rYgQXqLRGMsAa0qLVzhb0DaOh0VLi+Og19ejNzbtHC9BvMxloCWxBYBFj6YHwc2chOjJz/Ys3LfLpgDmDfx/+dWL40h4Qw8pwVP42+AGg/rFx9AotfVYN2AR6oJHwxcKLlUjiThCjzXayfehVI2KZrE6Knr2+ilBa8EwzB7AuTzkQTM6oRMSyCVC0UFbERgZ+pCMmkQR4Hv9aKDOCkJZhDEidLoIanSpE5Ip2nUtpAZ5HlnJBjMxRKgodPESgleAjMxx3A7sZg7JFWO3kSbxNxVM1ktGH42nuaRdE0kpw3yfJ+EDXipCcCKEfgJbWjCBiufMyagb4Fj3SrAMl3wyLO1H7PlU5PR1ONu4rkpzSqLJiAYVhOBH5DgsFGg66x5aY36UMHhRf4nD5uqUjmWmsBwuAtbObrNS2fD3ZEhbw6ZCdacnXyU0awyk+zE8FvqgLWamzJcpwLjwF1CyvOUtr28jaojyQ5j7fQv8G2SB9YVNgsjkUVDJ5rbkGanxoM6O/0BjySJ7vLg/Z9nc6QqJ+Iz69Sm5v3/9htwCyTCs1agAgAAAABJRU5ErkJggg=="></i>
                                                                 <?php } else {?>
-                                                                    <i class="<?php if($current_step >1) { echo "bt_sst_selected"; } ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABfElEQVR4nN2VWUoDQRCGP6IJisa3jHoBEfUUKoggboh3SNz1EC5X8M31PBo17ngFN9A8GGn4B5pJT/cQfdEfGmZq+au6pqoG/jsKwCJwAlwDb8A78CiZ0eVbJZ8HHoBG4DwBU5ZfBJR9xDlgzyKoAmvAMNAFdAKDwBJwBnwAkxZ5VX6VtAAx+aeMcoFkBhzkVb07yxKTj/qumUAm8oJV88pvk6OOiI3a+Bl5h8v4VIarGclLwLl8akCf5BPAvsvhRsZDlqyccuW0zHvVVXeuAC9yKOq9klJXX82LkpuBbMJrIkCyBP2essToke45a4miRLahbhmR3qyVJhxLuZ6Ql6ys0zKPsSWbA1+bXjjaNLJukNbnxudSHAtpg3Yvg2WHPvINkfaV8b31bdg5a1WMeciSGAfqwBcwHTLetYKsBKa6XZnX5bOdJZucFaShb7KhDunWMc+bVs1N5juBzduEWU1k6Idjaj5Di8irI47UnmYYzbkCDqVr+Zf5N/ANYaON8ELI6uEAAAAASUVORK5CYII="></i>
+                                                                    <i class="<?php if($current_step >1) { echo "bt_sst_selected"; }else{ echo "bt_sst_not_selected";} ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAgUlEQVR4nO2UwQqAIBBE/Ymi/v9LuhRhpzr0Hxm7Bwc2vElYdFhBwgHxoDxnh0FjqqqKkRNpGRgZGLLACdgYEAZmVfgh0hCwBjh5v58iXYWbsmNhYGJgCc24n8VtCXvqzpcHbArgNOAPEfTqmd/dkobzt0k4R1ui/8WGpea86n+6APYsDy07b57jAAAAAElFTkSuQmCC"></i>
                                                                 <?php }
                                                             ?>
                                                             </div>
@@ -385,7 +464,7 @@ if(empty($bt_sst_review_subheading_text)){
                                                                 <div class="uabb-timeline-card-date">Out for delivery</div>
                                                             </div>
                                                             <div class="uabb-timeline-marker">
-                                                                    <i class="<?php if($current_step >2) { echo "bt_sst_selected"; } ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABfElEQVR4nN2VWUoDQRCGP6IJisa3jHoBEfUUKoggboh3SNz1EC5X8M31PBo17ngFN9A8GGn4B5pJT/cQfdEfGmZq+au6pqoG/jsKwCJwAlwDb8A78CiZ0eVbJZ8HHoBG4DwBU5ZfBJR9xDlgzyKoAmvAMNAFdAKDwBJwBnwAkxZ5VX6VtAAx+aeMcoFkBhzkVb07yxKTj/qumUAm8oJV88pvk6OOiI3a+Bl5h8v4VIarGclLwLl8akCf5BPAvsvhRsZDlqyccuW0zHvVVXeuAC9yKOq9klJXX82LkpuBbMJrIkCyBP2essToke45a4miRLahbhmR3qyVJhxLuZ6Ql6ys0zKPsSWbA1+bXjjaNLJukNbnxudSHAtpg3Yvg2WHPvINkfaV8b31bdg5a1WMeciSGAfqwBcwHTLetYKsBKa6XZnX5bOdJZucFaShb7KhDunWMc+bVs1N5juBzduEWU1k6Idjaj5Di8irI47UnmYYzbkCDqVr+Zf5N/ANYaON8ELI6uEAAAAASUVORK5CYII="></i>
+                                                                    <i class="<?php if($current_step >2) { echo "bt_sst_selected"; }else{ echo "bt_sst_not_selected";} ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAgUlEQVR4nO2UwQqAIBBE/Ymi/v9LuhRhpzr0Hxm7Bwc2vElYdFhBwgHxoDxnh0FjqqqKkRNpGRgZGLLACdgYEAZmVfgh0hCwBjh5v58iXYWbsmNhYGJgCc24n8VtCXvqzpcHbArgNOAPEfTqmd/dkobzt0k4R1ui/8WGpea86n+6APYsDy07b57jAAAAAElFTkSuQmCC"></i>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -395,7 +474,7 @@ if(empty($bt_sst_review_subheading_text)){
                                                                 <div class="uabb-timeline-card-date">Delivered</div>
                                                             </div>
                                                             <div class="uabb-timeline-marker">
-                                                                    <i class="<?php if($current_step >3) { echo "bt_sst_selected"; } ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABfElEQVR4nN2VWUoDQRCGP6IJisa3jHoBEfUUKoggboh3SNz1EC5X8M31PBo17ngFN9A8GGn4B5pJT/cQfdEfGmZq+au6pqoG/jsKwCJwAlwDb8A78CiZ0eVbJZ8HHoBG4DwBU5ZfBJR9xDlgzyKoAmvAMNAFdAKDwBJwBnwAkxZ5VX6VtAAx+aeMcoFkBhzkVb07yxKTj/qumUAm8oJV88pvk6OOiI3a+Bl5h8v4VIarGclLwLl8akCf5BPAvsvhRsZDlqyccuW0zHvVVXeuAC9yKOq9klJXX82LkpuBbMJrIkCyBP2essToke45a4miRLahbhmR3qyVJhxLuZ6Ql6ys0zKPsSWbA1+bXjjaNLJukNbnxudSHAtpg3Yvg2WHPvINkfaV8b31bdg5a1WMeciSGAfqwBcwHTLetYKsBKa6XZnX5bOdJZucFaShb7KhDunWMc+bVs1N5juBzduEWU1k6Idjaj5Di8irI47UnmYYzbkCDqVr+Zf5N/ANYaON8ELI6uEAAAAASUVORK5CYII="></i>
+                                                                    <i class="<?php if($current_step >3) { echo "bt_sst_selected"; }else{ echo "bt_sst_not_selected";} ?>" aria-hidden="true"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAgUlEQVR4nO2UwQqAIBBE/Ymi/v9LuhRhpzr0Hxm7Bwc2vElYdFhBwgHxoDxnh0FjqqqKkRNpGRgZGLLACdgYEAZmVfgh0hCwBjh5v58iXYWbsmNhYGJgCc24n8VtCXvqzpcHbArgNOAPEfTqmd/dkobzt0k4R1ui/8WGpea86n+6APYsDy07b57jAAAAAElFTkSuQmCC"></i>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -411,11 +490,11 @@ if(empty($bt_sst_review_subheading_text)){
                                         </div>
                                     </div>
                                     <div style="display:flex; width:100%">
-                                        <div style="padding:15px; width:50%; border: 1px solid; margin: 5px; border-radius:5px; text-align:center;">
-                                            Courier: <?= $courier_name ?>
+                                        <div style="padding:5px; width:50%; border: 1px solid #e9e9e9; margin: 5px 15px; border-radius:10px; text-align:center;">
+                                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB+0lEQVR4nO2YOUsDQRiGHzAmWphYiGjAQksre8XSxsKjyl/wwtouXRpttLPS1s4fYOcNHo1XHVQ8SgVBdGXgi6whGXZ39sjKPPBB2G923n13vjk2YLFYLBaLGU7M8QJsAJ1pN+JIrJNyJsTIM/8ARyKSTh3DsEbSjBNFaSVp5NFDyT4BO8Cw106jnhemmu/AdKsaKWlyNYaAXbn2AYzTQuhehNMg1wZsy/UHoJeUGlFkgH3J7Ym5P8RVTo00/eYGgFfJr6TZiGIS+AY+gTESxsSIYk3aVIEeUmykHTiWdlv1N0ZdTl4f1vGoOSh7yxcwkmYjilVpu0lC6B62qtks6xmVtne0oJFygJVUrWCRlY8OnWZGzFT9bgutZsQv1kgY2BExLa0OYBk4lU1IxQmwBORMxEPQcrwaKQKXmtXiAugPyUgxgJYnIzlXx1fAFNAloT47byR3DmQNjQTV8mRkSXLXQKFBvuASmDc0ElTrt697+aG2+3oOJafeTjNmpM2BoZEgWiXXcZ6Kh11TDW8z8gGOFGFrlZF6q7hGxm/nhRiNFOraVsWEOtZoqQ237v+k2QClFbvWotx402QCdssRWrWZ89t5nFpZWbvVzbcy2fISs66Oz3wuv4loFV0CjUKt632GJmLTysnQqw/+N4kjYCGEkUhSy2KxkDJ+ANIID7KqwJZkAAAAAElFTkSuQmCC" width="25px"><div class="courier_name" style=""><?= $courier_name ?></div>
                                         </div>
-                                        <div style="padding:15px; width:50%; border: 1px solid; margin: 5px; border-radius:5px; text-align:center;">
-                                            AWB: <?= $awb_number ?>
+                                        <div style="padding:5px; width:50%; border: 1px solid #e9e9e9; margin: 5px 15px; border-radius:10px; text-align:center;">
+                                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABiklEQVR4nMWVsUrEQBCGY6do5zMoB76Dd4JYauUj2OQssv+/geuCrTa+hFernShY2V9lY+MJIjZXCFZHUIabQNzkNskZceDnZi+z8+1mZkgQ/LcZY3ZIDgHcenQJoLNQcgApgLEn+YTkF4C3xhA9+ThJkuV5MQDuST4poBlENovqxADYBPAK4D2Koq02ATckH9TvNLpJTcAJgCmAvrV2l+SxrqshAK5FvhiSqyTvpNCuqvYGg8FgXRRU25LUQG6QieSo6va/MtR4ve0CjE6sqpf9b609EpWt5Tc/dCTPwjBcKwByE/usU5tmEDgnya/VnyhA/KlACvt0Yj8B7FtrD9S/yAfGcbwhcgFSTC3sHskXklcFgAa6LZZP8igTKlI//8xtT84DjMpaDJoEwIeoBF7vBr73zFnSQ5ELcGsA4LSQ09cpAPok4+yZ+CTDsi6S5DLZpW3atqEOgOS56C8Bw6oPTpkZY1ak4Fmr+wA9HToJ9n2Tf0jjU2NMt85punKSJgCJJ7nd5NYL2zenX/kTY8xhFQAAAABJRU5ErkJggg==" width="25px"><div class="awb_number" style=""><?= $awb_number ?></div>
                                         </div>
                                     </div>
                                 </div>
@@ -527,7 +606,7 @@ if(empty($bt_sst_review_subheading_text)){
                         <div class="fl-col-content fl-node-content ui-sortable">
                             <div class="fl-module fl-module-heading fl-node-y2qxf7tea6o5" data-node="y2qxf7tea6o5" data-parent="p1khazx03f9c" data-type="heading" data-name="Heading">
                                 <div class="">
-                                    <h2 class="fl-heading">
+                                    <h2 class="fl-heading bt_sst_rating_bar_container">
                                         <?php if($is_premium && carbon_get_theme_option('bt_sst_enable_rating')=='yes'): ?>
                                             <div class="bt_sst_tracking_product_rating">
                                                 <div>
@@ -535,8 +614,20 @@ if(empty($bt_sst_review_subheading_text)){
                                                     <p><?php echo esc_html($bt_sst_review_subheading_text); ?></p>
                                                 </div>
                                                 <div>
-                                                    <a target="_blank" href="<?php echo esc_url(carbon_get_theme_option('bt_sst_rating_page_url')); ?>" class="bt_sst_tracking_rating_url_btn">
-                                                        <button>Rate Us </button>
+                                                    <a style="margin:7px; text-decoration: none;" target="_blank" href="<?php echo esc_url(carbon_get_theme_option('bt_sst_rating_page_url')); ?>" class="bt_sst_tracking_rating_url_btn">
+                                                        ⭐
+                                                    </a>
+                                                    <a style="margin:7px; text-decoration: none;" target="_blank" href="<?php echo esc_url(carbon_get_theme_option('bt_sst_rating_page_url')); ?>" class="bt_sst_tracking_rating_url_btn">
+                                                        ⭐
+                                                    </a>
+                                                    <a style="margin:7px; text-decoration: none;" target="_blank" href="<?php echo esc_url(carbon_get_theme_option('bt_sst_rating_page_url')); ?>" class="bt_sst_tracking_rating_url_btn">
+                                                        ⭐
+                                                    </a>
+                                                    <a style="margin:7px; text-decoration: none;" target="_blank" href="<?php echo esc_url(carbon_get_theme_option('bt_sst_rating_page_url_pos')); ?>" class="bt_sst_tracking_rating_url_btn">
+                                                        ⭐
+                                                    </a>
+                                                    <a style="margin:7px; text-decoration: none;" target="_blank" href="<?php echo esc_url(carbon_get_theme_option('bt_sst_rating_page_url_pos')); ?>" class="bt_sst_tracking_rating_url_btn">
+                                                        ⭐
                                                     </a>
                                                 </div>
                                             </div>
@@ -561,18 +652,18 @@ if(empty($bt_sst_review_subheading_text)){
                                             <div style="">
                                                 <div>
                                                     <?php if(is_user_logged_in()){ ?>
-                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid; border-radius:8px; padding:7px;"
+                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; color:#101212; border-radius:20px; padding:13px;"
                                                          href="<?php echo esc_url( $the_order->get_view_order_url() ); ?>" class="">View order details
                                                         </a>
                                                     <?php } else { ?>
-                                                        <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid; border-radius:8px; padding:7px;"
+                                                        <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; color:#101212; border-radius:20px; padding:13px;"
                                                             href="/my-account" class="">Login to see more details
                                                         </a>
                                                     <?php } ?>
-                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid; border-radius:8px; padding:7px;"
+                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; color:#101212; border-radius:20px; padding:13px;"
                                                          href="<?= get_permalink( get_the_ID() ); ?>" class="">Track another order
                                                     </a>
-                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid; border-radius:8px; padding:7px;"
+                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; color:#101212; border-radius:20px; padding:13px;"
                                                          href="https://api.whatsapp.com/send?text=<?php echo urlencode($whatsapp_url); ?>" target="_blank">Share on WhatsApp
                                                     </a>
                                                 </div>
@@ -630,72 +721,7 @@ if(empty($bt_sst_review_subheading_text)){
     <?php
     $bt_sst_navigation_map = carbon_get_theme_option('bt_sst_navigation_map');
     if($bt_sst_navigation_map == 'yes'): ?>
-        <script>
-            // Function to get coordinates from PIN code using Nominatim API
-async function getCoordinates(pinCode, base_country) {
-    const url = `https://nominatim.openstreetmap.org/search?postalcode=${pinCode}&country=${base_country}&format=json&limit=1`;
-    const response = await fetch(url);
-    const data = await response.json();
-    if (data.length > 0) {
-        const { lat, lon } = data[0];
-        return [parseFloat(lat), parseFloat(lon)];
-    } else {
-        //alert(`No coordinates found for PIN code ${pinCode}`);
-        return null;
-    }
-}
-
-// Main function to plot the map with PIN codes
-async function plotMap() {
-    // Retrieve PHP variables inside JavaScript
-    var dropoffPin = '<?php echo $delivery_pincode; ?>'; // Delivery PIN code
-    var estimated_date = `<?php echo $estimated_delivery_date; ?>`;
-    var delivery_country = '<?php echo $delivery_country; ?>';
-
-    const dropoffLocation = await getCoordinates(dropoffPin, delivery_country);
-
-    if (dropoffLocation) {
-        // Initialize the map and center it on the drop-off location
-        const map = L.map('bt_sst_leaflet_map_location', {
-            center: dropoffLocation,
-            zoom: 14, // Adjust zoom level as needed
-            scrollWheelZoom: false, // Disable scroll wheel zoom
-            touchZoom: true, // Enable pinch-to-zoom
-            doubleClickZoom: true // Enable double-click zoom
-        });
-
-        // Use OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 14,
-        }).addTo(map);
-
-        // Add a marker for the drop-off location
-        L.marker(dropoffLocation, {
-            icon: L.divIcon({
-                className: 'custom-icon', // Use custom class
-                html: '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEDElEQVR4nO2b34scRRDH61ARjRp/IFE4sts1KxfFB0F8ETQRkqiJYBJ/gT+e/PEH+KxEFO92qvaQoBjii2+Khz6YQ4gxAROffBASBXNeQPGyVeNxMXqnxsQfGendUw8vMTe93TOzt/uBgmVhp6u+U91dUz0L0KdPnz59+gTlptemL8NYNxnSOrKMI+sEsp4wJL9Zs5+R9AiS7kbWEWS91/4Gupo0HbCBIMuYIT2FrGlG+xVJ3olI77HXgm7CUPIQknzuEPTZjfQQsm6DsoPxsRsM6T5vgS8WYm80OlWDMmJIH0CWH4MFP2+GZQ5JHoXSkKYDhuWF0IEvEoK0XvzakKYDhmRn3sH/a/J6oSJge8sqKPi/M0FeKiT4KG4+UnTw/4jQkMcKWO3lp6IDX5AFszWajnITwITc6lyNdG8+wbM+WHiw5xRBtoYvb8ljhec/Cw4F3RWwVdt37OiHpiFPVePm0CpOVlirNGRNleRpm8adXr/akLsDCiBjHTg3YWK543xjVFnvRNKvXMcxpG8HCX4onrnc8anOFiwfV1755sqljrV65NurkOSA4zQ4ef12ubRM6T+RJfiFIhjWSadpQLLRuwCm1cxwSMklpP25iDhZ55gFwyHm/3gRe7NTzUH6PvgGHRYmu9p3Om7U0GccBDgCvjGsxzPPxbg51Om4dovMLDzpDPjGsJ7O6oiPxmaroZpdgFPgG9Pu3uYuQG3H8SsyC8B6GnyDtnVdxBSo640Oa8D34Bts9/K7YxFk+RJ8Y1g+yO6IftTxuCT7HQQYB98g6bCDAGkUJ3e5jlmNda3LmIblxQBTINns4oytH2xZm3W8wdGpqw3pUSfR7WmSb1ZxsgJZf3ETQQ5kEcEGj6wHHcf6OcjDkAVZ3nVyqr01TdraHs6DnTKud35+/o9BKKokG90dmxeCdJ9d2e32ZusEa/az/c5twfvv9ZvrQx+EfNGpkwHtcPCDkojk/hIEeva7Hyf3QR6YXm6LW1ZzYkp1MMIyVxlJqpAnyLoNSc4UHbz1ocrJw7kGX6bDUesDFPxuwJuFpT7pW4W/I3DrrvQiJN2Tf/Cyv7Zj8mIoA0P2zID1sxwFOIz1EyuhTNRe1mtd+/iZjOTrCk1fB2WkRtMRknwXcM7P+OgyBcWw3hakRiA9GTWat0M3gPa1WJbfPab9H1FDtkA3YUgf91IokZwxLE9CN4Kkz3vIgOegm0HSVzsI/g3oesbSCwzJe9mDl/G129MLYTkwODp1CZJ+kiH4T20PEpYTa4ab19gDiyXs9UdtUQXLkVr92KAhnfofAST35/q8QU5uRtIfFt95ma1Q8xboBSJO1i184ar136GGbIBeImq9bC1/tjs6+gT0Iob0WWtF+9GnD/QufwFmrtOpY71Z6gAAAABJRU5ErkJggg==" style="width:35px;" />',
-                iconSize: [32, 32],
-            }),
-        }).addTo(map).bindTooltip(estimated_date, {
-            permanent: true,
-            direction: "center",
-            offset: [0, -40]
-        }).openTooltip();
-
-        // Adjust map view to fit the drop-off marker
-        const bounds = L.latLngBounds([dropoffLocation]);
-        map.fitBounds(bounds, { padding: [50, 50] });
-
-        // Disable dragging
-        map.dragging.disable();
-    } else {
-        console.error("No coordinates found for the drop-off location.");
-    }
-}
-
-plotMap(); // Call the function to plot the map
-
-        </script>
+        
     <?php endif ?>
 </div>
 <style>
@@ -712,6 +738,33 @@ plotMap(); // Call the function to plot the map
     }
 </style>
 <style>
+    .bt_sst_tracking_product_trackong{
+        border: none !important;
+        margin-top: -50px;
+    }
+    .bt_sst_toggle-checkbox{
+        margin-left: 40%;
+    }
+    .leaflet-tooltip-center{
+        font-size:15px;
+    }
+    .bt_sst_tmp_mster_progressbar_container{
+        /* padding:0; margin:0; width:80%; */
+    }
+    .bt_sst_tracking_product_rating{
+        align-items:center;
+    }
+
+    .bt_sst_rating_bar_container{
+        border: 1px solid #e4e4e4;
+        border-radius: 20px;
+        box-shadow: 3px 3px 5px 3px rgba(168, 168, 168, 0.5);
+    }
+
+    .fl-module.fl-module-heading.fl-node-0z7h1ugnboap{
+       
+    }
+
     @font-face { 
     `font-family:"Font Awesome 5 Free";
     font-style:normal;
@@ -727,29 +780,7 @@ plotMap(); // Call the function to plot the map
     font-display:block;
     src:url(./fonts/fa-solid-900.eot);
     src:url(./fonts/fa-solid-900.eot?#iefix) format("embedded-opentype"),url(./fonts/fa-solid-900.woff2) format("woff2"),url(./fonts/fa-solid-900.woff) format("woff"),url(./fonts/fa-solid-900.ttf) format("truetype"),url(./fonts/fa-solid-900.svg#fontawesome) format("svg");
-    } 
-    @media all{     
-    body {  
-        font-family:sans-serif;
-        font-size:10px;
-        line-height:1.45;
-        color:#808080;
-        font-weight:400;
-    }  
-    }  
-    @media all{ 
-    * { 
-        -webkit-box-sizing: border-box; 
-        -moz-box-sizing: border-box; 
-        box-sizing: border-box;
-    } 
-    }     
-
-    *  { 
-        -webkit-box-sizing: border-box; 
-        -moz-box-sizing: border-box; 
-        box-sizing: border-box;
-    } 
+    }
 
     .fl-row-fixed-width { 
         max-width: 1100px;
@@ -759,51 +790,6 @@ plotMap(); // Call the function to plot the map
     .fl-post:last-child { 
         margin-bottom: 0;
     } 
-
-    body { 
-        margin: 0;
-    } 
-
-    body { 
-        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif; 
-        font-size: 14px; 
-        line-height: 1.42857143; 
-        color: #333; 
-        background-color: #fff;
-    } 
-
-    body { 
-        background-color: #f2f2f2; 
-        color: #808080; 
-        font-family: "Helvetica",Verdana,Arial,sans-serif; 
-        font-size: 14px; 
-        font-weight: 400; 
-        line-height: 1.45; 
-        padding: 0; 
-        word-wrap: break-word;
-    } 
-
-    html { 
-        --wp-admin--admin-bar--height: 32px; 
-        scroll-padding-top: var(--wp-admin--admin-bar--height);
-    } 
-
-    html { 
-        transition-property: margin; 
-        transition-duration: .35s;
-    } 
-
-    html { 
-        font-family: sans-serif; 
-        -ms-text-size-adjust: 100%; 
-        -webkit-text-size-adjust: 100%;
-    } 
-
-    html { 
-        font-size: 10px; 
-        -webkit-tap-highlight-color: rgba(0,0,0,0);
-    } 
-    }     
 
     .fl-row-content-wrap { 
         position: relative;
@@ -828,14 +814,7 @@ plotMap(); // Call the function to plot the map
         border-bottom-width: 1px; 
         border-left-width: 1px;
     } 
-
-    @media all{ 
-    :before,:after { 
-        -webkit-box-sizing: border-box; 
-        -moz-box-sizing: border-box; 
-        box-sizing: border-box;
-    } 
-    }     
+   
 
     * , .fl-builder-content ::before, .fl-builder-content ::after { 
         -webkit-box-sizing: border-box; 
@@ -984,44 +963,14 @@ plotMap(); // Call the function to plot the map
         -moz-box-shadow: 5px 5px 7px 5px rgba(168,168,168,0.5); 
         -o-box-shadow: 5px 5px 7px 5px rgba(168,168,168,0.5); 
         box-shadow: 5px 5px 7px 5px rgba(168,168,168,0.5);
+        border-radius: 31px;
     } 
 
     .fl-module-content { 
-        margin: 20px;
+        /* margin: 20px; */
     } 
 
-    @media all{ 
-    h5 { 
-        font-family: inherit; 
-        font-weight: 500; 
-        line-height: 1.1; 
-        color: inherit;
-    } 
 
-    h5 { 
-        margin-top: 10px; 
-        margin-bottom: 10px;
-    } 
-
-    h5 { 
-        font-size: 14px;
-    } 
-
-    h5 { 
-        color: #333; 
-        font-family: "Helvetica",Verdana,Arial,sans-serif; 
-        font-weight: 400; 
-        line-height: 1.4; 
-        text-transform: none; 
-        font-style: normal;
-    } 
-
-    h5 { 
-        font-size: 14px; 
-        line-height: 1.4; 
-        letter-spacing: 0px;
-    } 
-    }     
 
     .fl-module-heading .fl-heading  { 
         padding: 0 !important; 
@@ -1040,70 +989,7 @@ plotMap(); // Call the function to plot the map
     .fl-node-j7vr109hbw3x .fl-photo  { 
         text-align: center;
     } 
-
-    @media all{ 
-    h6 { 
-        font-family: inherit; 
-        font-weight: 500; 
-        line-height: 1.1; 
-        color: inherit;
-    } 
-
-    h6 { 
-        margin-top: 10px; 
-        margin-bottom: 10px;
-    } 
-
-    h6 { 
-        font-size: 12px;
-    } 
-
-    h6 { 
-        color: #333; 
-        font-family: "Helvetica",Verdana,Arial,sans-serif; 
-        font-weight: 400; 
-        line-height: 1.4; 
-        text-transform: none; 
-        font-style: normal;
-    } 
-
-    h6 { 
-        font-size: 12px; 
-        line-height: 1.4; 
-        letter-spacing: 0px;
-    } 
-
-    h2 { 
-        font-family: inherit; 
-        font-weight: 500; 
-        line-height: 1.1; 
-        color: inherit;
-    } 
-
-    h2 { 
-        margin-top: 20px; 
-        margin-bottom: 10px;
-    } 
-
-    h2 { 
-        font-size: 30px;
-    } 
-
-    h2 { 
-        color: #333; 
-        font-family: "Helvetica",Verdana,Arial,sans-serif; 
-        font-weight: 400; 
-        line-height: 1.4; 
-        text-transform: none; 
-        font-style: normal;
-    } 
-
-    h2 { 
-        font-size: 30px; 
-        line-height: 1.4; 
-        letter-spacing: 0px;
-    } 
-    }     
+   
 
     .uabb-timeline-wrapper { 
         position: relative;
@@ -1163,26 +1049,17 @@ plotMap(); // Call the function to plot the map
         bottom: 12px;
         border-radius: 15px;    } 
 
-    @media all{ 
-    :where(img[class*="wp-image-"])  { 
-        height: auto; 
-        max-width: 100%;
-    } 
+    .courier_name{
+        padding:2px; margin:0
+    }
 
-    img { 
-        border: 0;
-    } 
+    .awb_number{
+        padding:2px; margin:0
+    }
 
-    img { 
-        vertical-align: middle;
-    } 
-
-    img { 
-        max-width: 100%; 
-        height: auto;
-    } 
-    }     
-
+    .fl-col-group.fl-node-6pot3hxjwag4{
+        margin-bottom:30px;
+    }
     .fl-module img  { 
         max-width: 100%;
     } 
@@ -1193,12 +1070,7 @@ plotMap(); // Call the function to plot the map
         max-width: 100%;
     } 
 
-    @media all{ 
-    img[class*="wp-image-"]  { 
-        height: auto; 
-        max-width: 100%;
-    } 
-    }     
+   
 
     .uabb-timeline-wrapper .slick-list  { 
         position: relative; 
@@ -1264,6 +1136,9 @@ plotMap(); // Call the function to plot the map
         cursor: pointer; 
         text-align: center;
     } 
+    .fl-module.fl-module-uabb-timeline.fl-node-nyo8u0s1p4eh{
+        padding:20px;
+    }
 
     .fl-node-nyo8u0s1p4eh .uabb-timeline--center .uabb-timeline-marker-wrapper  { 
         margin-left: 10px; 
@@ -1282,27 +1157,7 @@ plotMap(); // Call the function to plot the map
 
     .fl-node-nyo8u0s1p4eh .uabb-timeline-connector .slick-current .uabb-timeline-marker .timeline-icon-new  { 
         color: #ffffff;
-    } 
-
-    @media all{ 
-    .fas { 
-        -moz-osx-font-smoothing: grayscale; 
-        -webkit-font-smoothing: antialiased; 
-        display: inline-block; 
-        font-style: normal; 
-        font-variant: normal; 
-        text-rendering: auto; 
-        line-height: 1;
-    } 
-
-    .fas { 
-        font-family: "Font Awesome 5 Free";
-    } 
-
-    .fas { 
-        font-weight: 900;
-    } 
-    }     
+    }
 
     .uabb-timeline-connector .uabb-timeline-marker i  { 
         background: #eee; 
@@ -1315,12 +1170,15 @@ plotMap(); // Call the function to plot the map
         line-height: 40px;
     } 
 
-    .fl-node-nyo8u0s1p4eh .uabb-timeline-connector .uabb-timeline-marker .bt_sst_selected  { 
+    .fl-node-nyo8u0s1p4eh .uabb-timeline-connector .uabb-timeline-marker .bt_sst_selected  {
         /* font-size: 18px; */
         background-color: #1e88e5;
         display: inline-block;
         width: 18px;
         height: 18px;
+    } 
+    .fl-node-nyo8u0s1p4eh .uabb-timeline-connector .uabb-timeline-marker .bt_sst_not_selected img  {
+        display: none;
     } 
     .fl-node-nyo8u0s1p4eh .uabb-timeline-connector .uabb-timeline-marker .bt_sst_selected_cancelled  { 
         /* font-size: 18px; */
@@ -1427,6 +1285,9 @@ plotMap(); // Call the function to plot the map
         width: 540px;  
         transform: translate3d(0px, 0px, 0px);  
     }  
+    #style-reSfY .slick-slide{
+        margin-top:auto;
+    }
     #style-bBNl2.style-bBNl2 {  
     width: 135px;  
     }  
@@ -1455,25 +1316,76 @@ plotMap(); // Call the function to plot the map
     }  
 
 </style>
+<style>
+    /* Mobile-first responsive design */
+@media only screen and (max-width: 768px) {
 
-<script>
-    
-// let count = parseInt(<?php echo $current_step; ?>);
-// let progressPercent = count * 25;
+/* Adjust columns to be full width for mobile */
+.fl-node-pt7e19gljyuh, .fl-node-hawcg9nob1yv,
+.fl-node-fi95nkgz4uvt, .fl-node-m9jah0vqwgcx,
+.fl-node-mgicd7spkbfo, .fl-node-vdxgkh9nq8y5 {
+    width: 100%; /* Make columns stack on mobile */
+}
 
-// setTimeout(function() {
-//     let $connector = jQuery('.fl-node-nyo8u0s1p4eh .uabb-timeline-connector');
+/* Reduce padding and margins for mobile */
+.fl-row-content-wrap {
+    padding: 10px; /* Less padding for mobile */
+}
 
-//     if (progressPercent === 25) {
-//         $connector.css('background', 'linear-gradient(to right, #3498db 25%, #e0e0e0 25%)');
-//     } else if (progressPercent === 50) {
-//         $connector.css('background', 'linear-gradient(to right, #3498db 50%, #e0e0e0 50%)');
-//     } else if (progressPercent === 75) {
-//         $connector.css('background', 'linear-gradient(to right, #3498db 75%, #e0e0e0 75%)');
-//     } else if (progressPercent === 100) {
-//         $connector.css('background', 'linear-gradient(to right, #3498db 100%, #e0e0e0 100%)');
-//     }
-// }, 2000); // 2 seconds delay
+.fl-module-content { 
+        margin: 0;
+    } 
 
 
-</script>
+.bt_sst_tracking_product_rating{
+    display: block !important;
+}
+.bt_sst_tracking_product_rating p{
+    /* margin: 0; */
+}
+
+.bt_sst_tmp_mster_progressbar_container{
+        padding:0; margin:0; width:100%;
+    }
+
+/* Full width for content sections */
+.fl-node-udyvigx8l6kb,
+.fl-node-gt9f8nkh6wuq,
+.fl-node-l0va2due3kcy,
+.fl-node-p1khazx03f9c,
+.fl-node-ai83xde9bp2o {
+    width: 100%; /* Make content span the full width on mobile */
+    margin: 0; /* Remove extra margins for mobile */
+}
+.bt_sst_tracking_product_trackong{
+    margin-top:0;
+}
+
+/* Adjust shadow and spacing for mobile */
+.fl-node-gt9f8nkh6wuq > .fl-col-content.fl-node-content {
+    box-shadow: 3px 3px 5px 3px rgba(168, 168, 168, 0.5); /* Lighter shadow on mobile */
+    padding: 20px 0; /* Smaller margins */
+    margin: 0;
+    margin-top: -80px;
+}
+#style-reSfY.style-reSfY {  
+    opacity: 1;  
+        width: 100%;  
+        transform: translate3d(0px, 0px, 0px);
+        display: flex;
+    font-size: 10px;
+    } 
+    #style-XLk1O.style-XLk1O {  
+    opacity: 1;  
+        width:100%;  
+        transform: translate3d(0px, 0px, 0px);  
+    }
+    .fl-node-nyo8u0s1p4eh .uabb-timeline-connector .uabb-timeline-marker i  { 
+        min-height: 36px; 
+        min-width: 35px; 
+        line-height: 33px;
+    } 
+
+}
+
+</style>
