@@ -715,5 +715,45 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             return null;
         }
 	}
+    public function get_order_label_by_shipment_id($shipment_ids){
+        $this->init_params();
+        $auth_token = $this->get_token();
+        if(!empty($auth_token)){
+
+            $body = array(
+                "shipment_id"=>$shipment_ids,
+            );
+            
+            $args = array(
+                'body'        => $body,
+                'headers'     => array(
+                    'Authorization' => 'Bearer ' . $auth_token,
+                    "Content-Type: application/json"
+                  ),
+            );
+    
+            $response = wp_remote_post( "https://apiv2.shiprocket.in/v1/external/courier/generate/label", $args );
+          
+            $body     = wp_remote_retrieve_body( $response );
+            $resp = json_decode($body,true);
+            // echo "<pre>"; print_r($resp); die;
+            $resp_array = [];
+            if (isset($resp['label_created']) && $resp['label_created'] > 0) {
+                // foreach ($resp['packages'] as $package) {
+                    // if (isset($package['label_url'])) {
+                        $resp_array[] = $resp['label_url'];
+                    // }
+                // }
+                $resp = $resp_array;
+            } else {
+                $resp = $resp['response'];
+            }            
+
+            return $resp;
+
+        }else{
+            return "Please Enter Token";
+        }
+	}
 
 }

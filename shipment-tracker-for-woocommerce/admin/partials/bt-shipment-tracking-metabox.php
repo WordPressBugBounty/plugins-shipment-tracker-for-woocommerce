@@ -110,13 +110,15 @@ foreach ($coriure_name as $key => $courier) {
         <button type="button" id="add_awb_no_in_ship24" class="button save_order" href='#'>Add AWB No.</button>
         <?php }else{ ?>
             <button type="button" id="sync_manual" class="button save_order" href='#'>Sync Tracking Now</button>
-    <?php }} ?>
+            <?php if($get_awb_no){ ?>
+                <button type="button"style="margin:5px 0"; id="dawnload_able_pdf" class="button dawnload_able_document" href='#'>Dawnload Label</button>
+    <?php }}} ?>
     <?php add_thickbox(); ?>
     <script>
-            jQuery('#bt_sst_ship24_couriers_name').select2({
-                                placeholder: "Select Courier",
-                                allowClear: true
-                            });
+        // jQuery('#bt_sst_ship24_couriers_name').select2({
+        //     placeholder: "Select Courier",
+        //     allowClear: true
+        // });
         jQuery('#bt_sst_awbPopup').hide();
         jQuery('#sync_manual').click(function () {
             jQuery('#sync_manual').addClass("disabled");
@@ -149,6 +151,38 @@ foreach ($coriure_name as $key => $courier) {
                     jQuery('#bt_sync-box .spinner').removeClass("is-active");
                     alert('Something went wrong! Error: ' + errorThrown);
                     return false;
+                }
+            });
+        });
+        jQuery('#dawnload_able_pdf').click(function () {
+            jQuery('#dawnload_able_pdf').addClass("disabled");
+
+            jQuery.ajax({
+                method: "POST",
+                url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                dataType: "json",
+                data: {
+                    'awbs': ['<?php echo $get_awb_no; ?>'],
+                    'order_id': '<?php echo $order_id; ?>',
+                    'action': 'download_label_pdf'
+                }, success: function (response) {
+                    jQuery('#dawnload_able_pdf').removeClass("disabled");
+                    // window.location.href = response[0]['pdf_download_link'];
+                    if(response && Array.isArray(response)){
+                        response.forEach(function(item) {
+                                if (item.startsWith('data:image/')) {
+                                    var newWindow = window.open();
+                                    newWindow.document.write('<img src="' + item + '" />');
+                                }else{
+                                    window.open(item, '_blank');
+                                }
+                        });
+                    }else{
+                        alert(response);
+                    }
+                    
+                }, error: function (jqXHR, textStatus, errorThrown) {
+                    alert('Failed To Dawnload Label');
                 }
             });
         });

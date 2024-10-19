@@ -31,7 +31,7 @@
 											<input type="hidden" name="redirect_url" value="<?php echo esc_url($payment_redirect_url); ?>" />                                
 											<input type="hidden" name="apikey"  value="<?php echo esc_html($api); ?>" />     
 											<p class="is-size-6" for="quantity">No. of Credits:</p>
-											<input id="bt_sms_input_credits_buy" value="" class="input is-medium mb-2" required type="number" name="quantity" maxlength="7" min="1000" max="5000000" placeholder="Enter quantity"/><br>
+											<input id="bt_sms_input_credits_buy" value="" class="input is-medium mb-2" required type="number" name="quantity" maxlength="7" min="3000" max="200000" placeholder="Enter quantity"/><br>
 											<p class="is-size-6" >Price per Credit:</p>
 											<p id="bt_sms_price_per_credit" class="is-size-5 pb-2" >-</p>
 											<p class="is-size-6" >Amount:</p>

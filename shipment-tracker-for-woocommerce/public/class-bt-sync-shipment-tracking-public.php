@@ -1157,6 +1157,28 @@ class Bt_Sync_Shipment_Tracking_Public
 		return $data_arr;
 	}
 	
+
+	function findNearestWeights($filtered_arr, $weight_in_grams) {
+		if($filtered_arr==null || !is_array($filtered_arr))
+		{
+			return $filtered_arr;
+		}
+		foreach ($filtered_arr as $r => $rb) {
+			if (preg_match('/([0-9.]+)\s*KG/i', $rb['minimum_chargeable_weight'], $matches)) {
+				$kg = floatval($matches[1]);
+				$minimum_chargeable_weight_in_grm = $kg * 1000;
+				$filtered_arr[$r]['minimum_chargeable_weight_in_grams'] = $minimum_chargeable_weight_in_grm;
+			}
+		}
+	
+		usort($filtered_arr, function ($a, $b) use ($weight_in_grams) {
+			return abs($a['minimum_chargeable_weight_in_grams'] - $weight_in_grams) <=> abs($b['minimum_chargeable_weight_in_grams'] - $weight_in_grams);
+		});
+	
+		$closest_five = array_slice($filtered_arr, 0, 5);
+		return  $closest_five;
+	}
+
 	function update_woocommerce_package_rates($rates, $package)
 	{
 		//echo "okk1". json_encode($package);exit;
@@ -1588,8 +1610,11 @@ class Bt_Sync_Shipment_Tracking_Public
 					usort($filtered_arr, function($a, $b) {
 						return ($a['total_charges'] - ($b['total_charges']));
 					});
+					$cart_totals = $this->get_cart_weight_and_dimentions();
+					$weight_in_grams = $cart_totals['total_weight_kg']*1000;
+					
+					$filtered_arr = $this->findNearestWeights($filtered_arr, $weight_in_grams);
 					foreach ($filtered_arr as $r => $rb) {
-						
 						$id = 'flat_rate:shipmozo:' . $rb['id'];
 						$lable = $rb['name'];
 						$method_id = 'flat_rate';
@@ -1644,7 +1669,8 @@ class Bt_Sync_Shipment_Tracking_Public
 						$WC_Shipping_Rate->add_meta_data('bt_sst_courier_company_name', $rb['name']);
 						$WC_Shipping_Rate->add_meta_data('bt_sst_shipment_provider', 'shipmozo');
 						
-						$rates[$id] = $WC_Shipping_Rate;
+						$rates[$id] = $WC_Shipping_Rate;	
+						
 					}
 				}
 			}
@@ -2089,6 +2115,9 @@ class Bt_Sync_Shipment_Tracking_Public
 					$variation_id = $cart_item['variation_id']; // to do
 					$quantity = $cart_item['quantity'];
 					$product = wc_get_product($product_id);
+					if(isset($variation_id) && $variation_id>0){
+						$product = wc_get_product($variation_id);
+					}
 					if (!empty($product->get_weight()) && $product->get_weight() > 0) {
 						$total_weight = $total_weight + ($product->get_weight() * $quantity);
 					}

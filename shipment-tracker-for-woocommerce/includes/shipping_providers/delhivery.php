@@ -438,39 +438,48 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
 
 
     }
-    // public function get_order_label_by_awb_numbers($awbs) {
-    //     $this->init_params();
-        
-    //     if (!empty($this->public_key) && !empty($awbs)) {
-    //         $args = array(
-    //             'body' => json_encode(array(
-    //                 'wbns' => $awbs,
-    //                 'pdf' => true
-    //             )),
-    //             'headers' => array(
-    //                 'Content-Type' => 'application/json',
-    //                 'Authorization' => 'Token ' . $this->public_key,
-    //             ),
-    //         );
+    public function get_order_label_by_awb_numbers($awbs) {
+        $this->init_params();
     
-    //         $url = 'https://track.delhivery.com/api/p/packing_slip';
-    
-    //         $response = wp_remote_post($url, $args);
-    //         echo "<pre>"; print_r($response); die;
-    
-    //         if (is_wp_error($response)) {
-    //             return array('error' => $response->get_error_message());
-    //         }
-    
-    //         $body = wp_remote_retrieve_body($response);
-    //         $resp = json_decode($body, true);
-            
-    //         return $resp;
-    //     } else {
-    //         return null;
-    //     }
-    // }
-    
+        if (!empty($this->public_key) && !empty($awbs)) {
 
+            $awbs_string = implode(',', $awbs);
+
+            $query_params = array(
+                'wbns' => $awbs_string,
+                'pdf' => 'true',
+            );
+    
+            $url = add_query_arg($query_params, 'https://track.delhivery.com/api/p/packing_slip');
+    
+            $args = array(
+                'headers' => array(
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Token ' . $this->public_key,
+                ),
+            );
+    
+            $response = wp_remote_get($url, $args);
+    
+            $body = wp_remote_retrieve_body($response);
+            $resp = json_decode($body, true);
+            
+            $resp_array = [];
+            if (isset($resp['packages_found']) && $resp['packages_found'] > 0) {
+                foreach ($resp['packages'] as $package) {
+                    if (isset($package['pdf_download_link'])) {
+                        $resp_array[] = $package['pdf_download_link'];
+                    }
+                }
+                $resp = $resp_array;
+            } else {
+                $resp = "Please enter a correct AWB number";
+            }            
+
+            return $resp;
+        } else {
+            return 'Please Enter Token';
+        }
+    }
     
 }

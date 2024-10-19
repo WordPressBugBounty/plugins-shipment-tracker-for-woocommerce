@@ -271,6 +271,66 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		}
 
 	}
+	public function woocommerce_order_status_on_hold($order_id){
+		
+		// $this->get_shipping_courier($order_id);
+		// echo " ok ";
+		// exit;
+		$enabled_shipping_providers = carbon_get_theme_option( 'bt_sst_enabled_shipping_providers' );
+		$bt_sst_default_shipping_provider = carbon_get_theme_option( 'bt_sst_default_shipping_provider' );
+		
+
+
+		//check if default shipping provider is set and enabled.
+		if(!empty($bt_sst_default_shipping_provider) && is_array($enabled_shipping_providers) && in_array($bt_sst_default_shipping_provider,$enabled_shipping_providers)){
+			$bt_shipping_provider = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shipping_provider', true );
+			//make sure a shipping provider is not already assigned.
+			if(empty($bt_shipping_provider)){
+				$bt_shipping_provider =  $bt_sst_default_shipping_provider;
+				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_provider', $bt_shipping_provider);
+				//if custom shipping, then set shipping mode in order meta
+				if($bt_shipping_provider=="manual"){
+					$shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
+					Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_sst_custom_shipping_mode', $shipping_mode_is_manual_or_ship24);
+				}
+			}
+			if($bt_shipping_provider=="shiprocket"){
+				$order = wc_get_order( $order_id );
+				$order->add_order_note('Added schedule to push this order to shiprocket.' . "\n\n- Shipment tracker for woocommerce", false );
+				wp_schedule_single_event( time()+10 , 'bt_push_order_to_shiprocket',array( $order_id)  );//schedule non blocking future event
+			
+			}
+			else if($bt_shipping_provider=="shipmozo"){
+					$order = wc_get_order( $order_id );
+					$order->add_order_note('Added schedule to push this order to shipmozo.' . "\n\n- Shipment tracker for woocommerce", false );
+					wp_schedule_single_event( time()+10 , 'bt_push_order_to_shipmozo',array( $order_id)  );//schedule non blocking future event
+				
+
+			}
+
+			else if($bt_shipping_provider=="nimbuspost_new"){
+				$order = wc_get_order( $order_id );
+				$order->add_order_note('Added schedule to push this order to nimbuspost.' . "\n\n- Shipment tracker for woocommerce", false );
+				wp_schedule_single_event( time()+10, 'bt_push_order_to_nimbuspost',array( $order_id)  );//schedule non blocking future event
+		
+			}
+
+			else if($bt_shipping_provider=="delhivery"){
+				$bt_sst_delhivery_push_order_method_is_automatic = carbon_get_theme_option( 'bt_sst_delhivery_push_orders' );
+				$is_premium = $this->licenser->is_license_active();
+				if($bt_sst_delhivery_push_order_method_is_automatic ==1 && $is_premium){
+					$order = wc_get_order( $order_id );
+					$order->add_order_note('Added schedule to push this order to delhivery.' . "\n\n- Shipment tracker for woocommerce", false );
+					wp_schedule_single_event( time()+1, 'bt_push_order_to_delhivery',array( $order_id)  );
+					
+				}
+			}
+
+		}else{
+
+		}
+
+	}
 
 	// public function get_shipping_courier($order_id){
 	// 	$order = wc_get_order( $order_id );
@@ -2061,6 +2121,34 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 	// }
 
+	function download_label_pdf(){
+		$order_id = $_POST['order_id'];
+		$bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($order_id);
+		$shipping_provider = $bt_shipment_tracking->shipping_provider;
+
+		//  var_dump($shipping_provider); die;
+		// $shipping_provider = 'delhivery';
+		if($shipping_provider == 'delhivery'){
+			if (isset($_POST['awbs'])){
+				$awb_number = $_POST['awbs'];
+				$resp = $this->delhivery->get_order_label_by_awb_numbers($awb_number);
+			}
+		}else if($shipping_provider == 'shiprocket'){
+			$shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shiprocket_shipment_id', true );
+			if (isset($_POST['awbs'])){
+				// $shipments_ids = $_POST['awbs'];
+				$resp = $this->shiprocket->get_order_label_by_shipment_id([$shipments_ids]);
+			}
+		}else if($shipping_provider == 'shipmozo'){
+			$shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shiprocket_shipment_id', true );
+			if (isset($_POST['awbs'])){
+				$awbs = $_POST['awbs'];
+				$resp = $this->shipmozo->get_order_label_by_awb_numbers_shipmozo($awbs);
+			}
+		}
+		wp_send_json($resp);
+		wp_die();
+	}
 	function handle_stw_wizard_form_data_save(){
 		if (isset($_POST['data'])){
 			$wizard_post_data = $_POST['data'];

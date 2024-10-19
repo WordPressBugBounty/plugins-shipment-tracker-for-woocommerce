@@ -356,6 +356,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'after_setup_theme', $this, 'crb_load' );
 		$this->loader->add_action( 'carbon_fields_register_fields', $this, 'crb_attach_theme_options' );
 		$this->loader->add_action( 'woocommerce_order_status_processing', $plugin_admin, 'woocommerce_order_status_processing',20,1 );
+		$this->loader->add_action( 'woocommerce_order_status_on-hold', $plugin_admin, 'woocommerce_order_status_on_hold' );
 		$this->loader->add_action( 'init', $this->crons, 'schedule_recurring_events');
 
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'handle_admin_init');
@@ -385,6 +386,7 @@ class Bt_Sync_Shipment_Tracking {
 		// $this->loader->add_action('wp_ajax_stw_wizard_form_data_save', $plugin_admin, 'handle_stw_wizard_form_data_save');
 		$this->loader->add_action('wp_ajax_handle_stw_wizard_form_data_save',$plugin_admin,  'handle_stw_wizard_form_data_save'); // For non-logged in users
 		
+		$this->loader->add_action( 'wp_ajax_download_label_pdf', $plugin_admin, 'download_label_pdf' );
 		$this->loader->add_action( 'wp_ajax_check_user_data_for_premium_features', $plugin_admin, 'check_user_data_for_premium_features' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_test_connection', $plugin_admin, 'api_call_for_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_delhivery_test_connection', $plugin_admin, 'api_call_for_delhivery_test_connection' );

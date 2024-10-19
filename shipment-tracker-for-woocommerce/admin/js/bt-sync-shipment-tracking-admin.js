@@ -837,9 +837,9 @@ document.addEventListener('DOMContentLoaded', () => {
 	
 	$(document).on('submit', '#bt_buy_sms_form', function (e) {
 		var qty = $('#bt_sms_input_credits_buy').val();
-		if(qty<1000){
+		if(qty<3000){
 			e.preventDefault();
-			alert("Minimum purchase of 1000 credit is required.");
+			alert("Minimum purchase of 3000 credit is required.");
 		}
 		
 	});

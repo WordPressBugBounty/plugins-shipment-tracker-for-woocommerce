@@ -232,7 +232,7 @@ if(empty($bt_sst_review_subheading_text)){
             if($order_status !='cancelled' || $order_status!='refunded' || $order_status!='failed' ){
             $whatsapp_url .= $estimated_delivery_date . "\n";
             }
-            if(!$estimated_delivery_date){
+            if($estimated_delivery_date=="NA" || !$estimated_delivery_date){
                 $estimated_delivery_date = "Arriving Soon";
             }
             $delivery_pincode = $the_order->get_shipping_postcode();
@@ -346,7 +346,7 @@ if(empty($bt_sst_review_subheading_text)){
                                                 async function plotMap() {
                                                     // Retrieve PHP variables inside JavaScript
                                                     var dropoffPin = '<?php echo $delivery_pincode; ?>'; // Delivery PIN code
-                                                    var estimated_date = `<?php echo $estimated_delivery_date; ?>`;
+                                                    var estimated_date = `<?php echo $the_order->get_billing_city()." ".$the_order->get_billing_state()." ".$the_order->get_billing_postcode(); ?>`;
                                                     var delivery_country = '<?php echo $delivery_country; ?>';
 
                                                     const dropoffLocation = await getCoordinates(dropoffPin, delivery_country);
@@ -386,7 +386,9 @@ if(empty($bt_sst_review_subheading_text)){
                                                         // Disable dragging
                                                         map.dragging.disable();
                                                     } else {
+                                                        jQuery('#style-choB9').css("height","100px");
                                                         console.error("No coordinates found for the drop-off location.");
+                                                        // alert("No coordinates found for the drop-off location.");
                                                     }
                                                 }
 
@@ -615,19 +617,19 @@ if(empty($bt_sst_review_subheading_text)){
                                                 </div>
                                                 <div>
                                                     <a style="margin:7px; text-decoration: none;" target="_blank" href="<?php echo esc_url(carbon_get_theme_option('bt_sst_rating_page_url')); ?>" class="bt_sst_tracking_rating_url_btn">
-                                                        ⭐
+                                                    😈
                                                     </a>
                                                     <a style="margin:7px; text-decoration: none;" target="_blank" href="<?php echo esc_url(carbon_get_theme_option('bt_sst_rating_page_url')); ?>" class="bt_sst_tracking_rating_url_btn">
-                                                        ⭐
+                                                    😐
                                                     </a>
                                                     <a style="margin:7px; text-decoration: none;" target="_blank" href="<?php echo esc_url(carbon_get_theme_option('bt_sst_rating_page_url')); ?>" class="bt_sst_tracking_rating_url_btn">
-                                                        ⭐
+                                                    😌
                                                     </a>
                                                     <a style="margin:7px; text-decoration: none;" target="_blank" href="<?php echo esc_url(carbon_get_theme_option('bt_sst_rating_page_url_pos')); ?>" class="bt_sst_tracking_rating_url_btn">
-                                                        ⭐
+                                                    ☺️
                                                     </a>
                                                     <a style="margin:7px; text-decoration: none;" target="_blank" href="<?php echo esc_url(carbon_get_theme_option('bt_sst_rating_page_url_pos')); ?>" class="bt_sst_tracking_rating_url_btn">
-                                                        ⭐
+                                                    😎
                                                     </a>
                                                 </div>
                                             </div>

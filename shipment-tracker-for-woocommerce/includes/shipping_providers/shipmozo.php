@@ -35,12 +35,13 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
             $response = wp_remote_post( 'https://shipping-api.com/app/api/v1/pincode-serviceability', $args );
             $body     = wp_remote_retrieve_body( $response );
             $resp = json_decode($body,true);
-           if($resp["message"] && strpos($resp["message"], "Anauthorised") !== false){
+            // var_dump(strpos($resp["message"], "unauthorised")); die;
+            if (isset($resp["message"]) && strpos($resp["message"], "unauthorised") !== false) {
                 return false;
-            }
-            else{
+            } else {
                 return true;
             }
+            
         }else{
             return false;
         }
@@ -300,7 +301,7 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
                 'order_amount'=>$order_amount,
                 'type_of_package'=>'SPS',
                 'cod_amount'=>$order_amount,
-                'weight'=>$weight,
+                'weight'=>$weight*1000,
                 'dimensions'=> array($dimension)
            
             );
@@ -321,9 +322,9 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
 
              $resp = json_decode($body,true);
              //print_r($args);
-             //echo json_encode($response);
+           // echo json_encode($weight);
             // echo($body);
-            // exit;
+             //exit;
             return $resp;
         }else{
             return null;
@@ -524,4 +525,39 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
 
         return null;
     }
+
+    public function get_order_label_by_awb_numbers_shipmozo($awbs) {
+        $this->init_params();
+    
+        if (!empty($this->public_key) && !empty($this->private_key)) {
+            $awb_string = implode(',', $awbs);
+            $url = 'https://shipping-api.com/app/api/v1/get-order-label/'.$awb_string;
+            $args = array(
+                'headers' => array(
+                    'public-key' => $this->public_key,
+                    'private-key' => $this->private_key
+                ),
+            );
+    
+            $response = wp_remote_get($url, $args);
+            $body = wp_remote_retrieve_body($response);
+            
+            $resp = json_decode($body, true);
+            $resp_array = [];
+            if(is_array($resp['data']) && count($resp['data'])>0){
+                foreach ($resp['data'] as $package) {
+                    if (isset($package['label'])) {
+                        $resp_array[] = $package['label'];
+                    }
+                }
+                $resp = $resp_array;
+            }else{
+                $resp = "Please enter correct awb";
+            }
+        } else {
+            $resp = "enter public and private key";
+        }
+        return $resp;
+    }
+    
 }
