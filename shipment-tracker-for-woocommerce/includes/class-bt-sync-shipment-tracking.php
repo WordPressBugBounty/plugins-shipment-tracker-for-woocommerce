@@ -1403,6 +1403,11 @@ class Bt_Sync_Shipment_Tracking {
 								</div>
 							</div> 
 						')),
+						Field::make( 'text', 'bt_sst_google_key_shipmozo', __( 'Enter your Google API key.') )
+							->set_attribute( 'placeholder', 'Enter google geocoding api key.' )
+							->set_help_text('
+							<a target="_blank" href="https://developers.google.com/maps/documentation/geocoding/get-api-key">Click here to get Google Geocode Api Key</a>
+							'),
 						Field::make( 'select', 'bt_sst_shipmozo_cron_schedule', __( 'Sync Tracking every' ) )
 						->add_options( 
 							array(

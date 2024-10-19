@@ -593,7 +593,7 @@ class Bt_Sync_Shipment_Tracking_Public
 							$push_resp = $bt_sst_cached_delivery_estimates_shipmozo[$cached_pincode_key];
 							$response["message"] = "Data fetched from cache.";
 						}else{
-							$push_resp = $this->shipmozo->get_rate_calcultor(0,$pickup_pin, $delivery_pincode, 'PREPAID',1,0,'500','1','10','10','10');
+							$push_resp = $this->shipmozo->get_rate_calcultor(0,$pickup_pin, $delivery_pincode, 'PREPAID',1,0,'.5','1','10','10','10');
 						
 							if ($push_resp != null && !empty($push_resp ) && $push_resp['result']=="1" && isset( $push_resp['data'])) {
 								$push_resp = $push_resp['data'];
@@ -620,44 +620,62 @@ class Bt_Sync_Shipment_Tracking_Public
 					
 
 					foreach ($filtered_arr as $key => $value) {
-						 $daytohour=$value['estimated_delivery'];
-						  preg_match('/\d+/',$daytohour,$matches);
-						  $days=intval($matches[0]);
-						  $hour=$days*24;
-						  //echo"$hour,";
-						  //exit;
-						  $value['etd_hours'] = $hour;
-						  
-						  $input = $value['estimated_delivery'];
-						  $currentDate = new DateTime();
-						  preg_match('/\d+/', $input, $matches);
-						  $days = intval($matches[0]);
-						  $interval = new DateInterval("P{$days}D");
-						  $currentDate->add($interval);
-						  $expectedDate = $currentDate->format('c');
-						  //echo"$expectedDate,";
-						  $value['etd'] = $expectedDate;
-
-						
-
-
-						if ($max_hours < $value['etd_hours']) {
-							$max_hours = $value['etd_hours'];
-							$max_date = $value['etd'];
-							$max_date_charges = $value['total_charges'];
-							$max_courier_name = $value['name'];
-						} 
-						if ($min_hours > $value['etd_hours']) {
-							$min_hours = $value['etd_hours'];
-							$min_date = $value['etd'];
-							$min_date_charges = $value['total_charges'];
-							$min_courier_name = $value['name'];
+						if (is_array($value['estimated_delivery']) && !empty($value['estimated_delivery'])) {
+							$daytohour=$value['estimated_delivery'];
+							 preg_match('/\d+/',$daytohour,$matches);
+							 $days=intval($matches[0]);
+							 $hour=$days*24;
+							 //echo"$hour,";
+							 //exit;
+							 $value['etd_hours'] = $hour;
+							 
+							 $input = $value['estimated_delivery'];
+							 $currentDate = new DateTime();
+							 preg_match('/\d+/', $input, $matches);
+							 $days = intval($matches[0]);
+							 $interval = new DateInterval("P{$days}D");
+							 $currentDate->add($interval);
+							 $expectedDate = $currentDate->format('c');
+							 //echo"$expectedDate,";
+							 $value['etd'] = $expectedDate;
+   
+						   
+   
+   
+						   if ($max_hours < $value['etd_hours']) {
+							   $max_hours = $value['etd_hours'];
+							   $max_date = $value['etd'];
+							   $max_date_charges = $value['total_charges'];
+							   $max_courier_name = $value['name'];
+						   } 
+						   if ($min_hours > $value['etd_hours']) {
+							   $min_hours = $value['etd_hours'];
+							   $min_date = $value['etd'];
+							   $min_date_charges = $value['total_charges'];
+							   $min_courier_name = $value['name'];
+						   }
 						}
 						//echo json_encode($value['estimated_delivery']);exit;
 					}
-					//echo json_encode($filtered_arr);exit;
+					// var_dump($delivery_country);exit;
 					if($delivery_country == "IN"){
-						$city = $filtered_arr[0]['city'];
+						// $city = $filtered_arr[0]['city'];
+						$city = $delivery_pincode;
+						$google_key = carbon_get_theme_option("bt_sst_google_key_shipmozo");
+						if(!empty($google_key)){
+							if(isset($bt_sst_cached_pincodes[$cached_pincode_key.'google'])){
+								$data = $bt_sst_cached_pincodes[$cached_pincode_key.'google'];
+								$city = $data['city'];
+							}else{
+								$data = $this->get_data_from_google_api($delivery_pincode, $delivery_country, $google_key);
+								$city = $data['city'];
+								$bt_sst_cached_pincodes[$cached_pincode_key.'google'] = $data;
+								set_transient( 'bt_sst_cached_pincodes', $bt_sst_cached_pincodes, 12 * HOUR_IN_SECONDS );
+								$response["message"] = "Data fetched from provider.";
+							}
+						}else{
+							$city = $delivery_pincode;
+						}
 					}else{
 						$city = $delivery_country;
 						$min_date = explode("-", $min_date)[0];

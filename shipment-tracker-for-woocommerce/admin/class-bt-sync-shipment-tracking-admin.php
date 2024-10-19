@@ -2039,7 +2039,8 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
-		echo '<h3>Shipment Tracking</h3>';
+		echo "<div class = 'dokan-panel dokan-panel-default'>";
+		echo '<div class="dokan-panel-heading">Shipment Tracking</div>';
 		$post_id = $order->get_id();
 		$order_id = $order->get_id();
 		if(empty($post_id)){
@@ -2052,8 +2053,17 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 		$shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
 		// $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($post_id, '_bt_sst_custom_shipping_mode', true);
+		echo "<div class='dokan-panel-body'>";
 		if(current_user_can("manage_options" )){
+			if(isset($_POST['wc_order_action_bt_sst_shipping_provider'])){
+				$new_provider = $_POST['wc_order_action_bt_sst_shipping_provider'];
+				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta( $order->get_id(), '_bt_shipping_provider', $new_provider );
+			}
+
+			$current_url = ( isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http" ) . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+			echo '<form action="' . esc_url( $current_url ) . '" method="post">';
 			include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-woocommerce-order-actions-end.php';
+			echo "</form>";
 		}else{
 			echo '<div style="pointer-events: none; opacity: 0.5;">'; // Makes it non-clickable and visually indicates it's disabled
 			include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-woocommerce-order-actions-end.php';
@@ -2065,6 +2075,8 @@ class Bt_Sync_Shipment_Tracking_Admin {
         } else if($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite'|| $bt_shipping_provider == 'nimbuspost'|| $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo'|| $bt_shipping_provider == 'nimbuspost_new'|| $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24=="ship24") {
 			include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-metabox.php';
         }
+		echo "</div>";
+		echo "</div>";
 		
 	}
 	// public function post_customer_feedback_to_sever() {

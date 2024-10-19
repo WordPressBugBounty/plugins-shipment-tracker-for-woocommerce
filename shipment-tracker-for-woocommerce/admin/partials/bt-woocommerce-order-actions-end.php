@@ -37,5 +37,5 @@ if(!$post_id){
                 <?php }
             } ?>
         </select>
-	    <button style="box-sizing: border-box;float: right;" class="button wc-reload"><span><?php esc_html_e( 'Apply', 'woocommerce' ); ?></span></button>
+	    <button style="box-sizing: border-box;float: right;" class="button wc-reload"><span><?php esc_html_e( '>', 'woocommerce' ); ?></span></button>
 </div>
