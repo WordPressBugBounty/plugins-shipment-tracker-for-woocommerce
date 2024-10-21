@@ -400,6 +400,9 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'wp_ajax_buy_credit_balance', $plugin_admin, 'buy_credit_balance' );
 		$this->loader->add_action( 'wp_ajax_credit_balance_details', $plugin_admin, 'credit_balance_details' );
 		$this->loader->add_action( 'wp_ajax_register_for_sms', $plugin_admin, 'register_for_sms' );
+		$this->loader->add_action( 'wp_ajax_bt_sst_get_users_list', $plugin_admin, 'bt_sst_get_users_list' );
+		$this->loader->add_action( 'wp_ajax_bt_sst_set_users_list', $plugin_admin, 'bt_sst_set_users_list' );
+		$this->loader->add_action( 'wp_ajax_bt_sst_check_users_list', $plugin_admin, 'bt_sst_check_users_list' );
 		$this->loader->add_filter( 'woocommerce_email_classes', $plugin_admin, 'register_shipment_email' );
 	
 		// Add a dropdown to filter orders by state
@@ -713,7 +716,7 @@ class Bt_Sync_Shipment_Tracking {
 						'value' => 'review_after_delivery',
 					)
 				))
-				->set_required( true )
+				//->set_required( true )
 				->set_help_text('This link will be send to customer after 2 hours of delivery. It can be your Google Review URL or your website\'s url where customer can leave feedback.')
 				,
 				
@@ -1021,7 +1024,41 @@ class Bt_Sync_Shipment_Tracking {
 						->set_default_value( 'Primary' )
 						->set_help_text( 'Required. Pickup location to set while pushing order to shiprocket.
 						<br>Available at: <b>Shiprocket > Settings > Pickup Address > Manage Pickup Addresses</b>
+						<div style="margin: 10px 0;">
+							Using "Dokan Multi-Vendor Plugin"? Set Vendor wise pickup location :<br>
+							<button type="button" id="" class="button bt_sst_button">Set Vendor Pickup Locations</button>
+						</div>
+						<div id="" class="">
+							<div class="bt_sst_overlay"></div>
+							<div class="bt_sst_popup">
+							  <span class="bt_sst_close">&times;</span>
 
+								        <div id="bt_sst_select_vendor" class="field">
+        <label class="label" for="bt_sst_vendor_select">Vendor Name</label>
+        <div class="control">
+          <div class="select">
+            <select id="bt_sst_vendor_select">
+              <option value="option1">Select Vendor</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="bt_sst_vendor_pickup_location">Pickup Location</label>
+        <div class="control">
+          <input
+            class="input"
+            type="text"
+            id="bt_sst_vendor_pickup_location"
+            placeholder="pickup location"
+            required
+          />
+        </div>
+      </div>
+							
+							</div>
+						</div>
 						' )
 						->set_conditional_logic( array(
 							array(

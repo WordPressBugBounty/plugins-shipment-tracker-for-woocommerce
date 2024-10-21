@@ -503,35 +503,40 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
     }
 
     public function push_order_to_shiprocket($order_id){
-        $this->init_params();
-        $auth_token = $this->get_token();
-        //$auth_token ="akjkjb";
-        if(!empty($auth_token)){
-
-            if(false == $body = $this->get_shiprocket_order_object($order_id)){
-                return;
-            }
-            // echo "<pre>"; print_r($body); die;
-
-            //$body = json_encode($body);
-            //echo json_encode($body );exit;
-            $args = array(
-                'body'        => $body,
-                'headers'     => array(
-                    'Authorization' => 'Bearer ' . $auth_token,
-                    "Content-Type: application/json"
-                  ),
-            );
+        $order = wc_get_order( $order_id );
+        if ( $order && $order->get_meta('has_sub_order') != 1 ) {
+            $this->init_params();
+            $auth_token = $this->get_token();
+            //$auth_token ="akjkjb";
+            if(!empty($auth_token)){
     
-            $response = wp_remote_post( "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc", $args );
-          // $response = wp_remote_post( "https://eo650r7ymufcxnv.m.pipedream.net", $args );
-            //https://eo650r7ymufcxnv.m.pipedream.net
-          
-            $body     = wp_remote_retrieve_body( $response );
-          //  echo $body;exit;
-            $resp = json_decode($body,true);
-            return $resp;
-
+                if(false == $body = $this->get_shiprocket_order_object($order_id)){
+                    return;
+                }
+                // echo "<pre>"; print_r($body); die;
+    
+                //$body = json_encode($body);
+                //echo json_encode($body );exit;
+                $args = array(
+                    'body'        => $body,
+                    'headers'     => array(
+                        'Authorization' => 'Bearer ' . $auth_token,
+                        "Content-Type: application/json"
+                      ),
+                );
+        
+                $response = wp_remote_post( "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc", $args );
+              // $response = wp_remote_post( "https://eo650r7ymufcxnv.m.pipedream.net", $args );
+                //https://eo650r7ymufcxnv.m.pipedream.net
+              
+                $body     = wp_remote_retrieve_body( $response );
+              //  echo $body;exit;
+                $resp = json_decode($body,true);
+                return $resp;
+    
+            }else{
+                return null;
+            }
         }else{
             return null;
         }
@@ -550,6 +555,18 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
     public function get_shiprocket_order_object($order_id){
         if(false == $order = wc_get_order( $order_id )){
             return false;
+        }
+        $order = wc_get_order($order_id);
+        foreach ($order->get_items() as $item_id => $item) {
+            $product_id = $item->get_product_id();
+            $vendor_id = get_post_field('post_author', $product_id);
+            if ( $vendor_id ) {
+                $vendor_pickup_location = get_user_meta( $vendor_id, 'vendor_pickup_location', true );
+                if ( !$vendor_pickup_location ) {
+                    $vendor_pickup_location = carbon_get_theme_option( 'bt_sst_shiprocket_pickup_location' );
+                }
+            }
+            break;
         }
       
         $phoneNumber = $this->extractPhoneNumber($order->get_billing_phone());
@@ -577,7 +594,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
         $so = array(
             "order_id"=> $order->get_id(),
             "order_date"=> $order->get_date_created()->date("Y-m-d H:i:s"),
-            "pickup_location"=> carbon_get_theme_option( 'bt_sst_shiprocket_pickup_location' ),
+            "pickup_location"=> $vendor_pickup_location,
             "channel_id"=> carbon_get_theme_option( 'bt_sst_shiprocket_channelid' ),
             "comment"=> $order->get_customer_note(),
             "billing_customer_name"=> $order->get_billing_first_name(),

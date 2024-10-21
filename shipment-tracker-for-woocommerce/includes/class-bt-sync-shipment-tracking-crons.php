@@ -166,7 +166,7 @@ class Bt_Sync_Shipment_Tracking_Crons {
     public function bt_daily_job(){
         //error_log("24hours");
         $this->do_sync("24hours");
-        $this->validate_license();
+        //$this->validate_license();
     }
 
     private function do_sync($cron_freq){

@@ -418,7 +418,84 @@
 		});
 	
 		showStep(currentStep);
-	
+
+
+			// Show the popup when the button is clicked
+			$('.bt_sst_button').on('click', function() {
+				$('.bt_sst_popup').show();
+				$('.bt_sst_overlay').show();
+				if ($("#bt_sst_select_vendor #bt_sst_select").length < 1) {
+					$.post(
+						bt_sync_shipment_track_data.ajax_url,
+						{ action: 'bt_sst_get_users_list'},
+						function(res) {
+							if (res) {
+								$("#bt_sst_select_vendor").html(res);
+							}
+						}
+					);				
+				}
+			});
+
+			$('.bt_sst_set_vendor_submit').on('click', function() {
+				var vendor_user_id = $("#bt_sst_select").val();
+				var vendor_pickup_location = $("#bt_sst_vendor_pickup_location").val();
+					$(this).attr("disabled", true);
+				$.post(
+					bt_sync_shipment_track_data.ajax_url,
+					{ action: 'bt_sst_set_users_list',vendor_user_id:vendor_user_id,vendor_pickup_location:vendor_pickup_location},
+					function(res) {
+						$(".bt_sst_set_vendor_submit").attr("disabled", false);
+						if (res) {
+							$('.bt_sst_popup').hide();
+							$('.bt_sst_overlay').hide();
+							alert(res);
+						}
+					}
+				);				
+			});
+
+			$(document).on('change', '#bt_sst_select', function() {
+				var vendor_user_id = $(this).val();
+				$("#bt_sst_vendor_pickup_location").attr("disabled", true);
+				if(vendor_user_id){
+					$.post(
+						bt_sync_shipment_track_data.ajax_url,
+						{ action: 'bt_sst_check_users_list',vendor_user_id:vendor_user_id},
+						function(res) {
+							$("#bt_sst_vendor_pickup_location").attr("disabled", false);
+							if (res) {
+								$("#bt_sst_vendor_pickup_location").val(res);
+							} else {
+								$("#bt_sst_vendor_pickup_location").val('');
+							}
+						}
+					);
+				}
+			});
+		
+			// Close the popup when the close button is clicked
+			$('.bt_sst_close').on('click', function() {
+				$('.bt_sst_popup').hide();
+				$('.bt_sst_overlay').hide();
+			});
+		
+			// Form submission and validation
+			$('.bt_sst_form').on('submit', function(event) {
+				event.preventDefault();
+				const idValue = $('#bt_sst_id').val();
+				const classValue = $('#bt_sst_class').val();
+		
+				// Check if the ID and Class Name start with bt_sst_
+				if (!idValue.startsWith('bt_sst_') || !classValue.startsWith('bt_sst_')) {
+					alert('ID and Class Name must start with bt_sst_');
+					return;
+				}
+		
+				alert('Form submitted successfully!\nID: ' + idValue + '\nClass Name: ' + classValue);
+				$('.bt_sst_popup').hide();
+				$('.bt_sst_overlay').hide();
+			});
 		
 	});
 

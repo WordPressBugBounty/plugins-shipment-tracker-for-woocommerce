@@ -1919,6 +1919,65 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	// 	return $new_order_statuses;
 	// }
 
+	function bt_sst_get_users_list(){
+		$args = array(
+			'role__in' => array('seller'),
+			'orderby'  => 'user_nicename',
+			'order'    => 'ASC'
+		);
+
+		$users = get_users( $args );
+		$html = '<label for="bt_sst_vendor_pickup_location" class="label">Vendor Name</label>';
+		$html .='<div class="control">
+          <div class="select">';
+		$html .= '<select id="bt_sst_select">';
+		$html .= '<option value="" >Select Vendor</option>';
+
+		foreach ( $users as $user ) {
+			$html .=  '<option value="' . esc_attr( $user->ID ) . '" title="' . esc_attr( $user->display_name.'('.$user->user_nicename.')' ) . '">';
+			$html .=  esc_html( $user->display_name ) . ' [' . esc_html( $user->user_nicename ) . ']';
+			$html .= '</option>';
+		}
+		$html .= '</select>';
+		$html .='</div>
+          </div>';
+
+		wp_send_json($html);
+		die();
+	}
+	function bt_sst_set_users_list(){
+		if(isset($_POST['vendor_pickup_location']) && isset($_POST['vendor_user_id'])){
+			$vendor_pickup_location = $_POST['vendor_pickup_location'];
+			$vendor_user_id = $_POST['vendor_user_id'];
+			update_user_meta( $vendor_user_id, 'vendor_pickup_location', $vendor_pickup_location );
+			$resp = "success";
+		}else{
+			$resp = "faild";
+		}
+
+		wp_send_json($resp);
+		die();
+	}
+	function bt_sst_check_users_list(){
+		$current_user_id = get_current_user_id();
+		// var_dump($current_user_id); die;
+		if(isset($_POST['vendor_user_id'])){
+			$vendor_user_id = $_POST['vendor_user_id'];
+
+			$vendor_pickup_location = get_user_meta( $vendor_user_id, 'vendor_pickup_location', true );
+			if(!$vendor_user_id){
+				$resp = "";
+			}else{
+				$resp = $vendor_pickup_location;
+			}
+		}else{
+			$resp = "";
+		}
+
+		wp_send_json($resp);
+		die();
+	}
+
 	function create_and_add_tracking_page() {
 		$nonce = $_GET['nonce'];
 
