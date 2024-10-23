@@ -1052,7 +1052,6 @@ class Bt_Sync_Shipment_Tracking {
             type="text"
             id="bt_sst_vendor_pickup_location"
             placeholder="pickup location"
-            required
           />
         </div>
       </div>

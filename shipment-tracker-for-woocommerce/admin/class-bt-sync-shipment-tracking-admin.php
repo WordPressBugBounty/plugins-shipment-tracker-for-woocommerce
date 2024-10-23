@@ -721,7 +721,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		}
 		
         $bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($post_id);
-        if(!empty($bt_shipment_tracking->shipping_provider) && $bt_shipment_tracking->shipping_provider !== 'none'){
+        //if(!empty($bt_shipment_tracking->shipping_provider) && $bt_shipment_tracking->shipping_provider !== 'none'){
 			add_meta_box(
 				'bt_sync-box',
 				__( 'Shipment Tracking', 'bt-sync-order' ),
@@ -739,7 +739,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 				'side',
 				'default'
 			);
-		}
+		//}
     }
 
     public function sync_actions_meta_box() {

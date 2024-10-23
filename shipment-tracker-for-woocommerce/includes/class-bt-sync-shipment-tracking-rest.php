@@ -34,6 +34,7 @@ class Bt_Sync_Shipment_Tracking_Rest {
     private $rest_route_xpressbees;
     private $rest_route_manual;
     private $rest_route_ship24;
+    private $rest_route_nimbuspost_new;
 
 	/**
 	 * Initialize the class and set its properties.
