@@ -110,7 +110,7 @@ foreach ($coriure_name as $key => $courier) {
         <button type="button" id="add_awb_no_in_ship24" class="button save_order" href='#'>Add AWB No.</button>
         <?php }else{ ?>
             <button type="button" id="sync_manual" class="button save_order" href='#'>Sync Tracking Now</button>
-            <?php if($get_awb_no && $bt_shipping_provider=='shiprocket' || $bt_shipping_provider=='delhivery' || $bt_shipping_provider=='shipmozo'){ ?>
+            <?php if($get_awb_no && $bt_shipping_provider=='shiprocket' || $bt_shipping_provider=='delhivery' || $bt_shipping_provider=='shipmozo' || $bt_shipping_provider == 'nimbuspost_new' || $bt_shipping_provider == 'nimbuspost'){ ?>
                 <button type="button"style="margin:5px 0"; id="dawnload_able_pdf" class="button dawnload_able_document" href='#'>Download Label</button>
     <?php }}} ?>
     <?php add_thickbox(); ?>

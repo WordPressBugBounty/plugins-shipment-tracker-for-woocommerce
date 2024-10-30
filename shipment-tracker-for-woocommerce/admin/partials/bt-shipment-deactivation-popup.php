@@ -29,10 +29,19 @@
 
             <input type="radio" id="seven" class="feedback_option" name="feedback_option" value="Other">
             <label for="seven">Other</label><br>
+           
+            <input type="checkbox" id="bt_sst_ast_contact_help" class="feedback_option" name="bt_sst_ast_contact_help">
+            <label for="bt_sst_ast_contact_help">Allow support team to contact me (to better understand to problem)</label><br>
+            
+            <div id="bt_ss_contactField" style="display:none;">
+                <label for="seven">Please Enter Your Contact Number</label><br>
+                <input name="bt_st_help_contact" id="bt_st_help_contact" style="width:100%" required>
+            </div>
             
             <label for="seven">Additional remark: (Optional)</label><br>
-            <textarea name="bt_st_additional_remark" id="bt_st_additional_remark" style="width:100%" rows="5" required></textarea>
+            <input type="text" name="bt_st_additional_remark" id="bt_st_additional_remark" style="width:100%" required>
             <br>
+            
             Instead of deactivating, consider raising a <a target="_blank" href="https://wordpress.org/support/plugin/shipment-tracker-for-woocommerce/">support ticket</a>. We'd love to help!
         </div>
         <div class="modal-footer">

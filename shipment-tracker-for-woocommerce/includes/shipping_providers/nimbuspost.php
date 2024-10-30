@@ -334,4 +334,53 @@ class Bt_Sync_Shipment_Tracking_Nimbuspost {
         }
         return null;
     }
+    public function get_order_label_by_order_ids($ids) {
+        $this->init_params();
+    
+        if (!empty($this->api_key)) {
+            // Prepare the body with order IDs
+            $body = array(
+                'ids' => $ids // Pass the order IDs as an array
+            );
+    
+            // Convert body to JSON format
+            $postData = json_encode($body);
+            $args = array(
+                'headers' => array(
+                    'NP-API-KEY' => $this->api_key, // Use NP-API-KEY for authorization
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+    
+                ),
+                'body' => $postData
+            );
+    
+            // Make the API call to retrieve order labels
+            $response = wp_remote_post('https://ship.nimbuspost.com/api/shipments/label', $args);
+    
+            if (is_wp_error($response)) {
+                // Handle error response from wp_remote_post
+                return array('error' => $response->get_error_message());
+            }
+    
+            $body = wp_remote_retrieve_body($response);
+    
+            // Decode the JSON response into an associative array
+            $resp = json_decode($body, true);
+    
+            echo "<pre>"; print_r($resp); die; // Debugging output to examine the response
+    
+            // Check if response contains data
+            if (isset($resp['data'])) {
+                return $resp['data']; // Return the label data if available
+            } else {
+                // Handle potential errors
+                return array('error' => isset($resp['message']) ? $resp['message'] : 'Unknown error occurred.');
+            }
+        } else {
+            return array('error' => 'API key is missing.');
+        }
+    }
+    
+    
 }

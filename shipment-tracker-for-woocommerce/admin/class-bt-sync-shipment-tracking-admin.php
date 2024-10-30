@@ -758,7 +758,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 		include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-woocommerce-order-actions-end.php';
 
-        if($bt_shipping_provider == 'manual' && $shipping_mode_is_manual_or_ship24 =="manual"){
+        if(!$bt_shipping_provider || ($bt_shipping_provider == 'manual' && $shipping_mode_is_manual_or_ship24 =="manual")){
             include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-manual-metabox.php';
         } else if($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite'|| $bt_shipping_provider == 'nimbuspost'|| $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo'|| $bt_shipping_provider == 'nimbuspost_new'|| $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24=="ship24") {
 			$order_id=isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
@@ -1855,7 +1855,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		$shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
 		// $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_sst_custom_shipping_mode', true);
 
-		if($bt_shipping_provider == 'manual'){
+		if(!$bt_shipping_provider || $bt_shipping_provider == 'manual'){
 			if($shipping_mode_is_manual_or_ship24 == "ship24"){
 				ob_start();
 				include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-add-awb.php';
@@ -1920,29 +1920,63 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	// }
 
 	function bt_sst_get_users_list(){
-		$args = array(
-			'role__in' => array('seller'),
-			'orderby'  => 'user_nicename',
-			'order'    => 'ASC'
-		);
-
-		$users = get_users( $args );
-		$html = '<label for="bt_sst_vendor_pickup_location" class="label">Vendor Name</label>';
-		$html .='<div class="control">
-          <div class="select">';
-		$html .= '<select id="bt_sst_select">';
-		$html .= '<option value="" >Select Vendor</option>';
-
-		foreach ( $users as $user ) {
-			$html .=  '<option value="' . esc_attr( $user->ID ) . '" title="' . esc_attr( $user->display_name.'('.$user->user_nicename.')' ) . '">';
-			$html .=  esc_html( $user->display_name ) . ' [' . esc_html( $user->user_nicename ) . ']';
-			$html .= '</option>';
+		if(isset($_POST['task']) && $_POST['task']=='get_pick_up_location'){
+			$pick_up_locations = $this->shiprocket->get_all_pickup_locations();
+			$html_pick_lo = '<label for="bt_sst_vendor_pickup_location" class="label">Pickup Location</label>';
+			$html_pick_lo .= '<div class="control"><div class="select">';
+			$html_pick_lo .= '<select id="bt_sst_vendor_pickup_location">';
+			$html_pick_lo .= '<option value="">Select Pick-Up Location</option>';
+			
+			foreach ($pick_up_locations as $value) {
+				$html_pick_lo .= '<option value="' . htmlspecialchars($value['pickup_location']) . '">' . htmlspecialchars($value['pickup_location']) . '</option>';
+			}
+			
+			$html_pick_lo .= '</select></div></div>';
+			
+			$resp = [
+				"html_pick_lo" => $html_pick_lo,
+			];
+		}else{
+			$args = array(
+				'role__in' => array('seller'),
+				'orderby'  => 'user_nicename',
+				'order'    => 'ASC'
+			);
+	
+			$users = get_users( $args );
+			$html = '<label for="bt_sst_vendor_pickup_location" class="label">Vendor Name</label>';
+			$html .='<div class="control">
+			  <div class="select">';
+			$html .= '<select id="bt_sst_select">';
+			$html .= '<option value="" >Select Vendor</option>';
+	
+			foreach ( $users as $user ) {
+				$html .=  '<option value="' . esc_attr( $user->ID ) . '" title="' . esc_attr( $user->display_name.'('.$user->user_nicename.')' ) . '">';
+				$html .=  esc_html( $user->display_name ) . ' [' . esc_html( $user->user_nicename ) . ']';
+				$html .= '</option>';
+			}
+			$html .= '</select>';
+			$html .='</div>
+			  </div>';
+	
+			$pick_up_locations = $this->shiprocket->get_all_pickup_locations();
+			$html_pick_lo = '<label for="bt_sst_vendor_pickup_location" class="label">Pickup Location</label>';
+			$html_pick_lo .='<div class="control">
+			  <div class="select">';
+			$html_pick_lo .= '<select id="bt_sst_vendor_pickup_location">';
+			$html_pick_lo .= '<option value="" >Select Pick-Up Location</option>';
+			foreach($pick_up_locations as $value){
+				$html_pick_lo .= '<option value="'.$value['pickup_location'].'" >'.$value['pickup_location'].'</option>';
+			}
+			$html_pick_lo .= '</select>';
+			$html_pick_lo .='</div>
+			  </div>';
+			  $resp = [
+				  "html_pick_lo" => $html_pick_lo,
+				  "html" => $html
+				];
 		}
-		$html .= '</select>';
-		$html .='</div>
-          </div>';
-
-		wp_send_json($html);
+		wp_send_json($resp);
 		die();
 	}
 	function bt_sst_set_users_list(){
@@ -2129,7 +2163,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 			echo "</div>";
 		}
 
-        if($bt_shipping_provider == 'manual' && $shipping_mode_is_manual_or_ship24 =="manual"){
+        if(!$bt_shipping_provider || ($bt_shipping_provider == 'manual' && $shipping_mode_is_manual_or_ship24 =="manual")){
             include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-manual-metabox.php';
         } else if($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite'|| $bt_shipping_provider == 'nimbuspost'|| $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo'|| $bt_shipping_provider == 'nimbuspost_new'|| $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24=="ship24") {
 			include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-metabox.php';
@@ -2211,10 +2245,25 @@ class Bt_Sync_Shipment_Tracking_Admin {
 				$resp = $this->shiprocket->get_order_label_by_shipment_id([$shipments_ids]);
 			}
 		}else if($shipping_provider == 'shipmozo'){
-			$shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shiprocket_shipment_id', true );
+			// $shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shiprocket_shipment_id', true );
 			if (isset($_POST['awbs'])){
 				$awbs = $_POST['awbs'];
 				$resp = $this->shipmozo->get_order_label_by_awb_numbers_shipmozo($awbs);
+			}
+		}else if($shipping_provider == 'nimbuspost_new'){
+			// $shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shiprocket_shipment_id', true );
+			if (isset($_POST['awbs'])){
+				$awbs = $_POST['awbs'];
+				// var_dump($awbs);
+				$resp = $this->nimbuspost_new->get_order_label_by_order_ids($awbs);
+			}
+		}
+		else if($shipping_provider == 'nimbuspost'){
+			// $shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shiprocket_shipment_id', true );
+			if (isset($_POST['awbs'])){
+				$awbs = $_POST['awbs'];
+				// var_dump($awbs);
+				$resp = $this->nimbuspost->get_order_label_by_order_ids(240);
 			}
 		}
 		wp_send_json($resp);

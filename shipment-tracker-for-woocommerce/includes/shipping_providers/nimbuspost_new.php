@@ -488,6 +488,35 @@ class Bt_Sync_Shipment_Tracking_Nimbuspost_New {
         }
     }
 
+    public function get_order_label_by_order_ids($awbs) {
+        $this->init_params();
+        $auth_token = $this->get_token();
+        
+        if (!empty($auth_token)) {
+            $body = array(
+                'awbs' => $awbs
+            );
     
-
+            $postData = json_encode($body);
+            $args = array(
+                'headers' => array(
+                    'Authorization' => 'Bearer ' . $auth_token, // Bearer token for authorization
+                    'Content-Type' => 'application/json'
+                ),
+                'body' => $postData
+            );
+    
+            // Make the API call to create shipment manifest
+            $response = wp_remote_post('https://api.nimbuspost.com/v1/shipments/manifest', $args);
+            $body = wp_remote_retrieve_body($response);
+    
+            // Decode the JSON response into an associative array
+            $resp = json_decode($body, true);
+            $resp = array($resp['data']);
+            // echo "<pre>"; print_r($resp);
+            return $resp;
+        } else {
+            return null;
+        }
+    }
 }

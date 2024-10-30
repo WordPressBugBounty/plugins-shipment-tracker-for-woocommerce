@@ -50,15 +50,22 @@
             document.getElementById("bt-st-deactivation_popup").style.display = "none";
         })
 
+		$('#bt_sst_ast_contact_help').change(function() {
+			$('#bt_ss_contactField').toggle(this.checked);
+		});
+
         $('#bt-st-deactivation_popup .submit_deactivate').click ( function (e) {
             e.preventDefault();
 			$("#bt-st-deactivation_popup .submit_deactivate").prop('disabled', true);
             $("#bt-st-deactivation_popup .submit_deactivate").html('loading...');
             // alert('clicked');
             var feedback = $("input[type='radio'].feedback_option:checked").val();
-            var addition_remark = $("#bt_st_additional_remark").val();
-            var value = feedback + '. ' + addition_remark;
+			var contact_help_checkbox = $("#bt_sst_ast_contact_help:checked").val();
 
+            var addition_remark = $("#bt_st_additional_remark").val();
+            var contact_help = $("#bt_st_help_contact").val();
+            var value = feedback + '. ' + addition_remark + ' ' + contact_help_checkbox + ' ' + contact_help;
+			console.log(value);
             post_feedback_to_sever(value);
            
         })

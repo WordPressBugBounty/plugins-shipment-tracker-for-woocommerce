@@ -32,6 +32,12 @@ class Bt_Sync_Shipment_Tracking_Activator {
 	public static function activate() {
 	    //store plugin activation time
         add_option( '_bt_sst_activated_time', time(), '', false );
+		$enabled_shipping_providers = get_option( '_bt_sst_enabled_shipping_providers' );
+		if(!$enabled_shipping_providers){
+			update_option('_bt_sst_enabled_shipping_providers|||0|value', 'manual');
+			update_option('_bt_sst_enabled_custom_shipping_mode', "manual");
+			update_option('_bt_sst_default_shipping_provider', "manual");
+		}
 	}
 
 }

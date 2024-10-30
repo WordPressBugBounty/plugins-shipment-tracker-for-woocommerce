@@ -10,7 +10,7 @@ if(isset($order_id)){
     //if ($bt_enable_ud_shipment_details) {
         $get_awb_no = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shipping_awb', true );
 
-        if ($bt_shipping_provider == "manual" && $shipping_mode_is_manual_or_ship24 == "manual") {
+        if ((!$bt_shipping_provider) || ($bt_shipping_provider == "manual" && $shipping_mode_is_manual_or_ship24 == "manual")) {
             $edit = "<br><a data-order-id='".$order_id."' class='show_st_popup' href='#'>Update Tracking</a>";
         }else if($bt_shipping_provider == "manual" && $shipping_mode_is_manual_or_ship24=="ship24") {
             if($get_awb_no){

@@ -419,6 +419,49 @@
 	
 		showStep(currentStep);
 
+		jQuery(document).on('click', '#bt_sst_fetch_pichup_locations', function() {
+			$(this).attr("disabled", true);
+			$.post(
+				bt_sync_shipment_track_data.ajax_url,
+				{ action: 'bt_sst_get_users_list', task: 'get_pick_up_location' },
+				function(res) {
+					console.log(res);
+					if (res) {
+						$(this).attr("disabled", false);
+						// Insert response HTML into modal content
+						$("#pickupLocationContent").html(res.html_pick_lo); 
+						// Show modal
+						$("#pickupLocationModal").addClass("is-active");
+					}
+				}
+			);                
+		});
+
+		// Listen for changes on the pickup location dropdown
+		jQuery(document).on('change', '#bt_sst_vendor_pickup_location', function() {
+			// Get the selected value
+			let selectedValue = $(this).val();
+			console.log("Selected Pickup Location:", selectedValue);
+			
+			// Set the selected value to the hidden input field
+			jQuery('input[name="carbon_fields_compact_input[_bt_sst_shiprocket_pickup_location]"]').val(selectedValue);
+		});
+
+		jQuery(document).on('click', '#bt_sst_save_pickuplocation', function() {
+			$(this).attr("disabled", true);
+			// let pickupLocationValue = jQuery("#bt_sst_vendor_pickup_location").val();
+			// console.log(pickupLocationValue);
+			// jQuery('input[name="carbon_fields_compact_input[_bt_sst_shiprocket_pickup_location]"]').val(pickupLocationValue);
+			// setTimeout(function() {
+				$('#bt_sst_save_pickuplocation').closest('form').submit();
+			// }, 2000);
+		});
+		
+		
+		// Close modal on close button click or background click
+		jQuery(document).on('click', '#closeModal, .modal-background', function() {
+			$("#pickupLocationModal").removeClass("is-active");
+		});
 
 			// Show the popup when the button is clicked
 			$('.bt_sst_button').on('click', function() {
@@ -429,15 +472,17 @@
 						bt_sync_shipment_track_data.ajax_url,
 						{ action: 'bt_sst_get_users_list'},
 						function(res) {
+							console.log(res);
 							if (res) {
-								$("#bt_sst_select_vendor").html(res);
+								$("#bt_sst_select_vendor").html(res.html);
+								$(".bt_sst_vendor_pickup_location_container").html(res.html_pick_lo);
 							}
 						}
 					);				
 				}
 			});
 
-			$('.bt_sst_set_vendor_submit').on('click', function() {
+			$('#bt_sst_set_vendor_submit').on('click', function() {
 				var vendor_user_id = $("#bt_sst_select").val();
 				var vendor_pickup_location = $("#bt_sst_vendor_pickup_location").val();
 					$(this).attr("disabled", true);
@@ -445,7 +490,7 @@
 					bt_sync_shipment_track_data.ajax_url,
 					{ action: 'bt_sst_set_users_list',vendor_user_id:vendor_user_id,vendor_pickup_location:vendor_pickup_location},
 					function(res) {
-						$(".bt_sst_set_vendor_submit").attr("disabled", false);
+						$("#bt_sst_set_vendor_submit").attr("disabled", false);
 						if (res) {
 							$('.bt_sst_popup').hide();
 							$('.bt_sst_overlay').hide();

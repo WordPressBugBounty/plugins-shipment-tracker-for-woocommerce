@@ -773,4 +773,33 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
         }
 	}
 
+    public function get_all_pickup_locations(){
+        $this->init_params();
+        $auth_token = $this->get_token();
+    
+        if (!empty($auth_token)) {
+            $args = array(
+                'headers' => array(
+                    'Authorization' => 'Bearer ' . $auth_token,
+                ),
+            );
+    
+            // Making the API request
+            $response = wp_remote_get("https://apiv2.shiprocket.in/v1/external/settings/company/pickup", $args);
+    
+            // Get and decode response body
+            $body = wp_remote_retrieve_body($response);
+            $resp = json_decode($body, true);
+            // echo "<pre>"; print_r($resp); die;
+            if(is_array($resp['data']['shipping_address']) && isset($resp['data']['shipping_address'])){
+                return $resp['data']['shipping_address'];
+            }else{
+                return "error";
+            }
+        } else {
+            return "Please Enter Token";
+        }
+    }
+    
+
 }

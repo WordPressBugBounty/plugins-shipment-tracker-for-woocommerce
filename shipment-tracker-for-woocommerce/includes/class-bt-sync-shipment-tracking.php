@@ -1019,10 +1019,11 @@ class Bt_Sync_Shipment_Tracking {
 						<a target="_blank" href="https://shipment-tracker-for-woocommerce.bitss.tech/shiprocket-woocommerce-integration">See Demo</a>
 						' )
 						->set_option_value( 'no' ),
-						Field::make( 'text', 'bt_sst_shiprocket_pickup_location', __( 'Pickup location' ) )
+						Field::make( 'text', 'bt_sst_shiprocket_pickup_location', __( 'Pickup Location' ) )
 						->set_attribute( 'placeholder', 'Primary' )
 						->set_default_value( 'Primary' )
-						->set_help_text( 'Required. Pickup location to set while pushing order to shiprocket.
+						->set_attribute( 'readOnly', 'readOnly' )				
+						->set_help_text( '<div><a href="#"id="bt_sst_fetch_pichup_locations">Select Pickup Locations</a></div>Required. Pickup location to set while pushing order to shiprocket.
 						<br>Available at: <b>Shiprocket > Settings > Pickup Address > Manage Pickup Addresses</b>
 						<div style="margin: 10px 0;">
 							Using "Dokan Multi-Vendor Plugin"? Set Vendor wise pickup location :<br>
@@ -1031,31 +1032,38 @@ class Bt_Sync_Shipment_Tracking {
 						<div id="" class="">
 							<div class="bt_sst_overlay"></div>
 							<div class="bt_sst_popup">
-							  <span class="bt_sst_close">&times;</span>
-
+							  			<span class="bt_sst_close">&times;</span>
 								        <div id="bt_sst_select_vendor" class="field">
-        <label class="label" for="bt_sst_vendor_select">Vendor Name</label>
-        <div class="control">
-          <div class="select">
-            <select id="bt_sst_vendor_select">
-              <option value="option1">Select Vendor</option>
-            </select>
-          </div>
-        </div>
-      </div>
+											<label class="label" for="bt_sst_vendor_select">Vendor Name</label>
+											<div class="control">
+											<div class="select">
+												<select id="bt_sst_vendor_select">
+												<option value="option1">Select Vendor</option>
+												</select>
+											</div>
+											</div>
+										</div>
 
-      <div class="field">
-        <label class="label" for="bt_sst_vendor_pickup_location">Pickup Location</label>
-        <div class="control">
-          <input
-            class="input"
-            type="text"
-            id="bt_sst_vendor_pickup_location"
-            placeholder="pickup location"
-          />
-        </div>
-      </div>
-							
+										<div class="field bt_sst_vendor_pickup_location_container">
+											<label class="label" for="bt_sst_vendor_pickup_location">Pickup Location</label>
+											<div class="control">
+												<select id="bt_sst_vendor_pickup_location">
+													<option value="" >Select Pick-Up Location</option>
+												</select>
+											</div>
+										</div>
+										<button id="bt_sst_set_vendor_submit" type="button">Save Vender</button>
+							</div>
+						</div>
+						<div class="modal" id="pickupLocationModal">
+							<div class="modal-background"></div>
+							<div class="modal-content">
+								<div class="box">
+									<!-- Small close button positioned in the top-right corner -->
+									<button type="button" class="delete is-small" id="closeModal" aria-label="close" style="position: absolute; top: 10px; right: 10px;"></button>
+									<div id="pickupLocationContent"></div>
+									<button class="button is-primary" id="bt_sst_save_pickuplocation" style="margin-top: 15px;">Save</button>
+								</div>
 							</div>
 						</div>
 						' )
