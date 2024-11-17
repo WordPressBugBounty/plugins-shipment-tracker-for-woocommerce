@@ -66,7 +66,7 @@
         </div>
     </div>
     <footer class="card-footer">
-        <a href="https://billing.bitss.tech/order.php?step=2&productGroup=5&product=612&paymentterm=12" target="_blank" class="button is-focused is-primary is-large is-fullwidth card-footer-item">Buy Now</a>
+        <a href="https://shipment-tracker-for-woocommerce.bitss.tech/" target="_blank" class="button is-focused is-primary is-large is-fullwidth card-footer-item">Buy Now</a>
         <a href="https://shipment-tracker-for-woocommerce.bitss.tech/" target="_blank" class="button is-large is-fullwidth card-footer-item">Visit Website</a>
         <a href="https://shipment-tracker-for-woocommerce.bitss.tech/contact-me/" target="_blank" class="button is-large is-fullwidth card-footer-item">Get in touch</a>
      </footer>

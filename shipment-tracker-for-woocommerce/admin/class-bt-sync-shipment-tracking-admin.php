@@ -796,23 +796,24 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		$received_data = $this->licenser->get_premium_user_data_by_user_password($user, $password);
 		
 		$status = false;
-		if($received_data['status']) {
+		if($received_data&&$received_data['status']) {
 			$status = true;
 		}
-		$this->licenser->save_license($user, $password, $status);
+	
 
 		if (!$status) {
 			$response = array(
 				"status" => false,
 				"data" => null,
-				"message" => $received_data["message"]
+				"message" => empty($received_data["message"])?"No response from server":$received_data["message"]
 			);
 		} 
 		else {
+			$this->licenser->save_license($user, $password, $status);
 			$response = array(
 				"status" => true,
 				"data" => null,
-				"message" =>  $received_data["message"]
+				"message" => empty($received_data["message"])?"No response from server":$received_data["message"]
 			);
 		}
 
@@ -2251,21 +2252,24 @@ class Bt_Sync_Shipment_Tracking_Admin {
 				$resp = $this->shipmozo->get_order_label_by_awb_numbers_shipmozo($awbs);
 			}
 		}else if($shipping_provider == 'nimbuspost_new'){
-			// $shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shiprocket_shipment_id', true );
-			if (isset($_POST['awbs'])){
-				$awbs = $_POST['awbs'];
+			$nimbuspost_new_label_url = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_nimbuspost_new_label_url', true );
+			if ($nimbuspost_new_label_url){
+				// $awbs = $_POST['awbs'];
 				// var_dump($awbs);
-				$resp = $this->nimbuspost_new->get_order_label_by_order_ids($awbs);
+				// $resp = $this->nimbuspost_new->get_order_label_by_order_ids();
+				$resp = array($nimbuspost_new_label_url);
+			}else{
+				$resp = false;
 			}
 		}
-		else if($shipping_provider == 'nimbuspost'){
+		// else if($shipping_provider == 'nimbuspost'){
 			// $shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shiprocket_shipment_id', true );
-			if (isset($_POST['awbs'])){
-				$awbs = $_POST['awbs'];
+			// if (isset($_POST['awbs'])){
+				// $awbs = $_POST['awbs'];
 				// var_dump($awbs);
-				$resp = $this->nimbuspost->get_order_label_by_order_ids(240);
-			}
-		}
+				// $resp = $this->nimbuspost->get_order_label_by_order_ids();
+			// }
+		// }
 		wp_send_json($resp);
 		wp_die();
 	}

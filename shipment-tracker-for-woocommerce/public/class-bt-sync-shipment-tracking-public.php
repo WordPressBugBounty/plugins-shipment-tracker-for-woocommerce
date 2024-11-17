@@ -2054,7 +2054,7 @@ class Bt_Sync_Shipment_Tracking_Public
 			// $height_in_cms=$cart_totals['total_height_cm'];
 			// $declared_value=$cart_totals['declared_value'];
 			$bt_sst_list_weight_unit = carbon_get_theme_option("bt_sst_list_weight_unit");
-			if ($bt_sst_list_weight_unit != 'kg') {
+			if ($weight_in_kg && $weight_in_kg > 0 && $bt_sst_list_weight_unit != 'kg') {
 				$weight_in_kg = new Mass($weight_in_kg, 'kg');
 				$weight_in_kg = round($weight_in_kg->toUnit($bt_sst_list_weight_unit), 2);
 			}

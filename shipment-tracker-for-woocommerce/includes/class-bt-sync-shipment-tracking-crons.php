@@ -127,7 +127,7 @@ class Bt_Sync_Shipment_Tracking_Crons {
     }
     
 	
-    private function validate_license(){
+    public function validate_license(){
         $license = $this->licenser->get_license();
         if($license!=null && isset($license['is_active']) && $license['is_active']==true){
             //revalidate from api

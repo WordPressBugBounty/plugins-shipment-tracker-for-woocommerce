@@ -1,9 +1,7 @@
 <link rel="stylesheet" href="##bulma##" />
 <div class="columns">
-  <div class="column is-two-thirds ">
-    ##premiumfeatures##
-  </div>
-  <div class="column is-one-third">
+
+  <div class="column is-half is-offset-one-quarter ">
     <div class="m-2">
       ##csrf##
       <article  id="bt_st_buy_premium_login_panel" class="panel is-danger">
@@ -83,9 +81,15 @@
 
       </div>
       <div>
-        <a href="https://billing.bitss.tech/order.php?step=2&productGroup=5&product=612&paymentterm=12" target="_blank" class="ml-1 button is-focused is-medium is-fullwidth">Buy Premium License</a>
+        <a href="https://shipment-tracker-for-woocommerce.bitss.tech/" target="_blank" class="ml-1 button is-focused is-medium is-fullwidth">Buy Premium License</a>
       </div>
     </div>
 
+  </div>
+ 
+</div>
+<div class="columns">
+    <div class="columnis-three-fifths  is-offset-one-fifth">
+    ##premiumfeatures##
   </div>
 </div>

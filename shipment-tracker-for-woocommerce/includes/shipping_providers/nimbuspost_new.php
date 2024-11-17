@@ -240,6 +240,10 @@ class Bt_Sync_Shipment_Tracking_Nimbuspost_New {
             //echo $response;exit;
             $resp = json_decode($body,true);
             //echo json_encode($resp);exit;
+            if($resp['data']['label']){
+                Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_nimbuspost_new_label_url', $resp['data']['label'] );
+            }
+
             return $resp;
 
         }else{
@@ -379,7 +383,7 @@ class Bt_Sync_Shipment_Tracking_Nimbuspost_New {
 
         $total_height = new Length($total_height, $dimension_unit);
         $total_height_cm = $total_height->toUnit('cm');
-        
+        $total_weight_kg = 0;
         $so["package_length"] = $total_length_cm>0?$total_length_cm:0.5;
         $so["package_breadth"] = $total_width_cm>0?$total_width_cm:0.5;
         $so["package_height"] = $total_height_cm>0?$total_height_cm:0.5;
@@ -484,38 +488,6 @@ class Bt_Sync_Shipment_Tracking_Nimbuspost_New {
             // exit;
             return $resp;
         }else{
-            return null;
-        }
-    }
-
-    public function get_order_label_by_order_ids($awbs) {
-        $this->init_params();
-        $auth_token = $this->get_token();
-        
-        if (!empty($auth_token)) {
-            $body = array(
-                'awbs' => $awbs
-            );
-    
-            $postData = json_encode($body);
-            $args = array(
-                'headers' => array(
-                    'Authorization' => 'Bearer ' . $auth_token, // Bearer token for authorization
-                    'Content-Type' => 'application/json'
-                ),
-                'body' => $postData
-            );
-    
-            // Make the API call to create shipment manifest
-            $response = wp_remote_post('https://api.nimbuspost.com/v1/shipments/manifest', $args);
-            $body = wp_remote_retrieve_body($response);
-    
-            // Decode the JSON response into an associative array
-            $resp = json_decode($body, true);
-            $resp = array($resp['data']);
-            // echo "<pre>"; print_r($resp);
-            return $resp;
-        } else {
             return null;
         }
     }

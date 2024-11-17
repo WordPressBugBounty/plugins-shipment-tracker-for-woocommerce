@@ -958,7 +958,7 @@ class Bt_Sync_Shipment_Tracking {
 			$premium_overlay = '
 				<div style="background: #202020d4;" class="is-overlay level">
                     <p class="has-text-centered has-text-white title" style="margin: auto;">
-                        <a href="https://billing.bitss.tech/order.php?step=2&productGroup=5&product=612&paymentterm=12" target="_blank" class="button is-medium">Upgrade now</a>
+                        <a href="https://shipment-tracker-for-woocommerce.bitss.tech/" target="_blank" class="button is-medium">Upgrade now</a>
                         <br>
                         <span style="font-size:16px;">Available only in premium version of the plugin.</span>
                     </p><br>
@@ -1204,7 +1204,7 @@ class Bt_Sync_Shipment_Tracking {
 								</div>
 							</div>
 							<footer class='card-footer'>
-								<a href='https://billing.bitss.tech/order.php?step=2&productGroup=5&product=612&paymentterm=12' target='_blank' class='button is-focused is-primary is-large is-fullwidth card-footer-item'>Upgrade & Unlock Full Features</a>
+								<a href='https://shipment-tracker-for-woocommerce.bitss.tech/' target='_blank' class='button is-focused is-primary is-large is-fullwidth card-footer-item'>Upgrade & Unlock Full Features</a>
 							</footer>
 						</div>
 						")
