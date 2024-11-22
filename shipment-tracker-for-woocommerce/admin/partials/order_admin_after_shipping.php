@@ -6,7 +6,7 @@ if(isset($order_id)){
 ?>
 <br class="clear" />
 <div class="address">
-    <b>Shipping Provider:</b> <?php echo $bt_shipping_provider; ?>
+    <b>Shipping Provider:</b> <?php echo esc_html($bt_shipping_provider); ?>
 </div>
 <div>
     <?php if($bt_shipping_provider=="shiprocket" && wc_get_order( $order_id )->has_status('processing')) : 
@@ -14,26 +14,26 @@ if(isset($order_id)){
         $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET,array("bt_push_to_shiprocket"=>true)))));    
       //  $current_page .= http_build_query(array("bt_push_to_shiprocket"=>true))
     ?>
-        <a href="<?= $current_page ?>">Push Now</a>
+        <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
     
     <?php elseif($bt_shipping_provider=="shipmozo" && wc_get_order( $order_id )->has_status('processing')) : 
     global $pagenow;
     $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET,array("bt_push_to_shipmozo"=>true)))));    
     //  $current_page .= http_build_query(array("bt_push_to_shiprocket"=>true))
     ?>
-     <a href="<?= $current_page ?>">Push Now</a>
+     <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
     <?php elseif($bt_shipping_provider=="nimbuspost_new" && wc_get_order( $order_id )->has_status('processing')) : 
     global $pagenow;
     $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET,array("bt_push_to_nimbuspost_new"=>true)))));    
     //  $current_page .= http_build_query(array("bt_push_to_shiprocket"=>true))
     ?>
-     <a href="<?= $current_page ?>">Push Now</a> 
+     <a href="<?php echo esc_url($current_page) ?>">Push Now</a> 
 
      <?php elseif($bt_shipping_provider == "delhivery" && wc_get_order($order_id)->has_status('processing')): 
     global $pagenow;
     $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_delhivery" => true)))));    
 ?>
-    <a href="<?= $current_page ?>">Push Now</a>
+    <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
      <?php endif ?>
 
      <!-- http://localhost/minesite/wp-admin/admin.php?page=wc-orders&amp;action=edit&amp;id=141&amp;message=1&amp;bt_push_to_delhivery=1 -->

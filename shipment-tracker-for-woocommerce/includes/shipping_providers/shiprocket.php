@@ -57,8 +57,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             $body     = wp_remote_retrieve_body( $response );
 
             $resp = json_decode($body,true);
-            // echo json_encode($resp);
-            // exit;
+            
             
             if($resp["success"]){
                 $data = array(
@@ -68,8 +67,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
                     "state_code"=>$resp["postcode_details"]["state_code"],
                     "country"=>$resp["postcode_details"]["country"],
                 );
-                // echo $data;
-                // exit;
+               
                 return $data;
             }
 
@@ -109,19 +107,16 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             if($height_in_cms){
                 $params .= '&height='.$height_in_cms;
             }
-            //echo $params;exit;
+        
             $response = wp_remote_get( self::API_BASE_URL . self::API_Check_Courier_Serviceability . $params, $args );
 
             $body     = wp_remote_retrieve_body( $response );
 
             $resp = json_decode($body,true);
 
-             //echo json_encode($resp);
-             //exit;
-
+           
             if(isset($resp["status"]) && $resp["status"] == 200){
-                // echo json_encode($resp['data']['available_courier_companies']);
-                // exit;
+               
                 $resp = $resp['data']['available_courier_companies'];
                 return $resp;
             }else {
@@ -153,19 +148,15 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             $params = "?delivery_country=" . $delivery_country;
             $params .= "&cod=" . $is_cod . "&weight=" . $weight_in_kg . '&pickup_postcode='.$pickup_pincode;
           
-            //echo $params;exit;
+         
             $response = wp_remote_get( self::API_BASE_URL . self::API_Check_Courier_Serviceability_International . $params, $args );
 
             $body     = wp_remote_retrieve_body( $response );
 
             $resp = json_decode($body,true);
 
-             //echo json_encode($resp);
-             //exit;
-
             if(isset($resp["status"]) && $resp["status"] == 200){
-                // echo json_encode($resp['data']['available_courier_companies']);
-                // exit;
+               
                 $resp = $resp['data']['available_courier_companies'];
                 return $resp;
             }else {
@@ -197,9 +188,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
     
                 $resp = json_decode($body,true);
     
-                // echo json_encode($resp);
-                // exit;
-                //error_log("4. ". json_encode($resp));
+              
                 if(isset($resp["total_courier_count"]) && $resp["total_courier_count"] > 0){
                     $resp = $resp['courier_data'];
                     set_transient('bt_sst_shiprocket_courier_companies',$resp, 6000);
@@ -513,10 +502,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
                 if(false == $body = $this->get_shiprocket_order_object($order_id)){
                     return;
                 }
-                // echo "<pre>"; print_r($body); die;
-    
-                //$body = json_encode($body);
-                //echo json_encode($body );exit;
+               
                 $args = array(
                     'body'        => $body,
                     'headers'     => array(
@@ -530,7 +516,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
                 //https://eo650r7ymufcxnv.m.pipedream.net
               
                 $body     = wp_remote_retrieve_body( $response );
-              //  echo $body;exit;
+             
                 $resp = json_decode($body,true);
                 return $resp;
     
@@ -708,8 +694,6 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
                 "shipment_id"=>$shipment_id,
                 "courier_id"=>$courier_id,
             );
-           // $body = json_encode($body);
-           // echo $body;exit;
             
             $args = array(
                 'body'        => $body,
@@ -724,7 +708,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             //https://eo650r7ymufcxnv.m.pipedream.net
           
             $body     = wp_remote_retrieve_body( $response );
-          //  echo $body;exit;
+         
             $resp = json_decode($body,true);
             return $resp;
 
@@ -753,7 +737,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
           
             $body     = wp_remote_retrieve_body( $response );
             $resp = json_decode($body,true);
-            // echo "<pre>"; print_r($resp); die;
+          
             $resp_array = [];
             if (isset($resp['label_created']) && $resp['label_created'] > 0) {
                 // foreach ($resp['packages'] as $package) {
@@ -790,7 +774,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             // Get and decode response body
             $body = wp_remote_retrieve_body($response);
             $resp = json_decode($body, true);
-            // echo "<pre>"; print_r($resp); die;
+           
             if(is_array($resp['data']['shipping_address']) && isset($resp['data']['shipping_address'])){
                 return $resp['data']['shipping_address'];
             }else{

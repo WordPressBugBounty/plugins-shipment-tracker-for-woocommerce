@@ -16,13 +16,13 @@
             $pincode_report = get_option("bt_sst_product_page_pincode_checker_logs", []);
             foreach ($pincode_report as $a) {
                 echo "<tr>
-				<td>" . $a['pincode'] . "</td>
-				<td>" . $a['city'] . "</td>
-				<td>" . $a['min_date'] . "</td>
-				<td>" . $a['min_date_charges'] . "</td>
-				<td>" . $a['max_date'] . "</td>
-				<td>" . $a['max_date_charges'] . "</td>
-				<td>" . $a['time'] . "</td>
+                    <td>" . esc_html($a['pincode']) . "</td>
+                    <td>" . esc_html($a['city']) . "</td>
+                    <td>" . esc_html($a['min_date']) . "</td>
+                    <td>" . esc_html($a['min_date_charges']) . "</td>
+                    <td>" . esc_html($a['max_date']) . "</td>
+                    <td>" . esc_html($a['max_date_charges']) . "</td>
+                    <td>" . esc_html($a['time']) . "</td>
 				</tr><br>";
             }
             ?>

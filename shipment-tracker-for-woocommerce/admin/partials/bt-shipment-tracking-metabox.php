@@ -6,8 +6,6 @@ if(!$order_id){
 $shipping_mode_is_manual_or_ship24 = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
 // $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_sst_custom_shipping_mode', true);
 $coriure_name = get_option('_bt_sst_ship24_active_courier_companies');
-// echo "vishnu<pre>"; print_r($coriure_name); echo "</pre>";
-
 ?>
 <div id="bt_sst_check_already_exist">
 
@@ -38,7 +36,7 @@ foreach ($coriure_name as $key => $courier) {
     ];
     $courierCodeAndName = json_encode($courierCodeName);
     ?>
-    <option value='<?php echo $courierCodeAndName?>' data-courierName='<?php echo $courier['courierName']?>'><?php echo $courier['courierName']?></option>
+    <option value='<?php echo esc_attr($courierCodeAndName)?>' data-courierName='<?php echo esc_attr($courier['courierName'])?>'><?php echo esc_attr($courier['courierName'])?></option>
 <?php } }else{?>
                     <option value="">Loading.........</option>  
                     <?php } ?>                                                                       
@@ -57,22 +55,24 @@ foreach ($coriure_name as $key => $courier) {
 
     <?php if(!empty($bt_shipment_tracking->current_status)){ ?>  		
         <div>
-            <h3><?php echo bt_format_shipment_status($bt_shipment_tracking->current_status); ?></h3>
-            <small>via</small> <?php echo $bt_shipment_tracking->courier_name; ?>
+            <h3><?php echo esc_html(bt_format_shipment_status($bt_shipment_tracking->current_status)); ?></h3>
+            <small>via</small> <?php echo esc_html($bt_shipment_tracking->courier_name); ?>
         </div>
     <?php } ?>
     <?php if(!empty($bt_shipment_tracking->etd)){ ?>
   		<br>
         <div>
-            ETD: <?php echo $bt_shipment_tracking->etd; ?>
+            ETD: <?php echo esc_html($bt_shipment_tracking->etd); ?>
         </div>
     <?php } ?>    
 
     <?php if(!empty($bt_shipping_awb_number)){ ?>
   		<br>
         <div>
-            AWB# <a target="_blank" href="<?php echo $bt_shipment_tracking->get_tracking_link(); ?>"><?php echo $bt_shipping_awb_number; ?></a> 
-            <?php if($bt_shipping_provider != "xpressbees"){ ?>
+        AWB# <a target="_blank" href="<?php echo esc_url($bt_shipment_tracking->get_tracking_link()); ?>">
+                <?php echo esc_html($bt_shipping_awb_number); ?>
+            </a>            
+        <?php if($bt_shipping_provider != "xpressbees"){ ?>
                 <a id="add_awb_number" class="awb_number"><span class="dashicons dashicons-edit"></span></a> 
             <?php } ?>  
         </div>
@@ -86,7 +86,7 @@ foreach ($coriure_name as $key => $courier) {
     <?php if(!empty($bt_shipping_provider)){ ?>
   		<br>
         <div>
-            Logistic Partner: <?php echo $bt_shipping_provider; ?>
+            Logistic Partner: <?php echo esc_html($bt_shipping_provider); ?>
         </div>
     <?php } ?>
     <a id="bt_notify_popup" style="display:none;" href="#TB_inline?&width=200&height=150&inlineId=bt_notify_popup_content" class="thickbox"></a>
@@ -126,10 +126,10 @@ foreach ($coriure_name as $key => $courier) {
 
             jQuery.ajax({
                 method: "POST",
-                url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                 dataType: "json",
                 data: {
-                    'order_id': '<?php echo $order_id; ?>',
+                    'order_id': '<?php echo esc_js($order_id); ?>',
                     'action': 'force_sync_tracking'
                 }, success: function (response) {
                  
@@ -159,11 +159,11 @@ foreach ($coriure_name as $key => $courier) {
 
             jQuery.ajax({
                 method: "POST",
-                url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                 dataType: "json",
                 data: {
                     'awbs': ['<?php echo $get_awb_no; ?>'],
-                    'order_id': '<?php echo $order_id; ?>',
+                    'order_id': '<?php echo esc_js($order_id); ?>',
                     'action': 'download_label_pdf'
                 }, success: function (response) {
                     jQuery('#dawnload_able_pdf').removeClass("disabled");
@@ -193,11 +193,11 @@ foreach ($coriure_name as $key => $courier) {
             jQuery('#bt_sst_awbPopup').show();
         });
         jQuery('#add_awb_number').click(function () {
-            if ("<?php echo $shipping_mode_is_manual_or_ship24; ?>" == "ship24" && "<?php echo $bt_shipping_provider; ?>" == "manual") {
+            if ("<?php echo esc_js($shipping_mode_is_manual_or_ship24); ?>" == "ship24" && "<?php echo esc_js($bt_shipping_provider); ?>" == "manual") {
                 jQuery('#bt_sst_awbPopup').fadeIn();
             }else{
-                var current_awb = '<?php echo $bt_shipping_awb_number; ?>';
-                var shipment_provider = '<?php echo $bt_shipping_provider; ?>';
+                var current_awb = '<?php echo esc_js($bt_shipping_awb_number); ?>';
+                var shipment_provider = '<?php echo esc_js($bt_shipping_provider); ?>';
     
                 var awb_number = prompt("Enter new awb number of " + shipment_provider,current_awb);
                 awb_number = awb_number.trim();
@@ -215,10 +215,10 @@ foreach ($coriure_name as $key => $courier) {
     
                 jQuery.ajax({
                     method: "POST",
-                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                    url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                     dataType: "json",
                     data: {
-                        'order_id': '<?php echo $order_id; ?>',
+                        'order_id': '<?php echo esc_js($order_id); ?>',
                         'awb_number': awb_number,
                         'action': 'save_order_awb_number'
                     }, success: function (response) {
@@ -243,7 +243,7 @@ foreach ($coriure_name as $key => $courier) {
             if (optionCount === 2) {
                 jQuery.ajax({
                     method: "POST",
-                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                    url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                     dataType: "json",
                     data: {
                         'status': true,
@@ -304,10 +304,10 @@ foreach ($coriure_name as $key => $courier) {
             console.log(corier_code+" "+corier_name)
                 jQuery.ajax({
                     method: "POST",
-                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                    url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                     dataType: "json",
                     data: {
-                        'order_id': '<?php echo $order_id; ?>',
+                        'order_id': '<?php echo esc_js($order_id); ?>',
                         'awb_number': current_awb,
                         'corier_code': corier_code,
                         'corier_name': corier_name,                       

@@ -46,21 +46,21 @@ if(empty($bt_sst_review_subheading_text)){
                                         <div class="v3931_266"></div>
                                         <div class="v3931_255">
                                             <!-- <form class="bt_tracking_form" action="" method="post" class="bt_track_order_form"> -->
-                                                <input type="hidden" name="bt_tracking_form_nonce" value="<?= wp_create_nonce('bt_shipping_tracking_form_2') ?>">
+                                            <input type="hidden" name="bt_tracking_form_nonce" value="<?php echo esc_attr(wp_create_nonce('bt_shipping_tracking_form_2')); ?>">
                                                 
                                                 <div class="v3931_259">
                                                     <!-- <div class="v3931_260"></div> -->
                                                     <span class="v3931_261">Order Id/ AWB No</span>
                                                     <input required 
                                                     style="background: rgba(255,255,255,1); height: 52px; border-radius: 10px; border: 1px solid rgba(241,241,241,1); top: 30px;" 
-                                                    type="text" value="<?= $bt_track_order_id ?>" name="bt_track_order_id" placeholder="Your order id/ AWB No" id="bt_track_order_id">
+                                                    type="text" value="<?php echo esc_attr($bt_track_order_id) ?>" name="bt_track_order_id" placeholder="Your order id/ AWB No" id="bt_track_order_id">
                                                 </div>
                                                 
                                                 <?php if ($last_four_digit) { ?>
                                                         <!-- <div class="v3931_263"></div> -->
                                                         <div class="v3931_262">
                                                             <span class="v3931_261">Mobile No (last 4 digits)</span>
-                                                            <input required style="background: rgba(255,255,255,1); height: 52px; border-radius: 10px; border: 1px solid rgba(241,241,241,1); top: 30px;" type="text" value="<?= $bt_last_four_digit ?>" name="bt_track_order_phone" placeholder="Last 4 digits of mobile number" id="bt_last_four_digit_no">                              
+                                                            <input required style="background: rgba(255,255,255,1); height: 52px; border-radius: 10px; border: 1px solid rgba(241,241,241,1); top: 30px;" type="text" value="<?php echo esc_attr($bt_last_four_digit) ?>" name="bt_track_order_phone" placeholder="Last 4 digits of mobile number" id="bt_last_four_digit_no">                              
                                                         </div>
                                                 <?php } ?>
                                                 
@@ -92,8 +92,6 @@ if(empty($bt_sst_review_subheading_text)){
         else if (isset($the_order) && $the_order instanceof WC_Order)
         {
             
-            // echo json_encode($tracking);
-            // echo json_encode($the_order);
             $name = $the_order->get_billing_first_name() ." ". $the_order->get_billing_last_name() ;
             $order_status = $the_order->get_status();      
             $order_status_name = wc_get_order_status_name( $order_status);     
@@ -121,7 +119,7 @@ if(empty($bt_sst_review_subheading_text)){
             $shipped_message = "Your package is on its way & will reach you soon.";
             $show_delivery_states = true;
             $current_step = 2; //orderplaced=1, shipped=2, outfordelivery=3, delivered=4
-            // echo "<pre>"; print_r($tracking['tracking_data']); echo "</pre>";
+          
             $delivery_status = "";
             if(!empty($tracking['tracking_data']['awb']) && $order_status!='cancelled' && $order_status!='on-hold' && $order_status!='pending' && $order_status!='refunded' && $order_status!='failed' && $order_status!='checkout-draft'){
                 $awb_number = $tracking['tracking_data']['awb'];
@@ -129,10 +127,7 @@ if(empty($bt_sst_review_subheading_text)){
                 $shipment_status = $tracking['tracking_data']['current_status'];
                 $courier_name = $tracking['tracking_data']['courier_name'];
                 
-                // echo $shipment_status; die;
-                // extrect data 
-                // echo $shipment_status; die;
-         
+        
                 if (strtolower($shipment_status) != 'delivered') {
                     $delivery_status = "Arriving ";
                 }else {
@@ -264,7 +259,7 @@ if(empty($bt_sst_review_subheading_text)){
                             <div class="fl-module fl-module-heading fl-node-0z7h1ugnboap" data-node="0z7h1ugnboap" data-parent="pt7e19gljyuh" data-type="heading" data-name="Heading">
                                 <div class="fl-module-content fl-node-content" >
                                     <div class="fl-heading">
-                                        <h1 style="margin:0"><?php echo $estimated_delivery_date; ?></h1>
+                                        <h1 style="margin:0"><?php echo esc_html($estimated_delivery_date); ?></h1>
                                     </div>
                                 </div>
                             </div>
@@ -345,9 +340,10 @@ if(empty($bt_sst_review_subheading_text)){
                                                 // Main function to plot the map with PIN codes
                                                 async function plotMap() {
                                                     // Retrieve PHP variables inside JavaScript
-                                                    var dropoffPin = '<?php echo $delivery_pincode; ?>'; // Delivery PIN code
-                                                    var estimated_date = `<?php echo $the_order->get_billing_city()." ".$the_order->get_billing_state()." ".$the_order->get_billing_postcode(); ?>`;
-                                                    var delivery_country = '<?php echo $delivery_country; ?>';
+                                                var dropoffPin = '<?php echo esc_js($delivery_pincode); ?>'; // Delivery PIN code
+                                                var estimated_date = `<?php echo esc_js($the_order->get_billing_city() . " " . $the_order->get_billing_state() . " " . $the_order->get_billing_postcode()); ?>`;
+                                                var delivery_country = '<?php echo esc_js($delivery_country); ?>';
+
 
                                                     const dropoffLocation = await getCoordinates(dropoffPin, delivery_country);
 
@@ -448,7 +444,7 @@ if(empty($bt_sst_review_subheading_text)){
                                                     <div class="uabb-timeline-item-1 slick-slide slick-active style-KCZZz" data-slick-index="1" aria-hidden="false" id="style-KCZZz">
                                                         <div class="uabb-timeline-marker-wrapper">
                                                             <div class="uabb-timeline-card-date-wrapper">
-                                                                <div class="uabb-timeline-card-date"><?= ucfirst($shipped_string) ?></div>
+                                                                <div class="uabb-timeline-card-date"><?php echo ucfirst(esc_html($shipped_string)) ?></div>
                                                             </div>
                                                             <div class="uabb-timeline-marker">
                                                             <?php if ($order_status == "cancelled" || $order_status == "canceled" ||  $order_status == "refunded" || $order_status == "failed") {
@@ -493,10 +489,10 @@ if(empty($bt_sst_review_subheading_text)){
                                     </div>
                                     <div style="display:flex; width:100%">
                                         <div style="padding:5px; width:50%; border: 1px solid #e9e9e9; margin: 5px 15px; border-radius:10px; text-align:center;">
-                                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB+0lEQVR4nO2YOUsDQRiGHzAmWphYiGjAQksre8XSxsKjyl/wwtouXRpttLPS1s4fYOcNHo1XHVQ8SgVBdGXgi6whGXZ39sjKPPBB2G923n13vjk2YLFYLBaLGU7M8QJsAJ1pN+JIrJNyJsTIM/8ARyKSTh3DsEbSjBNFaSVp5NFDyT4BO8Cw106jnhemmu/AdKsaKWlyNYaAXbn2AYzTQuhehNMg1wZsy/UHoJeUGlFkgH3J7Ym5P8RVTo00/eYGgFfJr6TZiGIS+AY+gTESxsSIYk3aVIEeUmykHTiWdlv1N0ZdTl4f1vGoOSh7yxcwkmYjilVpu0lC6B62qtks6xmVtne0oJFygJVUrWCRlY8OnWZGzFT9bgutZsQv1kgY2BExLa0OYBk4lU1IxQmwBORMxEPQcrwaKQKXmtXiAugPyUgxgJYnIzlXx1fAFNAloT47byR3DmQNjQTV8mRkSXLXQKFBvuASmDc0ElTrt697+aG2+3oOJafeTjNmpM2BoZEgWiXXcZ6Kh11TDW8z8gGOFGFrlZF6q7hGxm/nhRiNFOraVsWEOtZoqQ237v+k2QClFbvWotx402QCdssRWrWZ89t5nFpZWbvVzbcy2fISs66Oz3wuv4loFV0CjUKt632GJmLTysnQqw/+N4kjYCGEkUhSy2KxkDJ+ANIID7KqwJZkAAAAAElFTkSuQmCC" width="25px"><div class="courier_name" style=""><?= $courier_name ?></div>
+                                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB+0lEQVR4nO2YOUsDQRiGHzAmWphYiGjAQksre8XSxsKjyl/wwtouXRpttLPS1s4fYOcNHo1XHVQ8SgVBdGXgi6whGXZ39sjKPPBB2G923n13vjk2YLFYLBaLGU7M8QJsAJ1pN+JIrJNyJsTIM/8ARyKSTh3DsEbSjBNFaSVp5NFDyT4BO8Cw106jnhemmu/AdKsaKWlyNYaAXbn2AYzTQuhehNMg1wZsy/UHoJeUGlFkgH3J7Ym5P8RVTo00/eYGgFfJr6TZiGIS+AY+gTESxsSIYk3aVIEeUmykHTiWdlv1N0ZdTl4f1vGoOSh7yxcwkmYjilVpu0lC6B62qtks6xmVtne0oJFygJVUrWCRlY8OnWZGzFT9bgutZsQv1kgY2BExLa0OYBk4lU1IxQmwBORMxEPQcrwaKQKXmtXiAugPyUgxgJYnIzlXx1fAFNAloT47byR3DmQNjQTV8mRkSXLXQKFBvuASmDc0ElTrt697+aG2+3oOJafeTjNmpM2BoZEgWiXXcZ6Kh11TDW8z8gGOFGFrlZF6q7hGxm/nhRiNFOraVsWEOtZoqQ237v+k2QClFbvWotx402QCdssRWrWZ89t5nFpZWbvVzbcy2fISs66Oz3wuv4loFV0CjUKt632GJmLTysnQqw/+N4kjYCGEkUhSy2KxkDJ+ANIID7KqwJZkAAAAAElFTkSuQmCC" width="25px"><div class="courier_name" style=""><?php echo esc_html($courier_name) ?></div>
                                         </div>
                                         <div style="padding:5px; width:50%; border: 1px solid #e9e9e9; margin: 5px 15px; border-radius:10px; text-align:center;">
-                                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABiklEQVR4nMWVsUrEQBCGY6do5zMoB76Dd4JYauUj2OQssv+/geuCrTa+hFernShY2V9lY+MJIjZXCFZHUIabQNzkNskZceDnZi+z8+1mZkgQ/LcZY3ZIDgHcenQJoLNQcgApgLEn+YTkF4C3xhA9+ThJkuV5MQDuST4poBlENovqxADYBPAK4D2Koq02ATckH9TvNLpJTcAJgCmAvrV2l+SxrqshAK5FvhiSqyTvpNCuqvYGg8FgXRRU25LUQG6QieSo6va/MtR4ve0CjE6sqpf9b609EpWt5Tc/dCTPwjBcKwByE/usU5tmEDgnya/VnyhA/KlACvt0Yj8B7FtrD9S/yAfGcbwhcgFSTC3sHskXklcFgAa6LZZP8igTKlI//8xtT84DjMpaDJoEwIeoBF7vBr73zFnSQ5ELcGsA4LSQ09cpAPok4+yZ+CTDsi6S5DLZpW3atqEOgOS56C8Bw6oPTpkZY1ak4Fmr+wA9HToJ9n2Tf0jjU2NMt85punKSJgCJJ7nd5NYL2zenX/kTY8xhFQAAAABJRU5ErkJggg==" width="25px"><div class="awb_number" style=""><?= $awb_number ?></div>
+                                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABiklEQVR4nMWVsUrEQBCGY6do5zMoB76Dd4JYauUj2OQssv+/geuCrTa+hFernShY2V9lY+MJIjZXCFZHUIabQNzkNskZceDnZi+z8+1mZkgQ/LcZY3ZIDgHcenQJoLNQcgApgLEn+YTkF4C3xhA9+ThJkuV5MQDuST4poBlENovqxADYBPAK4D2Koq02ATckH9TvNLpJTcAJgCmAvrV2l+SxrqshAK5FvhiSqyTvpNCuqvYGg8FgXRRU25LUQG6QieSo6va/MtR4ve0CjE6sqpf9b609EpWt5Tc/dCTPwjBcKwByE/usU5tmEDgnya/VnyhA/KlACvt0Yj8B7FtrD9S/yAfGcbwhcgFSTC3sHskXklcFgAa6LZZP8igTKlI//8xtT84DjMpaDJoEwIeoBF7vBr73zFnSQ5ELcGsA4LSQ09cpAPok4+yZ+CTDsi6S5DLZpW3atqEOgOS56C8Bw6oPTpkZY1ak4Fmr+wA9HToJ9n2Tf0jjU2NMt85punKSJgCJJ7nd5NYL2zenX/kTY8xhFQAAAABJRU5ErkJggg==" width="25px"><div class="awb_number" style=""><?php echo esc_html($awb_number) ?></div>
                                         </div>
                                     </div>
                                 </div>
@@ -663,7 +659,7 @@ if(empty($bt_sst_review_subheading_text)){
                                                         </a>
                                                     <?php } ?>
                                                     <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; color:#101212; border-radius:20px; padding:13px;"
-                                                         href="<?= get_permalink( get_the_ID() ); ?>" class="">Track another order
+                                                         href="<?php echo esc_url(get_permalink( get_the_ID() )); ?>" class="">Track another order
                                                     </a>
                                                     <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; color:#101212; border-radius:20px; padding:13px;"
                                                          href="https://api.whatsapp.com/send?text=<?php echo urlencode($whatsapp_url); ?>" target="_blank">Share on WhatsApp
@@ -688,7 +684,7 @@ if(empty($bt_sst_review_subheading_text)){
     <?php if($auto_post) : ?>
       <script>
         document.addEventListener("DOMContentLoaded", function(event) {
-          var enable_ph = '<?= $last_four_digit ?>'
+          var enable_ph = '<?php echo esc_js($last_four_digit) ?>'
     
           if (enable_ph) {
             var ph = prompt("Enter last 4 digits of phone number");
@@ -728,17 +724,18 @@ if(empty($bt_sst_review_subheading_text)){
 </div>
 <style>
     @font-face {
-    font-family: 'bt_sst_tracking_widget_font';
-    src: url('<?= $public_dir_url  ?>/css/fonts/bt_sst_tracking_widget_font.eot?40534079');
-    src: url('<?= $public_dir_url  ?>/css/fonts/bt_sst_tracking_widget_font.eot?40534079#iefix') format('embedded-opentype'),
-        url('<?= $public_dir_url  ?>/css/fonts/bt_sst_tracking_widget_font.woff2?40534079') format('woff2'),
-        url('<?= $public_dir_url  ?>/css/fonts/bt_sst_tracking_widget_font.woff?40534079') format('woff'),
-        url('<?= $public_dir_url  ?>/css/fonts/bt_sst_tracking_widget_font.ttf?40534079') format('truetype'),
-        url('<?= $public_dir_url  ?>/css/fonts/bt_sst_tracking_widget_font.svg?40534079#bt_sst_tracking_widget_font') format('svg');
-    font-weight: normal;
-    font-style: normal;
+        font-family: 'bt_sst_tracking_widget_font';
+        src: url('<?php echo esc_url( $public_dir_url ); ?>/css/fonts/bt_sst_tracking_widget_font.eot?40534079');
+        src: url('<?php echo esc_url( $public_dir_url ); ?>/css/fonts/bt_sst_tracking_widget_font.eot?40534079#iefix') format('embedded-opentype'),
+            url('<?php echo esc_url( $public_dir_url ); ?>/css/fonts/bt_sst_tracking_widget_font.woff2?40534079') format('woff2'),
+            url('<?php echo esc_url( $public_dir_url ); ?>/css/fonts/bt_sst_tracking_widget_font.woff?40534079') format('woff'),
+            url('<?php echo esc_url( $public_dir_url ); ?>/css/fonts/bt_sst_tracking_widget_font.ttf?40534079') format('truetype'),
+            url('<?php echo esc_url( $public_dir_url ); ?>/css/fonts/bt_sst_tracking_widget_font.svg?40534079#bt_sst_tracking_widget_font') format('svg');
+        font-weight: normal;
+        font-style: normal;
     }
 </style>
+
 <style>
     .bt_sst_tracking_product_trackong{
         border: none !important;

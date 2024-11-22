@@ -30,7 +30,7 @@
             Amit Mittal<br>
             Prop: Bitss Techniques<br>
             <br>
-            <a href="<?php echo admin_url( 'admin.php?page=crb_carbon_fields_container_shipment_tracking.php&t=bp' ) ?>">See details</a>
+            <a href="<?php echo esc_url(admin_url( 'admin.php?page=crb_carbon_fields_container_shipment_tracking.php&t=bp' )) ?>">See details</a>
             | <a target="_blank" href="https://shipment-tracker-for-woocommerce.bitss.tech/">Visit website</a>
             | <a id="hide_this_for_30_days" href="#">Hide this for 30 days</a>
             

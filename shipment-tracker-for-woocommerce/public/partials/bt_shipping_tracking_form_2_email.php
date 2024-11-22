@@ -7,8 +7,6 @@
       if (isset($the_order) && $the_order instanceof WC_Order)
       {
             
-            // echo json_encode($tracking);
-            // echo json_encode($the_order);
             $name = $the_order->get_billing_first_name() ." ". $the_order->get_billing_last_name() ;
             $order_status = $the_order->get_status();      
             $order_status_name = wc_get_order_status_name( $order_status);     
@@ -85,7 +83,7 @@
                                         <div class="fl-module-rich-text snipcss0-8-8-9 obscure-LzqyzR5x7 obscure-ZWy0WPMR0" data-node="512uy9gq7pib">
                                             <div class="fl-node-content snipcss0-9-9-10 obscure-p7an7J3vr" style="margin:20px;margin-top:5px;margin-bottom:5px;">
                                                 <div class="snipcss0-10-10-11 obscure-69p19MbZm" style="text-align:center !important;">
-                                                  <p class="snipcss0-11-87-88 bt_sst" style="margin:0 0 10px;text-align:center !important;"><strong class="snipcss0-12-88-89" style="font-weight: bold;">Courier:</strong> <?= $courier_name ?></p>
+                                                  <p class="snipcss0-11-87-88 bt_sst" style="margin:0 0 10px;text-align:center !important;"><strong class="snipcss0-12-88-89" style="font-weight: bold;">Courier:</strong> <?php echo esc_html($courier_name) ?></p>
                                                 </div>
                                             </div>
                                         </div>
@@ -98,7 +96,7 @@
                                         <div class="snipcss0-8-16-17 obscure-LzqyzR5x7 obscure-VXzbXRgBj obscure-n0EW0n7er" data-node="4358g7wtiu2f">
                                             <div class="fl-node-content snipcss0-9-17-18 obscure-p7an7J3vr" style="margin:20px;margin-top:0px;margin-bottom:0px;">
                                                 <h2 class="snipcss0-10-18-19 obscure-Wb9zbk749 bt_sst" style='font-family:"Helvetica",Verdana,Arial,sans-serif;font-weight:700;line-height:1.4;color:#333;margin-top:20px;margin-bottom:10px;font-size:14px;text-transform:none;font-style:normal;letter-spacing:0px;text-align:left;padding:0 !important;margin:0 !important;'>
-                                                  <p class="snipcss0-11-94-95 bt_sst" style="margin:0 0 10px;text-align:center !important;"><strong class="snipcss0-12-95-96" style="font-weight: bold;">AWB #:</strong> <?= $awb_number ?></p>
+                                                  <p class="snipcss0-11-94-95 bt_sst" style="margin:0 0 10px;text-align:center !important;"><strong class="snipcss0-12-95-96" style="font-weight: bold;">AWB #:</strong> <?php echo esc_html($awb_number) ?></p>
                                                 </h2>
                                             </div>
                                         </div>
@@ -109,7 +107,13 @@
                                         <div class="snipcss0-8-22-23 obscure-LzqyzR5x7 obscure-8zZkzly8z obscure-n0EW0n7er" data-node="qdhmc7bswel5">
                                             <div class="fl-node-content snipcss0-9-23-24 obscure-p7an7J3vr" style="margin:20px;margin-top:0px;margin-bottom:0px;">
                                                 <h2 class="snipcss0-10-24-25 obscure-Wb9zbk749 bt_sst" style='font-family:"Helvetica",Verdana,Arial,sans-serif;font-weight:700;line-height:1.4;color:#333;margin-top:20px;margin-bottom:10px;font-size:14px;text-transform:none;font-style:normal;letter-spacing:0px;text-align:right;padding:0 !important;margin:0 !important;'>
-                                                    <span class="snipcss0-11-25-26 obscure-0w5ewyE3G" style="color:#17b200;"><?= $estimated_delivery_date>=""?"":"Estimated delivery by:$estimated_delivery_date" ?></span>
+                                                    <span class="snipcss0-11-25-26 obscure-0w5ewyE3G" style="color:#17b200;">
+                                                        <?php 
+                                                            if ( !empty( $estimated_delivery_date ) ) {
+                                                                echo 'Estimated delivery by: ' . esc_html( $estimated_delivery_date );
+                                                            }
+                                                        ?>                                                    
+                                                    </span>
                                                 </h2>
                                             </div>
                                         </div>
@@ -129,7 +133,7 @@
                                                                     <div class="snipcss0-15-36-37 obscure-8zZkzlygz obscure-BEzVENpmn" style="text-align: center;"> 
                                                                     <span class="snipcss0-16-37-38 obscure-5eLBea7qK" style="display:inline-block;vertical-align:middle;">
                                                                             <span class="snipcss0-17-38-39 obscure-Wb9zbk739" style="display:block;">
-                                                                                <i class="snipcss0-18-39-40 obscure-geN8ev7qP obscure-avzpv6m4P" style=' <?= $current_step>=1?"color:green;":"color:gray;" ?>;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;display:block;font-style:normal;font-variant:normal;text-rendering:auto;line-height:75px;font-weight:400;font-family:"bt_sst_tracking_widget_font";margin:0;float:none;font-size:75px;height:75px;width:75px;text-align:center;'>
+                                                                                <i class="snipcss0-18-39-40 obscure-geN8ev7qP obscure-avzpv6m4P" style='<?php echo 'color:' . esc_attr( $current_step >= 1 ? 'green' : 'gray' ) . ';'; ?>;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;display:block;font-style:normal;font-variant:normal;text-rendering:auto;line-height:75px;font-weight:400;font-family:"bt_sst_tracking_widget_font";margin:0;float:none;font-size:75px;height:75px;width:75px;text-align:center;'>
                                                                                     ✓
                                                                                 </i>
                                                                             </span>
@@ -139,39 +143,39 @@
                                                                 <div class="info-list-content-dynamic0 snipcss0-14-35-41 obscure-jzEBz173V obscure-LzqyzR5gW" style="float:none;display:inline-block;width:calc( 100% - 120px );">
                                                                     <h4 class="uabb-info-list-title bt_sst snipcss0-15-41-42" style='font-family:"Helvetica",Verdana,Arial,sans-serif;font-weight:400;line-height:1.4;color:#333;margin-top:10px;margin-bottom:10px;font-size:18px;text-transform:none;font-style:normal;letter-spacing:0px;margin:0;clear:both;padding:0;'>Order Placed</h4>
                                                                     <div class="info-list-description-dynamic0 snipcss0-15-41-43 obscure-9aVkarqgw obscure-n0EW0n7or">
-                                                                        <p class="snipcss0-16-43-44 bt_sst" style="margin:0 0 10px;">We've received your order on </strong> <?=  $ordering_date ?> at <?=  $ordering_time ?>.</p>
+                                                                        <p class="snipcss0-16-43-44 bt_sst" style="margin:0 0 10px;">We've received your order on </strong> <?php echo esc_html($ordering_date) ?> at <?php echo esc_html($ordering_time) ?>.</p>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div class="snipcss0-13-34-45 obscure-jzEBz173V obscure-kzaezq7PL <?= $current_step>1?"bt_sst_step_completed":"" ?>" style="color:#9c9c9c;height:calc( 100% - 75px );position:absolute;z-index:1;border-width:0 0 0 1px;float:none;border-style:dotted;border-left-width:5px;top:75px;left:37.5px;"></div>
+                                                            <div class="snipcss0-13-34-45 obscure-jzEBz173V obscure-kzaezq7PL <?php echo esc_attr( $current_step > 1 ? 'bt_sst_step_completed' : '' ); ?>" style="color:#9c9c9c;height:calc( 100% - 75px );position:absolute;z-index:1;border-width:0 0 0 1px;float:none;border-style:dotted;border-left-width:5px;top:75px;left:37.5px;"></div>
                                                         </li>
                                                         <li class="info-list-item-dynamic1 snipcss0-12-33-46 obscure-z0xQ0E4nw" style="list-style:none;margin:0;padding:0;position:relative;padding-bottom:20px;">
                                                             <div class="snipcss0-13-46-47 obscure-jzEBz173V obscure-MMkaMW93B obscure-vMapMwZlb" style="position:relative;z-index:5;float:none;">
                                                                 <div class="snipcss0-14-47-48 obscure-38P18aqL4 obscure-P7W378aLr obscure-x03Z0E85r obscure-4BxzBaq0J" style="-webkit-animation-duration:1s;animation-duration:1s;-webkit-animation-fill-mode:both;animation-fill-mode:both;-webkit-animation-name:pulse;animation-name:pulse;position:relative;z-index:5;display:inline-block;vertical-align:top;margin-right:20px;">
                                                                     <div class="snipcss0-15-48-49 obscure-8zZkzlygz obscure-BEzVENpmn" style="text-align: center;"> <span class="snipcss0-16-49-50 obscure-5eLBea7qK" style="display:inline-block;vertical-align:middle;">
                                                                             <span class="snipcss0-17-50-51 obscure-Wb9zbk739" style="display:block;">
-                                                                                <i class="snipcss0-18-51-52 obscure-geN8ev7qP obscure-avzpv6m4P " style='<?= $current_step>1?"color:green;":"color:grey;"?>;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;display:block;font-style:normal;font-variant:normal;text-rendering:auto;line-height:75px;font-weight:400;font-family:"bt_sst_tracking_widget_font";margin:0;float:none;font-size:75px;height:75px;width:75px;text-align:center;'>
-                                                                                    <?= $shipped_string == "canceled" ? '<span style="color:red;">⚠</span>' : '<span style="color:green;">✓</span>' ?>
+                                                                                <i class="snipcss0-18-51-52 obscure-geN8ev7qP obscure-avzpv6m4P " style='<?php echo 'color:' . esc_attr( $current_step > 1 ? 'green' : 'grey' ) . ';'; ?>;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;display:block;font-style:normal;font-variant:normal;text-rendering:auto;line-height:75px;font-weight:400;font-family:"bt_sst_tracking_widget_font";margin:0;float:none;font-size:75px;height:75px;width:75px;text-align:center;'>
+                                                                                    <?php echo $shipped_string == "canceled" ? '<span style="color:red;">⚠</span>' : '<span style="color:green;">✓</span>' ?>
                                                                                 </i>
                                                                             </span>
                                                                         </span>
                                                                     </div>
                                                                 </div>
                                                                 <div class="info-list-content-dynamic1 snipcss0-14-47-53 obscure-jzEBz173V obscure-LzqyzR5gW" style="float:none;display:inline-block;width:calc( 100% - 120px );">
-                                                                    <h4 class="uabb-info-list-title bt_sst snipcss0-15-53-54" style='font-family:"Helvetica",Verdana,Arial,sans-serif;font-weight:400;line-height:1.4;color:#333;margin-top:10px;margin-bottom:10px;font-size:18px;text-transform:none;font-style:normal;letter-spacing:0px;margin:0;clear:both;padding:0;'><?= $shipped_string  ?></h4>
+                                                                    <h4 class="uabb-info-list-title bt_sst snipcss0-15-53-54" style='font-family:"Helvetica",Verdana,Arial,sans-serif;font-weight:400;line-height:1.4;color:#333;margin-top:10px;margin-bottom:10px;font-size:18px;text-transform:none;font-style:normal;letter-spacing:0px;margin:0;clear:both;padding:0;'><?php echo esc_html($shipped_string)  ?></h4>
                                                                     <div class="info-list-description-dynamic1 snipcss0-15-53-55 obscure-9aVkarqgw obscure-n0EW0n7or">
-                                                                        <p class="snipcss0-16-55-56 bt_sst" style="margin:0 0 10px;"><?= $shipped_message ?></p>
+                                                                        <p class="snipcss0-16-55-56 bt_sst" style="margin:0 0 10px;"><?php echo esc_html($shipped_message) ?></p>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div class="snipcss0-13-46-57 obscure-jzEBz173V obscure-kzaezq7PL <?= $current_step>2?"bt_sst_step_completed":"" ?>" style="color:#9c9c9c;height:calc( 100% - 75px );position:absolute;z-index:1;border-width:0 0 0 1px;float:none;border-style:dotted;border-left-width:5px;top:75px;left:37.5px;"></div>
+                                                            <div class="snipcss0-13-46-57 obscure-jzEBz173V obscure-kzaezq7PL <?php echo esc_attr($current_step > 2 ? "bt_sst_step_completed" : "") ?>" style="color:#9c9c9c;height:calc( 100% - 75px );position:absolute;z-index:1;border-width:0 0 0 1px;float:none;border-style:dotted;border-left-width:5px;top:75px;left:37.5px;"></div>
                                                         </li>
-                                                        <li style="<?= $show_delivery_states?'':'display:none;' ?>list-style:none;margin:0;padding:0;position:relative;padding-bottom:20px;" class="info-list-item-dynamic2 snipcss0-12-33-58 obscure-z0xQ0E4nw">
+                                                        <li style="<?php echo esc_attr($show_delivery_states ? '' : 'display:none;') ?>list-style:none;margin:0;padding:0;position:relative;padding-bottom:20px;" class="info-list-item-dynamic2 snipcss0-12-33-58 obscure-z0xQ0E4nw">
                                                             <div class="snipcss0-13-58-59 obscure-jzEBz173V obscure-MMkaMW93B obscure-vMapMwZlb" style="position:relative;z-index:5;float:none;">
                                                                 <div class="snipcss0-14-59-60 obscure-38P18aqL4 obscure-P7W378aLr obscure-x03Z0E85r obscure-KEqMElRvl" style="-webkit-animation-duration:1s;animation-duration:1s;-webkit-animation-fill-mode:both;animation-fill-mode:both;-webkit-animation-name:pulse;animation-name:pulse;position:relative;z-index:5;display:inline-block;vertical-align:top;margin-right:20px;">
                                                                     <div class="snipcss0-15-60-61 obscure-8zZkzlygz obscure-BEzVENpmn" style="text-align: center;"> <span class="snipcss0-16-61-62 obscure-5eLBea7qK" style="display:inline-block;vertical-align:middle;">
                                                                             <span class="snipcss0-17-62-63 obscure-Wb9zbk739" style="display:block;">
-                                                                                <i class="snipcss0-18-63-64 obscure-geN8ev7qP obscure-avzpv6m4P " style='<?= $current_step>=3?"color:green;":"color:grey;" ?>;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;display:block;font-style:normal;font-variant:normal;text-rendering:auto;line-height:75px;font-weight:400;font-family:"bt_sst_tracking_widget_font";margin:0;float:none;font-size:75px;height:75px;width:75px;text-align:center;'>
+                                                                                <i class="snipcss0-18-63-64 obscure-geN8ev7qP obscure-avzpv6m4P " style='<?php echo esc_attr($current_step >= 3 ? 'color:green;' : 'color:grey;') ?>;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;display:block;font-style:normal;font-variant:normal;text-rendering:auto;line-height:75px;font-weight:400;font-family:"bt_sst_tracking_widget_font";margin:0;float:none;font-size:75px;height:75px;width:75px;text-align:center;'>
                                                                                     ✓
                                                                                 </i>
                                                                             </span>
@@ -192,12 +196,12 @@
                                                             </div>
                                                             <div class="snipcss0-13-58-69 obscure-jzEBz173V obscure-kzaezq7PL " style="height:calc( 100% - 75px );position:absolute;z-index:1;border-width:0 0 0 1px;float:none;color:#9c9c9c;border-style:dotted;border-left-width:5px;top:75px;left:37.5px;"></div>
                                                         </li>
-                                                        <li style=" <?= $show_delivery_states?'':'display:none;' ?> list-style:none;margin:0;padding:0;position:relative;padding-bottom:20px;" class="info-list-item-dynamic3 snipcss0-12-33-70 obscure-z0xQ0E4nw">
+                                                        <li style=" <?php echo esc_attr($show_delivery_states ? '' : 'display:none;') ?> list-style:none;margin:0;padding:0;position:relative;padding-bottom:20px;" class="info-list-item-dynamic3 snipcss0-12-33-70 obscure-z0xQ0E4nw">
                                                             <div class="snipcss0-13-70-71 obscure-jzEBz173V obscure-MMkaMW93B obscure-vMapMwZlb" style="position:relative;z-index:5;float:none;">
                                                                 <div class="snipcss0-14-71-72 obscure-38P18aqL4 obscure-P7W378aLr obscure-x03Z0E85r obscure-l0E90NdXQ" style="-webkit-animation-duration:1s;animation-duration:1s;-webkit-animation-fill-mode:both;animation-fill-mode:both;-webkit-animation-name:pulse;animation-name:pulse;position:relative;z-index:5;display:inline-block;vertical-align:top;margin-right:20px;">
                                                                     <div class="snipcss0-15-72-73 obscure-8zZkzlygz obscure-BEzVENpmn" style="text-align: center;"> <span class="snipcss0-16-73-74 obscure-5eLBea7qK" style="display:inline-block;vertical-align:middle;">
                                                                             <span class="snipcss0-17-74-75 obscure-Wb9zbk739" style="display:block;">
-                                                                                <i class="snipcss0-18-75-76 obscure-geN8ev7qP obscure-avzpv6m4P  " style='<?= $current_step>=4?"color:green;":"color:grey;" ?>;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;display:block;font-style:normal;font-variant:normal;text-rendering:auto;line-height:75px;font-weight:400;font-family:"bt_sst_tracking_widget_font";margin:0;float:none;color:#9c9c9c;font-size:65px;height:75px;width:75px;text-align:center;'>
+                                                                                <i class="snipcss0-18-75-76 obscure-geN8ev7qP obscure-avzpv6m4P  " style='<?php echo esc_attr($current_step >= 4 ? 'color:green;' : 'color:grey;') ?>;-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;display:block;font-style:normal;font-variant:normal;text-rendering:auto;line-height:75px;font-weight:400;font-family:"bt_sst_tracking_widget_font";margin:0;float:none;color:#9c9c9c;font-size:65px;height:75px;width:75px;text-align:center;'>
                                                                                     ✓
                                                                                 </i>
                                                                             </span>

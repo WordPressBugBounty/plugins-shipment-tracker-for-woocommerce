@@ -48,7 +48,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
                 'cgm'=>$cgm
                 
             );
-            // echo "<pre>"; print_r($body); die;
+          
             $args = array(
                 'headers'     => array(
                     'Authorization'=>'Token '. $this->public_key
@@ -57,7 +57,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
     
             $url = 'https://track.delhivery.com/api/kinko/v1/invoice/charges/.json?' .  http_build_query($body);
             $response = wp_remote_get( $url, $args);
-            // echo "<pre>"; print_r($response); die;
+         
              $body     = wp_remote_retrieve_body( $response );
 
              $resp = json_decode($body,true);
@@ -70,7 +70,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
     public function get_order_tracking_by_awb_number($awb_number){
         $args ="";
         $this->init_params();
-        // echo "<pre>"; echo($this->public_key); die;
+     
 
         if(!empty($this->public_key)){
     
@@ -81,7 +81,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
             $url = 'https://track.delhivery.com/api/v1/packages/json?' . http_build_query($body);
 
             $response = wp_remote_get( $url, $args);
-            // echo "<pre>"; print_r(json_decode($response['body'])); die;
+         
            
             $body     = wp_remote_retrieve_body( $response );
     
@@ -131,7 +131,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         $response = wp_remote_get( $url, $args);
         
         $body     = wp_remote_retrieve_body( $response );
-        // echo "<pre>"; print_r($response); die;
+     
 
         $resp = json_decode($body,true);
         return $resp;
@@ -173,7 +173,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
             if (false === $postData) {
                 return;
             }
-            // echo "<pre>"; print_r(json_encode($postData)); echo "</pre>";
+          
             $postData = 'format=json&data=' . urlencode(json_encode($postData));
             $args = array(
                 'headers' => array(
@@ -187,7 +187,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
             $url = 'https://track.delhivery.com/api/cmu/create.json';
             
             $response = wp_remote_post($url, $args);
-            // echo "<pre>"; print_r($response); die;
+       
             $body = wp_remote_retrieve_body($response);
             $resp = json_decode($body, true);
             
@@ -310,7 +310,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         $postData['shipments'][0]['shipment_width'] = $total_width_cm>0?$total_width_cm:5;
         $postData['shipments'][0]['shipment_height'] = $total_height_cm>0?$total_height_cm:5;
         $postData['shipments'][0]['shipment_length'] = $total_height_cm>0?$total_height_cm:5;
-        // echo "<pre>"; print_r($postData); echo "</pre>";
+     
         return $postData;
         
     }
@@ -355,7 +355,6 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
                     $all_methods[] = $value;
             }
             }
-            // echo "<pre>"; print_r($all_methods); echo "</pre>";
 
         }
             
@@ -416,10 +415,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
             if(!isset($resp['delivery_codes'][0])){
                 return null;
             }
-            // echo "<pre>"; print_r($resp); die;
-            // echo json_encode($resp);
-            // exit;
-            
+        
             if(isset($resp["delivery_codes"][0])){
                 $data = array(
                     "postcode"=>$resp["delivery_codes"][0]['postal_code']['pin'],
@@ -427,8 +423,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
                     "state_code"=>$resp["delivery_codes"][0]['postal_code']['state_code'],
                     "country"=>$resp["delivery_codes"][0]['postal_code']['country_code'],
                 );
-                // echo $data;
-                // exit;
+              
                 return $data;
             }
 

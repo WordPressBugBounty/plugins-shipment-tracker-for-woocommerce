@@ -28,7 +28,7 @@ foreach ($coriure_name as $key => $courier) {
     ];
     $courierCodeAndName = json_encode($courierCodeName);
     ?>
-    <option value='<?php echo $courierCodeAndName?>' data-courierName='<?php echo $courier['courierName']?>'><?php echo $courier['courierName']?></option>
+    <option value='<?php echo esc_attr($courierCodeAndName)?>' data-courierName='<?php echo esc_attr($courier['courierName'])?>'><?php echo esc_attr($courier['courierName'])?></option>
 <?php } }else{?>
                     <option value="">Loading.........</option>  
                     <?php } ?>                                   
@@ -48,94 +48,16 @@ foreach ($coriure_name as $key => $courier) {
         allowClear: true
     });
         
-        // jQuery('#sync_manual').click(function () {
-        //     jQuery('#sync_manual').addClass("disabled");
-        //     jQuery('#bt_sync-box .spinner').addClass("is-active");
-
-        //     jQuery.ajax({
-        //         method: "POST",
-        //         url: '<?php echo admin_url('admin-ajax.php'); ?>',
-        //         dataType: "json",
-        //         data: {
-        //             'order_id': '<?php echo $order_id; ?>',
-        //             'action': 'force_sync_tracking'
-        //         }, success: function (response) {
-                 
-        //             jQuery('#sync_manual').removeClass("disabled");
-        //             jQuery('#bt_sync-box .spinner').removeClass("is-active");
-        //             if (response != null && response.status !=false) {
-        //                 //location.reload();  //Reload the page if response received
-        //                 bt_st_show_info("Tracking Synced.");
-        //             } else {
-        //                 alert(response.response);
-        //             }
-        //         }, error: function (jqXHR, textStatus, errorThrown) {
-        //             jQuery('#sync_manual').removeClass("disabled");
-        //             jQuery('#bt_sync-box .spinner').removeClass("is-active");
-        //             alert('Something went wrong! Error: ' + errorThrown);
-        //             return false;
-        //         }
-        //     });
-        // });
         jQuery('#bt_sst_closePopup').click(function () {
             jQuery('#bt_sst_awbPopup').fadeOut();
         });
-        // jQuery('#add_awb_no_in_ship24').click(function () {
-        //     jQuery('#bt_sst_awbPopup').show();
-        // });
-        // jQuery('#add_awb_number').click(function () {
-        //     if ("<?php echo $shipping_mode_is_manual_or_ship24; ?>" == "ship24" && "<?php echo $bt_shipping_provider; ?>" == "manual") {
-        //         jQuery('#bt_sst_awbPopup').fadeIn();
-        //     }else{
-        //         var current_awb = '<?php echo $bt_shipping_awb_number; ?>';
-        //         var shipment_provider = '<?php echo $bt_shipping_provider; ?>';
-    
-        //         var awb_number = prompt("Enter new awb number of " + shipment_provider,current_awb);
-        //         awb_number = awb_number.trim();
-    
-        //         if(awb_number==""){
-        //             return;
-        //         }            
-        //         if(awb_number===current_awb){               
-        //             return;
-        //         } 
-              
-    
-        //         jQuery('#add_awb_number').addClass("disabled");
-        //         jQuery('#bt_sync-box .spinner').addClass("is-active");
-    
-        //         jQuery.ajax({
-        //             method: "POST",
-        //             url: '<?php echo admin_url('admin-ajax.php'); ?>',
-        //             dataType: "json",
-        //             data: {
-        //                 'order_id': '<?php echo $order_id; ?>',
-        //                 'awb_number': awb_number,
-        //                 'action': 'save_order_awb_number'
-        //             }, success: function (response) {
-        //                 jQuery('#add_awb_number').removeClass("disabled");
-        //                 jQuery('#bt_sync-box .spinner').removeClass("is-active");
-        //                 jQuery('#bt_notify_popup_ship24').css('display', 'block');
-        //                 if (response != null && response.status !=false) {
-        //                     bt_st_show_info("AWB updated & Tracking Synced.");
-        //                 } else {
-        //                     alert(response.response);
-        //                 }
-        //             }, error: function (jqXHR, textStatus, errorThrown) {
-        //                 jQuery('#add_awb_number').removeClass("disabled");
-        //                 jQuery('#bt_sync-box .spinner').removeClass("is-active");
-        //                 alert('Something went wrong! Error: ' + errorThrown);
-        //                 return false;
-        //             }
-        //         });
-        //     }
-        // });
+      
         jQuery('#bt_sst_ship24_couriers_name').click(function () {
             var optionCount = jQuery(this).find('option').length;
             if (optionCount === 2) {
                 jQuery.ajax({
                     method: "POST",
-                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                    url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                     dataType: "json",
                     data: {
                         'status': true,
@@ -195,10 +117,10 @@ foreach ($coriure_name as $key => $courier) {
             console.log(corier_code+" "+corier_name)
                 jQuery.ajax({
                     method: "POST",
-                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
+                    url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                     dataType: "json",
                     data: {
-                        'order_id': '<?php echo $order_id; ?>',
+                        'order_id': '<?php echo esc_js($order_id); ?>',
                         'awb_number': current_awb,
                         'corier_code': corier_code,
                         'corier_name': corier_name,                       

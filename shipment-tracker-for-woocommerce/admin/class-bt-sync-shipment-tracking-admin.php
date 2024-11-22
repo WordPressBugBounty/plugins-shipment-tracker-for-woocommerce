@@ -122,7 +122,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		 */
 		wp_register_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/bt-sync-shipment-tracking-admin.js', array( 'jquery','jquery-ui-dialog' ), $this->version, false);
 		$current_screen = get_current_screen();
-		//echo $current_screen->id;exit;
 		if($current_screen!=null && ($current_screen->id=="woocommerce_page_crb_carbon_fields_container_shipment_tracking" || $current_screen->id=="woocommerce_page_wc-orders" || $current_screen->id=="edit-shop_order" || $current_screen->id=="shop_order" )){
 			$script_data = array(
 
@@ -167,12 +166,11 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 	function render_admin_settings(){
 		$url=get_site_url(null, '/wp-json/bt-sync-shipment-tracking-shiprocket/v1.0.0/webhook_receiver');
-		echo "Enter this url in Shiprocket webhook settings: " . $url;
+		echo esc_html("Enter this url in Shiprocket webhook settings: " . esc_url($url));
 	}
 
 	public function custom_shop_order_column($columns){
 		$reordered_columns = array();
-		//echo json_encode($columns);exit;
 		// Inserting columns to a specific location
 		foreach( $columns as $key => $column){
 			$reordered_columns[$key] = $column;
@@ -192,9 +190,9 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		switch ( $column )
 		{
 			case 'bt-shipping-status' :
-				echo  "<div class='bt-sync-tracking order-$order_id'>";
+				echo "<div class='bt-sync-tracking order-" . esc_attr($order_id) . "'>";
 				include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/order_shipment_details.php';
-				echo "</div>";
+				echo "</div>" ;
 				
 				break;
 		}
@@ -212,10 +210,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	public function woocommerce_order_status_processing($order_id){
-		
-		// $this->get_shipping_courier($order_id);
-		// echo " ok ";
-		// exit;
+
 		$enabled_shipping_providers = carbon_get_theme_option( 'bt_sst_enabled_shipping_providers' );
 		$bt_sst_default_shipping_provider = carbon_get_theme_option( 'bt_sst_default_shipping_provider' );
 		
@@ -273,9 +268,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 	public function woocommerce_order_status_on_hold($order_id){
 		
-		// $this->get_shipping_courier($order_id);
-		// echo " ok ";
-		// exit;
 		$enabled_shipping_providers = carbon_get_theme_option( 'bt_sst_enabled_shipping_providers' );
 		$bt_sst_default_shipping_provider = carbon_get_theme_option( 'bt_sst_default_shipping_provider' );
 		
@@ -332,20 +324,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 	}
 
-	// public function get_shipping_courier($order_id){
-	// 	$order = wc_get_order( $order_id );
-	// 	$courier_selected_via_shiprocket_plugin = false;
-	// 	$shipping = $order->get_items( 'shipping' );
-	// 	foreach( $order->get_items( 'shipping' ) as $s_item_id => $s_item ){
-	// 		$bt_sst_sr_courier_company_id = $s_item->get_meta("bt_sst_sr_courier_company_id",true);
-	// 	//	echo $bt_sst_sr_courier_company_id;
-	// 	//	exit;
-	// 	}
-	// 	echo "<pre>";
-	// 	 print_r($shipping);
-	// 	 echo "</pre>";
-	// 	exit;
-	// }
 
 	public function push_order_to_shiprocket($order_id){
 			try {
@@ -508,8 +486,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 						$shipmozo_orderid = $push_resp["data"]["order_id"];
 						Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_nimbuspost_order_id', $shipmozo_orderid);
 						$order->add_order_note( "Order pushed to shipmozo. Shipmozo Order ID: " . $shipmozo_orderid . "\n\n- Shipment tracker for woocommerce", false );
-						//echo json_encode($shipmozo_orderid);
-                        //exit;
 
 					}else{
 						$order->add_order_note( "Failed to push order to shipmozo, got error response from shipmozo: '" . json_encode($push_resp)."'" . "\n\n- Shipment tracker for woocommerce" , false );
@@ -599,8 +575,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 						$nimbuspost_orderid = "NA"; //$push_resp["data"]["order_id"];
 						Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_nimbuspost_order_id', $nimbuspost_orderid);
 						$order->add_order_note( "Order pushed to nimbuspost. nimbuspost Order ID: " . $nimbuspost_orderid . "\n\n- Shipment tracker for woocommerce", false );
-						//echo json_encode($shipmozo_orderid);
-                        //exit;
 
 					}else{
 						$order->add_order_note( "Failed to push order to nimbuspost, got error response from nimbuspost: '" . json_encode($push_resp)."'" . "\n\n- Shipment tracker for woocommerce" , false );
@@ -643,7 +617,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 				}
 				if(!empty($bt_sst_order_note_template)){
 					$order = wc_get_order( $order_id );
-					// echo json_encode($shipment_obj); exit;
 					$note = str_replace("#old_status#",bt_format_shipment_status($old_tracking_obj == null?"":$old_tracking_obj->current_status),$bt_sst_order_note_template);
 					$note = str_replace("#new_status#",bt_format_shipment_status($shipment_obj->current_status),$note);
 					$note = str_replace("#track_url#",$shipment_obj->get_tracking_link() ,$note);
@@ -747,8 +720,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		if(empty($post_id)){
 			$post_id = $_GET["id"];
 		}	
-		//echo $post_id . "okk2";
-		//exit;
         $bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($post_id);
 		$bt_shipping_provider = $bt_shipment_tracking->shipping_provider;
 		$bt_shipping_awb_number = $bt_shipment_tracking->awb;
@@ -1003,7 +974,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		$message_type = 'sms';
 
 		$pricing = $this->get_credits_pricing( $message_type );
-		// echo json_encode($pricing); exit;
 	
 		$response = array(
 			"status" => true,
@@ -1065,9 +1035,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		
 		if(!empty($api)){
 			$api_call = $this->get_balance();
-			//echo json_encode($api_call);exit;
 			
-
 			if ($api_call['response_code']==200 ) {
 				$datetime_string = "NA";
 				if($api_call['data']['lastSentTimeStamp']>0){
@@ -1132,7 +1100,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		}
 		
 		$body = array();
-		// echo json_encode($body); exit;
 		$args = array(
 			'body' => json_encode( $body),
 			'headers' => array(
@@ -1187,11 +1154,9 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		$current_url = get_site_url();
 		$current_user = get_bloginfo( 'name' );
 		$shop_country = WC()->countries->get_base_country();
-		//echo($shop_country);exit;
  
 		$api_call = $this->signup_api($admin_email,$current_url,$shop_country,$current_user,"NA",true,true);
 		
-		//echo json_encode($api_call);exit;
 
 		if ($api_call['response_code']==200 && isset($api_call['data']['apiKey'])  && !empty($api_call['data']['apiKey'])) {
 
@@ -1215,7 +1180,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	public function get_bt_sst_email_trial() {
-		//echo("hello");exit;
 		
 		$nonce = $_GET["value"];
 		$bt_sst_test_email = $_GET["bt_sst_test_email"];
@@ -1281,7 +1245,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	public function get_sms_trial() {
-		//echo("hello");exit;
 		$nonce = $_GET["value"];
 		$phoneNumber = $_GET["phonenumber"];
 		$selectValue = $_GET["selectvalue"];
@@ -1345,10 +1308,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 				'Content-Type: multipart/form-data'
 			),
 			);
-			//echo json_encode($body);exit;
 			 $url =  "https://quickengage.bitss.in/trigger/TrialMessage?" . http_build_query($body);
-			 //echo $url;
-			 //exit;
 			 $response = wp_remote_post( $url,$args ); //its a non-blocking call. so website's speed is not effected.
 			 $body     = wp_remote_retrieve_body( $response );
 			
@@ -1377,7 +1337,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 			"HasTermsAgreed" => true,
 			"HasAuthorizedForSMS" => true
 		);
-		// echo json_encode($body); exit;
+	
 		$args = array(
 			'body' => json_encode( $body),
 			'headers' => array(
@@ -1473,12 +1433,12 @@ class Bt_Sync_Shipment_Tracking_Admin {
 				'Content-Type: multipart/form-data'
 			),
 			);
-			//echo json_encode($args);exit;
+		
 			$url =  "https://quickengage.bitss.in/trigger/message";
 			$response = wp_remote_post( $url,$args ); //its a non-blocking call. so website's speed is not effected.
 			$body     = wp_remote_retrieve_body( $response );
 			//$resp = json_decode($body,true);
-			//echo json_encode($resp);exit;
+		
 			$order = wc_get_order( $order_id );
 			$order->add_order_note("'$event_name'" . ' SMS Sent. Request ID: ' .  $body  . "\n\n- Shipment tracker for woocommerce", false );
 		}else{
@@ -1580,7 +1540,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 			"data" => $result ,
 			"message" => "Sync Successful1"
 		);
-        //echo json_encode($response);
 		wp_send_json($response);
 		die();
 	}
@@ -1614,10 +1573,10 @@ class Bt_Sync_Shipment_Tracking_Admin {
 			}
 			
 			foreach ($arr as $key => $value) {		
-				if($selected==$key){
-					echo "<option selected value=".$key.">".$value."</option>";
-				}else{
-					echo "<option value=".$key.">".$value."</option>";
+				if ($selected == $key) {
+					echo "<option selected value='" . esc_attr($key) . "'>" . esc_html($value) . "</option>";
+				} else {
+					echo "<option value='" . esc_attr($key) . "'>" . esc_html($value) . "</option>";
 				}		
 				
 			}
@@ -1889,7 +1848,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 	// function register_shipment_arrival_order_status() {
 	// 	$enabled_order_status = apply_filters( 'bt_sst_shipping_statuses', BT_SHIPPING_STATUS );;// carbon_get_theme_option( 'bt_sst_enable_order_status' );
-	// 	// echo json_encode($enabled_order_status); exit;
 	// 	foreach ($enabled_order_status as $key=>$value) {
 	// 		$l = BT_SHIPPING_STATUS[$key];
 
@@ -1910,7 +1868,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	// 		$new_order_statuses[ $key ] = $status;
 	// 		if ( 'wc-processing' === $key ) {
 	// 			$enabled_order_status = apply_filters( 'bt_sst_shipping_statuses', BT_SHIPPING_STATUS );
-	// 			// echo json_encode($enabled_order_status); exit;
 				
 	// 			foreach ($enabled_order_status as $key => $value) {
 	// 				$new_order_statuses[$key] = $value;
@@ -2186,7 +2143,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	// 	$base_url="https://shipment-tracker-for-woocommerce.bitss.tech";
 	// 	$cfid=4;
 	// 	$resp = $this->post_cf7_data($body,$cfid,$base_url );
-	// 	//  echo json_encode($resp).'ok'; exit;
 	// 	return;
 	// }
 
@@ -2445,7 +2401,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 			$wizard_post_data['shipping_company'] = 'ship24';
 		}
 		$data = $wizard_post_data;
-		// echo "<pre>"; print_r($data); die;
 		wp_send_json($data);
     wp_die();
 	}
@@ -2480,7 +2435,6 @@ function bt_get_shipping_tracking($order_id){
 }
 
 function bt_force_sync_order_tracking($order_id){
-// echo $order_id;
     if(empty($order_id)) {
         return null;
     }

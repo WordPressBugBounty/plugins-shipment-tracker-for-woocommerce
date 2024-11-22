@@ -242,7 +242,7 @@ class Bt_Sync_Shipment_Tracking_Public
 			}
 		}
 		if($processing_days>0){
-			echo "<div class='bt_sst_processing_time'>Processing time: $processing_days days</div>";
+			echo "<div class='bt_sst_processing_time'>Processing time: " . esc_html($processing_days) . " days</div>";
 		}
 	}
 
@@ -317,7 +317,7 @@ class Bt_Sync_Shipment_Tracking_Public
 	/**To Show Delivery data on Product Page using Pincode */
 	function get_pincode_data_product_page()
 	{
-		// echo "<pre>"; print_r($_POST);
+	
 		$nonce = $_POST["value"]['n'];
 		if (!wp_verify_nonce($nonce, 'get_pincode_data_product_page')) {
 			exit; // Get out of here, the nonce is rotten!
@@ -361,7 +361,7 @@ class Bt_Sync_Shipment_Tracking_Public
 				$is_domestic = $shop_country==$delivery_country;
 
 				$generic_config =  carbon_get_theme_option( "bt_sst_pincode_estimate_generic_provider"	);
-				//echo json_encode($generic_config);exit;
+			
 
 				if($is_domestic){
 					$config_obj = null;
@@ -504,7 +504,7 @@ class Bt_Sync_Shipment_Tracking_Public
 						}
 					}
 					
-					//echo json_encode($push_resp);exit;
+			
 				}
 
 				$admin_courier_arr = carbon_get_theme_option("bt_sst_courier_companies_product_page");
@@ -522,7 +522,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					$filtered_arr = $push_resp;
 				}
 			
-				// echo json_encode($filtered_arr); exit;
+				
 
 				if (is_array($filtered_arr) && sizeof($filtered_arr) > 0) {
 					
@@ -541,9 +541,9 @@ class Bt_Sync_Shipment_Tracking_Public
 							$min_date_charges = $value['rate'];
 							$min_courier_name = $value['courier_name'];
 						}
-						//echo json_encode($value['etd']);exit;
+						
 					}
-					//echo json_encode($filtered_arr);exit;
+			
 					if($delivery_country == "IN"){
 						$city = $filtered_arr[0]['city'];
 					}else{
@@ -560,8 +560,7 @@ class Bt_Sync_Shipment_Tracking_Public
 						//if not found, get processing days set at global level.
 						$processing_days = carbon_get_theme_option("bt_sst_shiprocket_processing_days");
 					}
-					//$processing_days = 9;
-					//echo $processing_days;exit;
+				
 				
 					if ($processing_days && $processing_days > 0) {
 						$min_date = $this->addDayswithdate($min_date, $processing_days);
@@ -614,7 +613,7 @@ class Bt_Sync_Shipment_Tracking_Public
 
 				$filtered_arr = $push_resp;
 
-				// echo json_encode($filtered_arr); exit;
+				
 
 				if (is_array($filtered_arr) && sizeof($filtered_arr) > 0) {
 					
@@ -625,8 +624,7 @@ class Bt_Sync_Shipment_Tracking_Public
 							 preg_match('/\d+/',$daytohour,$matches);
 							 $days=intval($matches[0]);
 							 $hour=$days*24;
-							 //echo"$hour,";
-							 //exit;
+							
 							 $value['etd_hours'] = $hour;
 							 
 							 $input = $value['estimated_delivery'];
@@ -636,7 +634,7 @@ class Bt_Sync_Shipment_Tracking_Public
 							 $interval = new DateInterval("P{$days}D");
 							 $currentDate->add($interval);
 							 $expectedDate = $currentDate->format('c');
-							 //echo"$expectedDate,";
+							
 							 $value['etd'] = $expectedDate;
    
 						   
@@ -655,9 +653,9 @@ class Bt_Sync_Shipment_Tracking_Public
 							   $min_courier_name = $value['name'];
 						   }
 						}
-						//echo json_encode($value['estimated_delivery']);exit;
+					
 					}
-					// var_dump($delivery_country);exit;
+				
 					if($delivery_country == "IN"){
 						// $city = $filtered_arr[0]['city'];
 						$city = $delivery_pincode;
@@ -690,8 +688,6 @@ class Bt_Sync_Shipment_Tracking_Public
 						//if not found, get processing days set at global level.
 						$processing_days = carbon_get_theme_option("bt_sst_shiprocket_processing_days");
 					}
-					//$processing_days = 9;
-					//echo $processing_days;exit;
 				
 					if ($processing_days && $processing_days > 0) {
 						$min_date = $this->addDayswithdate($min_date, $processing_days);
@@ -727,7 +723,7 @@ class Bt_Sync_Shipment_Tracking_Public
 							$response["message"] = "Data fetched from cache.";
 						}else{
 							$push_resp = $this->nimbuspost_new->get_rate_calcultor($pickup_pin, $delivery_pincode, 'PREPAID',1,'500','10','10','10');
-						    //echo json_encode($push_resp );exit;
+						
 							if ($push_resp != null && !empty($push_resp ) && $push_resp['status']=="true" && isset( $push_resp['data'])) {
 								$push_resp = $push_resp['data'];
 								$bt_sst_cached_delivery_estimates_nimbuspost[$cached_pincode_key] =  $push_resp;
@@ -747,7 +743,6 @@ class Bt_Sync_Shipment_Tracking_Public
 
 				$filtered_arr = $push_resp;
 
-				//echo json_encode($filtered_arr); exit;
 				
 				if (is_array($filtered_arr) && sizeof($filtered_arr) > 0) {
 
@@ -763,7 +758,7 @@ class Bt_Sync_Shipment_Tracking_Public
                           // Convert difference to hours
                           $hour = $timeDiff->days * 24 + $timeDiff->h;
                           // Display the result
-                          //echo "Hours until May 18, 2024: $hour hours.";
+                        
 						  
 
 						  $value['etd_hours'] = $hour;
@@ -786,9 +781,9 @@ class Bt_Sync_Shipment_Tracking_Public
 							$min_date_charges = $value['total_charges'];
 							$min_courier_name = $value['name'];
 						}
-						//echo json_encode($value['estimated_delivery']);exit;
+					
 					}
-					//echo json_encode($filtered_arr);exit;
+				
 					if($delivery_country == "IN"){
 						$city = $filtered_arr[0]['city'];
 					}else{
@@ -806,7 +801,7 @@ class Bt_Sync_Shipment_Tracking_Public
 						$processing_days = carbon_get_theme_option("bt_sst_shiprocket_processing_days");
 					}
 					//$processing_days = 9;
-					//echo $processing_days;exit;
+					
 				
 					if ($processing_days && $processing_days > 0) {
 						$min_date = $this->addDayswithdate($min_date, $processing_days);
@@ -837,7 +832,7 @@ class Bt_Sync_Shipment_Tracking_Public
 							$response["message"] = "Data fetched from cache.";
 						}else{
 							$push_resp = $this->delhivery->get_rate_calcultor_and_date('E', 'Delivered',$pickup_pin, $delivery_pincode, '500');
-							// echo "<pre>"; print_r($push_resp['error']); die;
+							
 							if ($push_resp != null && !empty($push_resp ) && sizeof($push_resp)>0 ) {
 								$bt_sst_cached_delivery_estimates_delhivery[$cached_pincode_key] =  $push_resp;
 								set_transient( 'bt_sst_cached_delivery_estimates_delhivery', $bt_sst_cached_delivery_estimates_delhivery, 1 * HOUR_IN_SECONDS );
@@ -1199,12 +1194,12 @@ class Bt_Sync_Shipment_Tracking_Public
 
 	function update_woocommerce_package_rates($rates, $package)
 	{
-		//echo "okk1". json_encode($package);exit;
+	
 		$push_resp =[];
 		if(!is_cart() && !is_checkout()){
 		//	return $rates;
 		}
-		//echo "okk2";
+	
 		$is_premium = $this->licenser->should_activate_premium_features();
 		if (!$is_premium) {
 			return $rates;
@@ -1248,7 +1243,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		if ($bt_sst_courier_rate_provider == 'generic') {
 			$bt_sst_shipping_methods = carbon_get_theme_option("bt_sst_add_shipping_methods");
 			$shop_country = WC()->countries->get_base_country();
-			// echo json_encode($bt_sst_courier_rate_provider);
+		
 			$id = '';
 			$lable ='';
 			$delivery_date = '';
@@ -1266,7 +1261,7 @@ class Bt_Sync_Shipment_Tracking_Public
 				}
 				$rates = $free_shipping_rates;
 			}
-			//echo json_encode($bt_sst_shipping_methods);exit;
+		
 			foreach ($bt_sst_shipping_methods as $element) {
 				$id = $element['bt_sst_shipping_method'];
 				$bt_sst_rate_type = $element['bt_sst_rate_type'];
@@ -1314,7 +1309,7 @@ class Bt_Sync_Shipment_Tracking_Public
 			
 
 			$cart_totals = $this->get_cart_weight_and_dimentions();
-			//echo json_encode($cart_totals);exit;
+			
 			$weight_in_kg = $cart_totals['total_weight_kg'];
 			$length_in_cms = $cart_totals['total_length_cm'];
 			$breadth_in_cms = $cart_totals['total_width_cm'];
@@ -1357,7 +1352,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					$push_resp = $bt_sst_cached_delivery_estimates[$cached_pincode_key];
 				}else{
 					$push_resp = $this->shiprocket->get_courier_serviceability_international($delivery_country, $weight_in_kg,$pickup_pincode);
-					//echo json_encode($push_resp);exit;
+				
 					if ($push_resp != null && !empty($push_resp )) {
 						$bt_sst_cached_delivery_estimates[$cached_pincode_key] = $push_resp;
 						set_transient( 'bt_sst_cached_delivery_estimates', $bt_sst_cached_delivery_estimates, 1 * HOUR_IN_SECONDS );
@@ -1534,7 +1529,7 @@ class Bt_Sync_Shipment_Tracking_Public
 			
 
 			$cart_totals = $this->get_cart_weight_and_dimentions();
-			//echo json_encode($cart_totals);exit;
+			
 			$weight_in_kg = $cart_totals['total_weight_kg'];
 			$length_in_cms = $cart_totals['total_length_cm'];
 			$breadth_in_cms = $cart_totals['total_width_cm'];
@@ -1668,7 +1663,7 @@ class Bt_Sync_Shipment_Tracking_Public
 							$interval = new DateInterval("P{$days}D");
 							$currentDate->add($interval);
 							$expectedDate = $currentDate->format('c');
-							//echo"$expectedDate,";
+						
 							$rb['etd'] = $expectedDate;
 
 							$d = $this->addDayswithdate($rb['etd'], $processing_days);
@@ -1697,7 +1692,7 @@ class Bt_Sync_Shipment_Tracking_Public
 			
 
 			$cart_totals = $this->get_cart_weight_and_dimentions();
-			//echo json_encode($cart_totals);exit;
+		
 			$weight_in_kg = $cart_totals['total_weight_kg'];
 			$length_in_cms = $cart_totals['total_length_cm'];
 			$breadth_in_cms = $cart_totals['total_width_cm'];
@@ -1848,8 +1843,7 @@ class Bt_Sync_Shipment_Tracking_Public
 			
 
 			$cart_totals = $this->get_cart_weight_and_dimentions();
-			// echo "<pre>"; print_r($cart_totals); die;
-			// echo json_encode($cart_totals);exit;
+		
 			$weight_in_kg = $cart_totals['total_weight_kg'];
 			$length_in_cms = $cart_totals['total_length_cm'];
 			$breadth_in_cms = $cart_totals['total_width_cm'];
@@ -1914,7 +1908,6 @@ class Bt_Sync_Shipment_Tracking_Public
 				$rates = $free_shipping_rates;
 			//}
 		
-		//echo "<pre>"; print_r($filtered_arr); die;
 
 			if($filtered_arr==null || sizeof($filtered_arr) == 0) {
 
@@ -1943,7 +1936,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					//to handle international fallback rate
 				}
 			}else{
-				// echo "<pre>"; print_r($filtered_arr['express'][0]); die;
+			
 				if($delivery_country == "IN"){
 					 usort($filtered_arr, function($a, $b) {
 					 	return ($a['total_amount'] - ($b['total_amount']));
@@ -1987,32 +1980,13 @@ class Bt_Sync_Shipment_Tracking_Public
 							}
 						 }
 						 $cost = round($rb['total_amount'] + $markup_cost + $delivery_charge, 2);
-						//  echo ($cost); die;
+					
 						
 						$texes = [];
 						$delivery_date = '';
 						$show_delivery_date = carbon_get_theme_option("bt_sst_show_delivery_date");
 						if ($show_delivery_date == 1) {
-							// $processing_days = $this->bt_get_processing_days();//first try to get at product or category level.
-							// if(!$processing_days){
-							// 	//if not found, get processing days set at global level.
-							// 	$processing_days = carbon_get_theme_option("bt_sst_shipment_processing_days");
-							// }
-							
-							// if(!$processing_days || $processing_days<0){
-							// 	$processing_days=0;
-							// }
-							// $input = $rb['estimated_delivery'];
-							// $currentDate = new DateTime();
-							// preg_match('/\d+/', $input, $matches);
-							// $days = intval($matches[0]);
-							// $interval = new DateInterval("P{$days}D");
-							// $currentDate->add($interval);
-							// $expectedDate = $currentDate->format('c');
-							// //echo"$expectedDate,";
-							// $rb['etd'] = $expectedDate;
-
-							// $d = $this->addDayswithdate($rb['etd'], $processing_days);
+					
 							$delivery_date = "";
 						}
 		
@@ -2030,7 +2004,7 @@ class Bt_Sync_Shipment_Tracking_Public
 						
 						$rates[$id] = $WC_Shipping_Rate;
 					}
-					// echo $i; die;
+				
 				
 				}
 			}
@@ -2047,7 +2021,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		$bt_sst_show_shipment_weight = carbon_get_theme_option("bt_sst_show_shipment_weight");
 		if ($bt_sst_show_shipment_weight == 1) {
 			$cart_totals = $this->get_cart_weight_and_dimentions();
-			//echo json_encode($cart_totals);exit;
+			
 			$weight_in_kg = $cart_totals['total_weight_kg'];
 			// $length_in_cms=$cart_totals['total_length_cm'];
 			// $breadth_in_cms=$cart_totals['total_width_cm'];
@@ -2063,7 +2037,7 @@ class Bt_Sync_Shipment_Tracking_Public
 				echo '
 						<tr>
 							<th>Shipment Weight</th>
-							<td>' . $weight_in_kg . ' ' . $bt_sst_list_weight_unit . ' (approx)</td>
+            				<td>' . esc_html($weight_in_kg) . ' ' . esc_html($bt_sst_list_weight_unit) . ' (approx)</td>
 						</tr>
 					';
 			}
@@ -2117,13 +2091,13 @@ class Bt_Sync_Shipment_Tracking_Public
 
 		if (WC()->cart) {
 			$cart = WC()->cart;
-			//echo '<pre>';	var_dump($cart);echo '</pre>';exit;
+			
 			if ($cart->get_total('value') <= 0) {
 				$declared_value = $cart->cart_contents_total + $cart->tax_total - $cart->get_shipping_total();
 			} else {
 				$declared_value = $cart->get_total('value') - $cart->get_shipping_total();
 			}
-			//echo json_encode($declared_value);exit;
+		
 			if ($declared_value) {
 				$declared_value = round($declared_value, 2);
 			}
@@ -2530,7 +2504,6 @@ class Bt_Sync_Shipment_Tracking_Public
 	// 	if ( ! is_a( $order, 'WC_Order' ) ) {
 	// 		return;
 	// 	}
-	// 	echo '<h3>Shipment Tracking</h3>';
 	// 	$post_id = $order->get_id();
 	// 	$order_id = $order->get_id();
 	// 	if(empty($post_id)){

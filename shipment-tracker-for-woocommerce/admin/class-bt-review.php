@@ -30,8 +30,6 @@ class Bt_Sync_Shipment_Tracking_Review {
 	public function hooks() {
 
 		add_action( 'admin_init',array( $this, 'admin_init') );
-	
-	//	echo "okk1";exit;
 	}
 
 	public function admin_init() {		

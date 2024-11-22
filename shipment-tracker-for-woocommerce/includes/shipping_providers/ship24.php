@@ -209,10 +209,7 @@ class Bt_Sync_Shipment_Tracking_Ship24 {
             $body = wp_remote_retrieve_body($response);
             
             $resp = json_decode($body, true);
-        //   echo"testt"; print_r( $args );
-           
-         //  print_r( $body );
-         //  exit;
+      
             if(isset($resp['data'])){
                 $resp = $resp['data']['trackings'][0];
             }
@@ -238,8 +235,7 @@ class Bt_Sync_Shipment_Tracking_Ship24 {
             $response = wp_remote_get($url, $args);
             $body     = wp_remote_retrieve_body( $response );
             $resp = json_decode($body,true);
-            // echo "<pre>"; print_r($resp); die;
-
+          
             if(isset($resp['data'])){
                 $resp = $resp['data']['trackings'][0];
                 return $resp;
@@ -268,8 +264,7 @@ class Bt_Sync_Shipment_Tracking_Ship24 {
             $response = wp_remote_get($url, $args);
             $body     = wp_remote_retrieve_body( $response );
             $response = json_decode($body,true);
-            // echo "<pre>"; print_r($resp); die;
- 
+           
             $resp = $response['data'];
             if(!empty($resp) && !empty($resp['couriers'])){
                 update_option('_bt_sst_ship24_active_courier_companies', $resp['couriers']);

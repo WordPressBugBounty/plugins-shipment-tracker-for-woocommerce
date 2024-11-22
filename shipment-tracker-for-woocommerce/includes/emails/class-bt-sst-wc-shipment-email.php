@@ -50,9 +50,7 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
     function custom_content_to_processing_customer_email( $order, $sent_to_admin, $plain_text, $email ) {
 
         //if( 'Bt_Sst_WC_Shipment_Email' == $email->id ){
-    
-            // Set here as you want your custom content (for customers and email notification related to processing orders only)
-            //echo '<p class="some-class">Here goes your custom content… </p> '.$email->id ;
+   
             echo do_shortcode("[bt_shipping_tracking_form_2 email=true order_id='".$order->get_id()."']");
     
        // }

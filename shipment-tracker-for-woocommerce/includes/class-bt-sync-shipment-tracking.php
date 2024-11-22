@@ -147,7 +147,6 @@ class Bt_Sync_Shipment_Tracking {
 	public static function bt_sst_get_order_meta($order_id, $meta_key) {
 		// Get the order object
 		$order = wc_get_order($order_id);
-	// echo "<pre>"; print_r($order); die;
 		if ($order) {
 			// Get the meta data
 			$meta_value = $order->get_meta($meta_key);
@@ -475,7 +474,6 @@ class Bt_Sync_Shipment_Tracking {
 
 		$shipping_provides_with_premium = array();
 		foreach (BT_SHIPPING_PROVIDERS as $key => $value) {
-			//  echo $value; 
 			$shipping_provides_with_premium[$key] = $value;
 
 			if($key=="shipmozo"){

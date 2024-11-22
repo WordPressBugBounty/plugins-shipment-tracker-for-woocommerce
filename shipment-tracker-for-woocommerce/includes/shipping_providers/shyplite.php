@@ -61,7 +61,6 @@ class Bt_Sync_Shipment_Tracking_Shyplite {
             "key"=>$key,
             "secret"=>$secret,
         );
-        //echo $timestamp;
     }
 
     public function get_orders_tracking_by_awb($awbs){
@@ -96,7 +95,7 @@ class Bt_Sync_Shipment_Tracking_Shyplite {
             $body = wp_remote_retrieve_body( $response );
             
             $resp = json_decode($body,true);
-           // echo json_encode($resp);exit;
+        
             return !isset($resp["error"])?$resp:null;
             //return $resp;
         }

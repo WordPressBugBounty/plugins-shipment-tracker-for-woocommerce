@@ -221,7 +221,7 @@ class Bt_Sync_Shipment_Tracking_Nimbuspost_New {
                 
                 return;
             }
-            //echo json_encode($body );exit;
+         
             $postData = json_encode($body);
              $args = array(
                  'headers'     => array(
@@ -230,16 +230,16 @@ class Bt_Sync_Shipment_Tracking_Nimbuspost_New {
                  ),
                   'body' =>$postData
              );
-             //echo json_encode($args);exit;
+          
     
             $response = wp_remote_post( 'https://api.nimbuspost.com/v1/shipments', $args );
           // $response = wp_remote_post( "https://eo650r7ymufcxnv.m.pipedream.net", $args );
             //https://eo650r7ymufcxnv.m.pipedream.net
-            //echo json_encode($response);exit;
+         
             $body     = wp_remote_retrieve_body( $response );
-            //echo $response;exit;
+       
             $resp = json_decode($body,true);
-            //echo json_encode($resp);exit;
+        
             if($resp['data']['label']){
                 Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_nimbuspost_new_label_url', $resp['data']['label'] );
             }
@@ -390,8 +390,6 @@ class Bt_Sync_Shipment_Tracking_Nimbuspost_New {
         $so["package_weight"] = $total_weight_kg>0?$total_weight_g:100;
         
 
-        //echo json_encode($so);exit;
-
         return $so;
     }
     private function extractPhoneNumber( $billing_phone) {
@@ -482,10 +480,7 @@ class Bt_Sync_Shipment_Tracking_Nimbuspost_New {
              $body     = wp_remote_retrieve_body( $response );
 
              $resp = json_decode($body,true);
-             //print_r($args);
-             //echo json_encode($response);exit;
-             //echo($body);
-            // exit;
+           
             return $resp;
         }else{
             return null;

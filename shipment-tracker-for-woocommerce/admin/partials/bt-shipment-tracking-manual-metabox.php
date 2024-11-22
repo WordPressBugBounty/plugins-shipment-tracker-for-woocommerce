@@ -12,14 +12,14 @@
     $awb_n = str_replace('#order_id#', $order_id, $awb_n);
 
 ?>
-<input type="hidden" name="order_id" value="<?= $order_id ?>"/>
+<input type="hidden" name="order_id" value="<?php echo esc_attr( $order_id ) ?>"/>
 <p class="form-field ">
     <label for="bt_manual_courier_name">Courier Name *</label>
-    <input type="text" class="short" style="" name="bt_manual_courier_name" id="bt_manual_courier_name" value="<?php echo (isset($bt_shipment_tracking['courier_name']) && !empty($bt_shipment_tracking['courier_name'])) ? $bt_shipment_tracking['courier_name'] : ''; ?>" placeholder="<?= $cour_n ?>">
+    <input type="text" class="short" style="" name="bt_manual_courier_name" id="bt_manual_courier_name" value="<?php echo (isset($bt_shipment_tracking['courier_name']) && !empty($bt_shipment_tracking['courier_name'])) ? $bt_shipment_tracking['courier_name'] : ''; ?>" placeholder="<?php echo esc_attr($cour_n) ?>">
 </p>
 <p class="form-field ">
     <label for="bt_manual_awb_number">AWB Number</label>
-    <input type="text" class="short" style="" name="bt_manual_awb_number" id="bt_manual_awb_number" value="<?php echo (isset($bt_shipment_tracking['awb'])&& !empty($bt_shipment_tracking['awb'])) ? $bt_shipment_tracking['awb'] : ''; ?>" placeholder="<?= $awb_n ?>">
+    <input type="text" class="short" style="" name="bt_manual_awb_number" id="bt_manual_awb_number" value="<?php echo (isset($bt_shipment_tracking['awb'])&& !empty($bt_shipment_tracking['awb'])) ? $bt_shipment_tracking['awb'] : ''; ?>" placeholder="<?php echo esc_attr($awb_n) ?>">
 </p>
 <p class="form-field ">
     <?php
@@ -62,10 +62,10 @@
         jQuery('#bt_sync-box .spinner').addClass("is-active");
         jQuery.ajax({
             method: "POST",
-            url: '<?php echo admin_url('admin-ajax.php'); ?>',
+            url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
             dataType: "json",
             data: {
-                'order_id': '<?php echo $order_id; ?>',
+                'order_id': '<?php echo esc_js($order_id); ?>',
                 'courier_name': bt_manual_courier_name,
                 'awb_number':  jQuery('#bt_manual_awb_number').val(),
                 'shipping_status': jQuery('#bt_manual_shipping_status').val(),

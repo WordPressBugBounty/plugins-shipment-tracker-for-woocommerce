@@ -91,7 +91,6 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
 		$shipping_provider = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_shipping_provider', true);
 
         if($shipping_mode_is_manual_or_ship24=='ship24' && $shipping_provider == "manual"){
-            // echo "<pre>"; print_r($_POST['corier_code_and_name']); die;
             if(empty($corier_code = $_POST['corier_code'])){
                 $resp = array(
                     "status" => false,
@@ -202,7 +201,6 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
         $cfid=4;
         $resp = $this->post_cf7_data($body,$cfid,$base_url );
 
-        //echo json_encode($resp);
         return;
     }
 

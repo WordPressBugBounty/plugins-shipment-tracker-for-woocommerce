@@ -4,12 +4,12 @@
 ?>
 <div class="bt_order_tracking_page" style=" max-width: 90%; margin: auto; ">
     <form class="bt_tracking_form" action="" method="post" class="bt_track_order_form" >
-      <input type="hidden" name="bt_tracking_form_nonce" value="<?= wp_create_nonce('bt_shipping_tracking_form_2') ?>">
-      <input name="bt_track_order_id" value = "<?= $bt_track_order_id ?>" type="text" placeholder="Your order id">
+      <input type="hidden" name="bt_tracking_form_nonce" value="<?php echo esc_attr(wp_create_nonce('bt_shipping_tracking_form_2')) ?>">
+      <input name="bt_track_order_id" value = "<?php echo esc_attr($bt_track_order_id) ?>" type="text" placeholder="Your order id">
       <?php 
         
         if ($last_four_digit) {
-          echo "<input id='bt_last_four_digit_no' name='bt_track_order_phone' type='text' placeholder='Last 4 digits of phone no.' value='". $bt_last_four_digit ."'>";
+          echo "<input id='bt_last_four_digit_no' name='bt_track_order_phone' type='text' placeholder='Last 4 digits of phone no.' value='". esc_attr($bt_last_four_digit) ."'>";
         }
       ?>
       <button>Search</button>
@@ -27,12 +27,11 @@
       
       if ($the_order==false && !empty($bt_track_order_id))
       {
-        echo "<p style='text-align: center;'>". $message ."</p>";
+        echo "<p style='text-align: center;'>". esc_html($message) ."</p>";
       }
       else if (isset($the_order) && $the_order instanceof WC_Order && empty($tracking['tracking_data']['awb']))
       {
-        // echo json_encode($tracking);
-        // echo json_encode($the_order);
+ 
         $name = $the_order->get_billing_first_name() ." ". $the_order->get_billing_last_name() ;
         $order_status = $the_order->get_status();      
         $order_status_name = wc_get_order_status_name( $order_status);     
@@ -40,7 +39,7 @@
         $ordering_date = $the_order->get_date_created();
         ?>
         <div class="bt_details">
-        <p>Hello <?= $name ?>,</p> Your order is currently <em>'<?=  $order_status_name ?>'</em>. Tracking details (if applicable) will be available as soon as we ship your order.
+        <p>Hello <?php echo esc_html($name) ?>,</p> Your order is currently <em>'<?php  esc_html($order_status_name) ?>'</em>. Tracking details (if applicable) will be available as soon as we ship your order.
            
           <div class="track">
           
@@ -48,13 +47,13 @@
               <div class="tracking_details">
               
                 <div class="bt_delivery_date">
-                  <h4><?=  $order_status_name ?></h4>
+                  <h4><?php esc_html($order_status_name) ?></h4>
                   <span>YOUR ORDER STATUS</span>
                 </div>
               </div>
               <div class="bt_order_details">
                 <h4>ORDER DETAILS</h4>
-                <p>Order #: <?= $order_number ?></p>
+                <p>Order #: <?php echo esc_html($order_number) ?></p>
                 <p>AWB Number:  NA</p>
               </div>
             </div>
@@ -106,8 +105,7 @@
       }
       else if (isset($the_order)  && $the_order instanceof WC_Order && !empty($tracking['tracking_data']['awb']))
       {
-        // echo json_encode($tracking['tracking_data']);
-        // echo json_encode($the_order);
+
 
         $name = $the_order->get_billing_first_name() ." ". $the_order->get_billing_last_name();
         $expected_delv_date = $tracking['tracking_data']['etd'];
@@ -125,19 +123,19 @@
           <div class="track">
             <div class="bt_tracking_details">
               <div class="tracking_details">
-                <p>Hello <?= $name ?>!</p>
+                <p>Hello <?php echo esc_html($name) ?>!</p>
                 <p>Your shipment's expected delivery date is </p>
                 <div class="bt_delivery_date">
-                  <h4><?= $expected_delv_date ?></h4>
+                  <h4><?php echo  esc_html($expected_delv_date) ?></h4>
                   <span>EXPECTED DELIVERY DATE</span>
                 </div>
               </div>
               <div class="bt_order_details">
                 <h4>ORDER DETAILS</h4>
-                <P>Order Status: <?= $order_status ?></P>
-                <p>Courier Name:  <?= $courier_name ?></p>
-                <p>Order Id: <?= $order_id ?></p>
-                <p>AWB Number:  <?= $order_awb ?></p>
+                <P>Order Status: <?php echo esc_html($order_status) ?></P>
+                <p>Courier Name:  <?php echo esc_html($courier_name) ?></p>
+                <p>Order Id: <?php echo esc_html($order_id) ?></p>
+                <p>AWB Number:  <?php echo esc_html($order_awb) ?></p>
               </div>
             </div>
 
@@ -164,10 +162,7 @@
               else if ($tracking_status == "rto-in-transit" || $tracking_status == "rto-delivered") {
                 $status = "RTO in Transit";
                 $end_status = 'RTO Delivered';
-              }
-              // echo  '<br>' . $tracking_status . '<br>';
-              // echo $status . '<br>'; 
-              
+              }       
               $first = "
               <div class='order-track'>
                 <h4>Order Status</h4>
@@ -219,11 +214,11 @@
               </div>
               ";
               
-                echo $first;
+                echo esc_html($first);
                 if ($tracking_status != 'canceled' && $tracking_status != 'rto-in-transit' && $tracking_status != 'rto-delivered') {
-                  echo $second;
-                  echo $third;
-                  echo $fourth;
+                  echo esc_html($second);
+                  echo esc_html($third);
+                  echo esc_html($fourth);
                 }
                 else {
                   if ($tracking_status == 'canceled') {
@@ -231,13 +226,13 @@
                   }
                   if ($tracking_status == 'rto-in-transit' || $tracking_status == 'rto-delivered') {
                     // $end_status = 'RTO Delivered';
-                    echo $second;
+                    echo esc_html($second);
                   }
                   if ($tracking_status == 'pending-pickup' || $tracking_status == 'rto-delivered') {
                     // $end_status = 'RTO Delivered';
-                    echo $second;
+                    echo esc_html($second);
                   }
-                  echo $fourth;
+                  echo esc_html($fourth);
                 }
                   
             }              
@@ -251,7 +246,7 @@
     <?php if($auto_post) : ?>
       <script>
         document.addEventListener("DOMContentLoaded", function(event) {
-          var enable_ph = '<?= $last_four_digit ?>'
+          var enable_ph = '<?php echo esc_js( $last_four_digit) ?>'
     
           if (enable_ph) {
             var ph = prompt("Enter last 4 digits of phone number");

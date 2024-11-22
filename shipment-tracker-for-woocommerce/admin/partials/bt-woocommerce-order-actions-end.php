@@ -12,7 +12,6 @@ if(!$post_id){
                 unset($all_providers[$key]);
             }
         }
-        // echo var_dump($enabled_shipping_providers); die;
 	?>
 <div class="wide" id="bt_sst_actions" style="column-span: all;">
     <label>Shipping Provider</label>

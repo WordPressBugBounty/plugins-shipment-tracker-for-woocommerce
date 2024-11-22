@@ -270,9 +270,7 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
             $body     = wp_remote_retrieve_body( $response );
 
             $resp = json_decode($body,true);
-            // print_r($resp);
-            // echo json_encode($resp);
-            // exit;
+           
             return $resp;
         }else{
             return null;
@@ -321,10 +319,7 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
              $body     = wp_remote_retrieve_body( $response );
 
              $resp = json_decode($body,true);
-             //print_r($args);
-           // echo json_encode($weight);
-            // echo($body);
-             //exit;
+          
             return $resp;
         }else{
             return null;
@@ -339,7 +334,7 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
             if(false == $body = $this->get_shipmozo_order_object($order_id)){
                 return;
             }
-            //echo json_encode($body );exit;
+         
             $postData = json_encode($body);
              $args = array(
                  'headers'     => array(
@@ -355,7 +350,7 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
             //https://eo650r7ymufcxnv.m.pipedream.net
           
             $body     = wp_remote_retrieve_body( $response );
-           // echo $body;exit;
+           
             $resp = json_decode($body,true);
             return $resp;
 

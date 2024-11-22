@@ -46,7 +46,7 @@
             <img height="25px" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABoAAAAaCAYAAACpSkzOAAAACXBIWXMAAAsTAAALEwEAmpwYAAABJElEQVR4nLWWMUoDQRSGvyRIiuQkwcI6MVjYiGAVRKIYwYvE0s4b2GTvIFgasVBB7ExnlCRVyBFWBkYYhrfLvsnMB6/Z+Wc+9s3ssFCNFjACMmBqK7PPzFgUzoEVkBfUChhuK7kpEeRejUMlFwpJbkv9Zu2Sdi1sSWNL7Z6NhEW+ga6T6QJzIXepEWXCAq7kn56QM3Mr8+xN/i3JLrzsk0b0KOxLEUsv+6AR3QktMW3y6Qu5W41IWmDuyfaBHyG3pxHVgFnA8X4lgOuAD/YkRNQAvhSSd9uJ5NfQEVtQBz4rSF6IwKCC6DCGqGZPU5FkSkSOS0QHROZDkLyRgCtBdJZC1AQ2jmQN7JCIiSO6JyGnjmiQUrTriDopRebHw9xpplQ/jn+qg9Ubw5MNLwAAAABJRU5ErkJggg==">
             <div>
                 <input id="pin_input_box" placeholder="Enter a Pincode" type="text">
-                <input id="bt_sst_delivery_estimate_country" value="<?=$shop_country?>"  type="hidden">
+                <input id="bt_sst_delivery_estimate_country" value="<?php echo esc_attr($shop_country)?>"  type="hidden">
             </div>
             <div>
                 <?php wp_nonce_field( 'get_pincode_data_product_page', 'get_pincode_data_product_page_nounce'); ?>
@@ -70,7 +70,7 @@
 
             <ul id="myUL">
                 <?php foreach ( $countries as $code => $country ) {?>
-                    <li> <a class="bt_sst_country_select" href="#" data-country="<?=$code?>"><?=$country?></a> </li>
+                    <li> <a class="bt_sst_country_select" href="#" data-country="<?php echo esc_attr($code)?>"><?php echo esc_html($country)?></a> </li>
                 <?php } ?>
           
             </ul> 
@@ -158,9 +158,9 @@
             } 
         </script>
 
-        <style>
-            #myInput {
-            background-image: url('<?=$plugin_public_url?>images/searchicon.png'); /* Add a search icon to input */
+<style>
+    #myInput {
+            background-image: url('<?php echo esc_url( $plugin_public_url ); ?>images/searchicon.png');
             background-position: 10px 12px; /* Position the search icon */
             background-repeat: no-repeat; /* Do not repeat the icon image */
             width: 100%; /* Full-width */
@@ -223,7 +223,7 @@
                 box.addEventListener('click', function handleClick(e) {
                     e.preventDefault();
                     modal.style.display = "none";
-                    var base_country = '<?=  $shop_country ?>';
+                    var base_country = '<?php echo esc_js($shop_country) ?>';
                     var selected_country_code= this.dataset.country;
                     var selected_country= this.textContent;
                     document.getElementById("bt_sst_delivery_estimate_country").value = selected_country_code;

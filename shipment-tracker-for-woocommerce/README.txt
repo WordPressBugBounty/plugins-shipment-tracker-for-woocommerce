@@ -776,6 +776,8 @@ The tracking page adheres to strict privacy standards to ensure the security of 
 
 
 == Changelog ==
+= 1.4.23.1 - 2024.11.22 =
+1. Security Update
 = 1.4.18 - 2024.09.15 =
 1. Feature to show "Rate us" widget in tracking page.
 2. Feature to show "Map" of pickup and delivery location along with estimated delivery date in tracting page.

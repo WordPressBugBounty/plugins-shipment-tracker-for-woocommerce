@@ -50,21 +50,20 @@ if(empty($bt_sst_review_subheading_text)){
                                         <div class="v3931_266"></div>
                                         <div class="v3931_255">
                                             <!-- <form class="bt_tracking_form" action="" method="post" class="bt_track_order_form"> -->
-                                                <input type="hidden" name="bt_tracking_form_nonce" value="<?= wp_create_nonce('bt_shipping_tracking_form_2') ?>">
-                                                
+                                            <input type="hidden" name="bt_tracking_form_nonce" value="<?php echo esc_attr(wp_create_nonce('bt_shipping_tracking_form_2')) ?>">                                                
                                                 <div class="v3931_259">
                                                     <!-- <div class="v3931_260"></div> -->
                                                     <span class="v3931_261">Order Id/ AWB No</span>
                                                     <input required 
                                                     style="background: rgba(255,255,255,1); height: 52px; border-radius: 10px; border: 1px solid rgba(241,241,241,1); top: 30px;" 
-                                                    type="text" value="<?= $bt_track_order_id ?>" name="bt_track_order_id" placeholder="Your order id/ AWB No" id="bt_track_order_id">
+                                                    type="text" value="<?php echo esc_attr($bt_track_order_id) ?>" name="bt_track_order_id" placeholder="Your order id/ AWB No" id="bt_track_order_id">
                                                 </div>
                                                 
                                                 <?php if ($last_four_digit) { ?>
                                                         <!-- <div class="v3931_263"></div> -->
                                                         <div class="v3931_262">
                                                             <span class="v3931_261">Mobile No (last 4 digits)</span>
-                                                            <input required style="background: rgba(255,255,255,1); height: 52px; border-radius: 10px; border: 1px solid rgba(241,241,241,1); top: 30px;" type="text" value="<?= $bt_last_four_digit ?>" name="bt_track_order_phone" placeholder="Last 4 digits of mobile number" id="bt_last_four_digit_no">                              
+                                                            <input required style="background: rgba(255,255,255,1); height: 52px; border-radius: 10px; border: 1px solid rgba(241,241,241,1); top: 30px;" type="text" value="<?php  esc_attr($bt_last_four_digit) ?>" name="bt_track_order_phone" placeholder="Last 4 digits of mobile number" id="bt_last_four_digit_no">                              
                                                         </div>
                                                 <?php } ?>
                                                 
@@ -96,8 +95,6 @@ if(empty($bt_sst_review_subheading_text)){
         else if (isset($the_order) && $the_order instanceof WC_Order)
         {
             
-            // echo json_encode($tracking);
-            // echo json_encode($the_order);
             $name = $the_order->get_billing_first_name() ." ". $the_order->get_billing_last_name() ;
             $order_status = $the_order->get_status();      
             $order_status_name = wc_get_order_status_name( $order_status);     
@@ -106,7 +103,7 @@ if(empty($bt_sst_review_subheading_text)){
             $ordering_time = $the_order->get_date_created()->date(get_option('time_format'));
             $order_payment_method = $the_order->get_payment_method();
             $order_total = $the_order->get_formatted_order_total();
-            $order_sjipping_method = $the_order->get_shipping_method();
+            $order_shipping_method = $the_order->get_shipping_method();
             $order_delivery_address= $the_order->get_shipping_city();
             if(!$order_delivery_address){
                 $order_delivery_address= $the_order->get_billing_city();
@@ -116,7 +113,7 @@ if(empty($bt_sst_review_subheading_text)){
             if(isset($payment_gateways[$order_payment_method])){
                 $payment_method_name = $payment_gateways[$order_payment_method]->get_title();
             }
-            $order_placed_message = "We've received your order on </strong> $ordering_date at $ordering_time.";
+            $order_placed_message = "We've received your order on $ordering_date at $ordering_time.";
             $estimated_delivery_date = 'NA';
             $courier_name = 'NA';
             $awb_number = 'NA';
@@ -125,7 +122,7 @@ if(empty($bt_sst_review_subheading_text)){
             $shipped_message = "Your package is on its way & will reach you soon.";
             $show_delivery_states = true;
             $current_step = 2; //orderplaced=1, shipped=2, outfordelivery=3, delivered=4
-            // echo "<pre>"; print_r($tracking['tracking_data']); echo "</pre>";
+          
             $delivery_status = "";
             if(!empty($tracking['tracking_data']['awb']) && $order_status!='cancelled' && $order_status!='on-hold' && $order_status!='pending' && $order_status!='refunded' && $order_status!='failed' && $order_status!='checkout-draft'){
                 $awb_number = $tracking['tracking_data']['awb'];
@@ -133,9 +130,6 @@ if(empty($bt_sst_review_subheading_text)){
                 $shipment_status = $tracking['tracking_data']['current_status'];
                 $courier_name = $tracking['tracking_data']['courier_name'];
                 
-                // echo $shipment_status; die;
-                // extrect data 
-         
                 if (strtolower($shipment_status) != 'delivered') {
                     $delivery_status = "Estimated Delivery:";
                 }else {
@@ -251,13 +245,13 @@ if(empty($bt_sst_review_subheading_text)){
                                             <div class="bt_sst_location_del_bar_icone snipcss0-10-10-11 obscure-69p19MbZm">
                                                 <!-- <p class="bt_sst_location_del_bar_icone snipcss0-11-11-12 bt_sst snipcss0-0-0-1 tether-element-attached-top tether-element-attached-center tether-target-attached-top tether-target-attached-center"> -->
                                                     <div class="bt_sst_location_del_bar_icone_child">
-                                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAADuElEQVR4nO2ZWYiOURjHfzRkmbHPZOJCWYZCiNwoW7JEGtkaV24VuZG9xnZBcodsxYWILJESLiQiDLIklEhqLFnGvoxPR/+3TtN8531f3znffCO/euvr/f7vc/bnOec58J9G6QBUAbuAq8BL4Luel3q3E5gLlFCAVAB7gM9AJuHzCdgN9KUAaAdsBn6ocr/U6yuB0Wpgez0VercKuCZtRqO1CWjTVI0wPXlHlakH9gO9U3zfBzhgNegyUE6eGao5byrwABiWg63hwEPZegYMJo8jETXiDNDZg80uwFmrMeX5WBN3rEYUebTdCjhnTbOga2azNZ18jERjI/NIZawhEBXyTvU5rok4RsgBfAS6hyhgj3rKeKfQHFRZ20JE7E/qqSQutgxYB9xUz5rnBrAWKE3oUH7pu2I8UqUeMsEujplAnSOivwdmJLBzXfo5eGSXjJqIHdeIKMAdUySPIvsY4LgVQCtjbK2WdofHdvwZiYwq5ppO0UgsceiWSvMO6ObQjZXuCh55JaP9HJp11kjEcSKBi+0nzQs88k1GXVvvWwlGrWFvGweQjRJpvuKRLzLqirYfpEniZaJKmqno2kVkdDTwRq2MugJUXYqGdLA8WDZ6SPMcj9yX0YEOzU1pjHeKY5y0NQ7NEGnu4pGTMjrboVkrzfEU9qodmnnSHMUjG2R0vUNTqqmSkYvNxnJp3gJdHbqNCRqbmtkyarbZLmYo2GXkYsdqzRRrOkUjYTTTY2xdlDZOl4oyFf5V3sRFpYJdti3K2wSV66Sdtnk64pkbqsiUBNpuCnY1cst12jtVx0yniFkqy4yKd6LIvZfwHEmw1v6a/pbvj5teudBRAdhsPnuFKqRGjTGuMRQLVcb5gGWwwEoOhKAIeKwyzBkoGMWWRzJna9/MtbYlJqsSlC0q7HDAqbuCPFBuLcZBHu1OsA5cJo7kha0BRsUs7qD5rMboaWVVRnmwV6lGvA6U+HNSbZ3yWuZgp7WVxF5AE9AWeKIKzM/BzhLZuOc5l/xX+a5anfrSUmq584k0IS2AS6qISXCnZZ++Ndv7Jmeors9+AiNTfDfJuktMc9MVlOiYez/hvYbJojzVN4soIFoDtxMchyO2W+eNXDxeEIZoitXHZFImKf6Y0+YACpQ16uknWbYZZUqBGs1iCpgi4IKVxjFeLcJModP671SD/wqSnlbSe2UjR+XaUFdqIZimdWDWy2Rgqn4bFz2eZka1RuCNUkDm9zKaIS2AQ1Y+q+GaaVaU6Mbpsu9LTf5VfgNttDSN+ivn8AAAAABJRU5ErkJggg=="><p> <?= $order_delivery_address ?> </p>
+                                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAADuElEQVR4nO2ZWYiOURjHfzRkmbHPZOJCWYZCiNwoW7JEGtkaV24VuZG9xnZBcodsxYWILJESLiQiDLIklEhqLFnGvoxPR/+3TtN8531f3znffCO/euvr/f7vc/bnOec58J9G6QBUAbuAq8BL4Luel3q3E5gLlFCAVAB7gM9AJuHzCdgN9KUAaAdsBn6ocr/U6yuB0Wpgez0VercKuCZtRqO1CWjTVI0wPXlHlakH9gO9U3zfBzhgNegyUE6eGao5byrwABiWg63hwEPZegYMJo8jETXiDNDZg80uwFmrMeX5WBN3rEYUebTdCjhnTbOga2azNZ18jERjI/NIZawhEBXyTvU5rok4RsgBfAS6hyhgj3rKeKfQHFRZ20JE7E/qqSQutgxYB9xUz5rnBrAWKE3oUH7pu2I8UqUeMsEujplAnSOivwdmJLBzXfo5eGSXjJqIHdeIKMAdUySPIvsY4LgVQCtjbK2WdofHdvwZiYwq5ppO0UgsceiWSvMO6ObQjZXuCh55JaP9HJp11kjEcSKBi+0nzQs88k1GXVvvWwlGrWFvGweQjRJpvuKRLzLqirYfpEniZaJKmqno2kVkdDTwRq2MugJUXYqGdLA8WDZ6SPMcj9yX0YEOzU1pjHeKY5y0NQ7NEGnu4pGTMjrboVkrzfEU9qodmnnSHMUjG2R0vUNTqqmSkYvNxnJp3gJdHbqNCRqbmtkyarbZLmYo2GXkYsdqzRRrOkUjYTTTY2xdlDZOl4oyFf5V3sRFpYJdti3K2wSV66Sdtnk64pkbqsiUBNpuCnY1cst12jtVx0yniFkqy4yKd6LIvZfwHEmw1v6a/pbvj5teudBRAdhsPnuFKqRGjTGuMRQLVcb5gGWwwEoOhKAIeKwyzBkoGMWWRzJna9/MtbYlJqsSlC0q7HDAqbuCPFBuLcZBHu1OsA5cJo7kha0BRsUs7qD5rMboaWVVRnmwV6lGvA6U+HNSbZ3yWuZgp7WVxF5AE9AWeKIKzM/BzhLZuOc5l/xX+a5anfrSUmq584k0IS2AS6qISXCnZZ++Ndv7Jmeors9+AiNTfDfJuktMc9MVlOiYez/hvYbJojzVN4soIFoDtxMchyO2W+eNXDxeEIZoitXHZFImKf6Y0+YACpQ16uknWbYZZUqBGs1iCpgi4IKVxjFeLcJModP671SD/wqSnlbSe2UjR+XaUFdqIZimdWDWy2Rgqn4bFz2eZka1RuCNUkDm9zKaIS2AQ1Y+q+GaaVaU6Mbpsu9LTf5VfgNttDSN+ivn8AAAAABJRU5ErkJggg=="><p> <?php echo esc_html($order_delivery_address) ?> </p>
                                                     </div>
                                                     <div class="bt_sst_location_del_bar_icone_child">
-                                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB+0lEQVR4nO2YOUsDQRiGHzAmWphYiGjAQksre8XSxsKjyl/wwtouXRpttLPS1s4fYOcNHo1XHVQ8SgVBdGXgi6whGXZ39sjKPPBB2G923n13vjk2YLFYLBaLGU7M8QJsAJ1pN+JIrJNyJsTIM/8ARyKSTh3DsEbSjBNFaSVp5NFDyT4BO8Cw106jnhemmu/AdKsaKWlyNYaAXbn2AYzTQuhehNMg1wZsy/UHoJeUGlFkgH3J7Ym5P8RVTo00/eYGgFfJr6TZiGIS+AY+gTESxsSIYk3aVIEeUmykHTiWdlv1N0ZdTl4f1vGoOSh7yxcwkmYjilVpu0lC6B62qtks6xmVtne0oJFygJVUrWCRlY8OnWZGzFT9bgutZsQv1kgY2BExLa0OYBk4lU1IxQmwBORMxEPQcrwaKQKXmtXiAugPyUgxgJYnIzlXx1fAFNAloT47byR3DmQNjQTV8mRkSXLXQKFBvuASmDc0ElTrt697+aG2+3oOJafeTjNmpM2BoZEgWiXXcZ6Kh11TDW8z8gGOFGFrlZF6q7hGxm/nhRiNFOraVsWEOtZoqQ237v+k2QClFbvWotx402QCdssRWrWZ89t5nFpZWbvVzbcy2fISs66Oz3wuv4loFV0CjUKt632GJmLTysnQqw/+N4kjYCGEkUhSy2KxkDJ+ANIID7KqwJZkAAAAAElFTkSuQmCC"><p> <?= $courier_name ?> </p>
+                                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB+0lEQVR4nO2YOUsDQRiGHzAmWphYiGjAQksre8XSxsKjyl/wwtouXRpttLPS1s4fYOcNHo1XHVQ8SgVBdGXgi6whGXZ39sjKPPBB2G923n13vjk2YLFYLBaLGU7M8QJsAJ1pN+JIrJNyJsTIM/8ARyKSTh3DsEbSjBNFaSVp5NFDyT4BO8Cw106jnhemmu/AdKsaKWlyNYaAXbn2AYzTQuhehNMg1wZsy/UHoJeUGlFkgH3J7Ym5P8RVTo00/eYGgFfJr6TZiGIS+AY+gTESxsSIYk3aVIEeUmykHTiWdlv1N0ZdTl4f1vGoOSh7yxcwkmYjilVpu0lC6B62qtks6xmVtne0oJFygJVUrWCRlY8OnWZGzFT9bgutZsQv1kgY2BExLa0OYBk4lU1IxQmwBORMxEPQcrwaKQKXmtXiAugPyUgxgJYnIzlXx1fAFNAloT47byR3DmQNjQTV8mRkSXLXQKFBvuASmDc0ElTrt697+aG2+3oOJafeTjNmpM2BoZEgWiXXcZ6Kh11TDW8z8gGOFGFrlZF6q7hGxm/nhRiNFOraVsWEOtZoqQ237v+k2QClFbvWotx402QCdssRWrWZ89t5nFpZWbvVzbcy2fISs66Oz3wuv4loFV0CjUKt632GJmLTysnQqw/+N4kjYCGEkUhSy2KxkDJ+ANIID7KqwJZkAAAAAElFTkSuQmCC"><p> <?php echo esc_html($courier_name) ?> </p>
                                                     </div>
                                                     <div class="bt_sst_location_del_bar_icone_child">
-                                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABiklEQVR4nMWVsUrEQBCGY6do5zMoB76Dd4JYauUj2OQssv+/geuCrTa+hFernShY2V9lY+MJIjZXCFZHUIabQNzkNskZceDnZi+z8+1mZkgQ/LcZY3ZIDgHcenQJoLNQcgApgLEn+YTkF4C3xhA9+ThJkuV5MQDuST4poBlENovqxADYBPAK4D2Koq02ATckH9TvNLpJTcAJgCmAvrV2l+SxrqshAK5FvhiSqyTvpNCuqvYGg8FgXRRU25LUQG6QieSo6va/MtR4ve0CjE6sqpf9b609EpWt5Tc/dCTPwjBcKwByE/usU5tmEDgnya/VnyhA/KlACvt0Yj8B7FtrD9S/yAfGcbwhcgFSTC3sHskXklcFgAa6LZZP8igTKlI//8xtT84DjMpaDJoEwIeoBF7vBr73zFnSQ5ELcGsA4LSQ09cpAPok4+yZ+CTDsi6S5DLZpW3atqEOgOS56C8Bw6oPTpkZY1ak4Fmr+wA9HToJ9n2Tf0jjU2NMt85punKSJgCJJ7nd5NYL2zenX/kTY8xhFQAAAABJRU5ErkJggg=="><p> <?= $awb_number ?></p>
+                                                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAABiklEQVR4nMWVsUrEQBCGY6do5zMoB76Dd4JYauUj2OQssv+/geuCrTa+hFernShY2V9lY+MJIjZXCFZHUIabQNzkNskZceDnZi+z8+1mZkgQ/LcZY3ZIDgHcenQJoLNQcgApgLEn+YTkF4C3xhA9+ThJkuV5MQDuST4poBlENovqxADYBPAK4D2Koq02ATckH9TvNLpJTcAJgCmAvrV2l+SxrqshAK5FvhiSqyTvpNCuqvYGg8FgXRRU25LUQG6QieSo6va/MtR4ve0CjE6sqpf9b609EpWt5Tc/dCTPwjBcKwByE/usU5tmEDgnya/VnyhA/KlACvt0Yj8B7FtrD9S/yAfGcbwhcgFSTC3sHskXklcFgAa6LZZP8igTKlI//8xtT84DjMpaDJoEwIeoBF7vBr73zFnSQ5ELcGsA4LSQ09cpAPok4+yZ+CTDsi6S5DLZpW3atqEOgOS56C8Bw6oPTpkZY1ak4Fmr+wA9HToJ9n2Tf0jjU2NMt85punKSJgCJJ7nd5NYL2zenX/kTY8xhFQAAAABJRU5ErkJggg=="><p> <?php echo esc_html($awb_number) ?></p>
                                                     </div>
                                                 <!-- </p> -->
                                             </div>
@@ -291,7 +285,7 @@ if(empty($bt_sst_review_subheading_text)){
                                                             <div class="snipcss0-14-35-36 obscure-38P18aqL4 obscure-P7W378aLr obscure-x03Z0E85r obscure-VXzbXRgej">
                                                                 <div class="snipcss0-15-36-37 obscure-8zZkzlygz obscure-BEzVENpmn"> <span class="snipcss0-16-37-38 obscure-5eLBea7qK">
                                                                         <span class="snipcss0-17-38-39 obscure-Wb9zbk739">
-                                                                            <i class="snipcss0-18-39-40 obscure-geN8ev7qP obscure-avzpv6m4P <?= $current_step>=1?"bt_sst_step_completed":"" ?>"></i>
+                                                                            <i class="snipcss0-18-39-40 obscure-geN8ev7qP obscure-avzpv6m4P <?php echo esc_attr($current_step >= 1 ? "bt_sst_step_completed" : "") ?>"></i>
                                                                         </span>
                                                                     </span>
                                                                 </div>
@@ -299,11 +293,11 @@ if(empty($bt_sst_review_subheading_text)){
                                                             <div class="info-list-content-dynamic0 snipcss0-14-35-41 obscure-jzEBz173V obscure-LzqyzR5gW">
                                                                 <h4 class="uabb-info-list-title bt_sst snipcss0-15-41-42">Order Placed</h4>
                                                                 <div class="info-list-description-dynamic0 snipcss0-15-41-43 obscure-9aVkarqgw obscure-n0EW0n7or">
-                                                                    <p class="snipcss0-16-43-44 bt_sst"><?= $order_placed_message ?></p>
+                                                                    <p class="snipcss0-16-43-44 bt_sst"><?php echo esc_html($order_placed_message )?></p>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="snipcss0-13-34-45 obscure-jzEBz173V obscure-kzaezq7PL <?= $current_step>1?"bt_sst_step_completed":"" ?>"></div>
+                                                        <div class="snipcss0-13-34-45 obscure-jzEBz173V obscure-kzaezq7PL <?php echo esc_attr($current_step > 1 ? "bt_sst_step_completed" : ""); ?>"></div>
                                                     </li>
                                                     <li class="info-list-item-dynamic1 snipcss0-12-33-46 obscure-z0xQ0E4nw">
                                                         <div class="snipcss0-13-46-47 obscure-jzEBz173V obscure-MMkaMW93B obscure-vMapMwZlb">
@@ -322,20 +316,20 @@ if(empty($bt_sst_review_subheading_text)){
                                                                 </div>
                                                             </div>
                                                             <div class="info-list-content-dynamic1 snipcss0-14-47-53 obscure-jzEBz173V obscure-LzqyzR5gW">
-                                                                <h4 class="uabb-info-list-title bt_sst snipcss0-15-53-54"><?= $shipped_string  ?></h4>
+                                                                <h4 class="uabb-info-list-title bt_sst snipcss0-15-53-54"><?php echo esc_html($shipped_string)  ?></h4>
                                                                 <div class="info-list-description-dynamic1 snipcss0-15-53-55 obscure-9aVkarqgw obscure-n0EW0n7or">
-                                                                    <p class="snipcss0-16-55-56 bt_sst"><?= $shipped_message ?></p>
+                                                                    <p class="snipcss0-16-55-56 bt_sst"><?php echo esc_html($shipped_message); ?></p>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="snipcss0-13-46-57 obscure-jzEBz173V obscure-kzaezq7PL <?= $current_step>2?"bt_sst_step_completed":"" ?>"></div>
+                                                        <div class="snipcss0-13-46-57 obscure-jzEBz173V obscure-kzaezq7PL <?php echo esc_attr($current_step > 2 ? "bt_sst_step_completed" : ""); ?>"></div>
                                                     </li>
-                                                    <li style="<?= $show_delivery_states?'':'display:none' ?>" class="info-list-item-dynamic2 snipcss0-12-33-58 obscure-z0xQ0E4nw">
+                                                    <li style="<?php echo esc_attr($show_delivery_states ? '' : 'display:none') ?>" class="info-list-item-dynamic2 snipcss0-12-33-58 obscure-z0xQ0E4nw">
                                                         <div class="snipcss0-13-58-59 obscure-jzEBz173V obscure-MMkaMW93B obscure-vMapMwZlb">
                                                             <div class="snipcss0-14-59-60 obscure-38P18aqL4 obscure-P7W378aLr obscure-x03Z0E85r obscure-KEqMElRvl">
                                                                 <div class="snipcss0-15-60-61 obscure-8zZkzlygz obscure-BEzVENpmn"> <span class="snipcss0-16-61-62 obscure-5eLBea7qK">
                                                                         <span class="snipcss0-17-62-63 obscure-Wb9zbk739">
-                                                                            <i class="snipcss0-18-63-64 obscure-geN8ev7qP obscure-avzpv6m4P <?= $current_step>=3?"bt_sst_step_completed":"" ?>"></i>
+                                                                            <i class="snipcss0-18-63-64 obscure-geN8ev7qP obscure-avzpv6m4P <?php echo esc_attr($current_step >= 3 ? "bt_sst_step_completed" : ""); ?>"></i>
                                                                         </span>
                                                                     </span>
                                                                 </div>
@@ -352,14 +346,14 @@ if(empty($bt_sst_review_subheading_text)){
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="snipcss0-13-58-69 obscure-jzEBz173V obscure-kzaezq7PL <?= $current_step>3?"bt_sst_step_completed":"" ?>"></div>
+                                                        <div class="snipcss0-13-58-69 obscure-jzEBz173V obscure-kzaezq7PL <?php echo esc_attr($current_step > 3 ? "bt_sst_step_completed" : ""); ?>"></div>
                                                     </li>
-                                                    <li style="<?= $show_delivery_states?'':'display:none' ?>"  class="info-list-item-dynamic3 snipcss0-12-33-70 obscure-z0xQ0E4nw">
+                                                    <li style="<?php echo esc_attr($show_delivery_states ? '' : 'display:none') ?>"  class="info-list-item-dynamic3 snipcss0-12-33-70 obscure-z0xQ0E4nw">
                                                         <div class="snipcss0-13-70-71 obscure-jzEBz173V obscure-MMkaMW93B obscure-vMapMwZlb">
                                                             <div class="snipcss0-14-71-72 obscure-38P18aqL4 obscure-P7W378aLr obscure-x03Z0E85r obscure-l0E90NdXQ">
                                                                 <div class="snipcss0-15-72-73 obscure-8zZkzlygz obscure-BEzVENpmn"> <span class="snipcss0-16-73-74 obscure-5eLBea7qK">
                                                                         <span class="snipcss0-17-74-75 obscure-Wb9zbk739">
-                                                                            <i class="snipcss0-18-75-76 obscure-geN8ev7qP obscure-avzpv6m4P <?= $current_step>=4?"bt_sst_step_completed":"" ?>"></i>
+                                                                            <i class="snipcss0-18-75-76 obscure-geN8ev7qP obscure-avzpv6m4P <?php echo esc_attr($current_step >= 4 ? "bt_sst_step_completed" : ""); ?>"></i>
                                                                         </span>
                                                                     </span>
                                                                 </div>
@@ -371,13 +365,13 @@ if(empty($bt_sst_review_subheading_text)){
                                                                         <?php if($current_step>=4){
                                                                                 echo 'Yay! You should have already received your package.';
                                                                             }   
-                                                                            echo $estimated_delivery_date;
+                                                                            echo esc_html($estimated_delivery_date);
                                                                         ?>
                                                                     </p>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="snipcss0-13-70-81 obscure-jzEBz173V obscure-kzaezq7PL <?= $current_step>4?"bt_sst_step_completed":"" ?>"></div>
+                                                        <div class="snipcss0-13-70-81 obscure-jzEBz173V obscure-kzaezq7PL <?php echo esc_attr($current_step > 4 ? "bt_sst_step_completed" : ""); ?>"></div>
                                                     </li>
                                                 </ul>
                                                 
@@ -563,7 +557,7 @@ if(empty($bt_sst_review_subheading_text)){
                                                         <h3 class="snipcss0-13-130-131 obscure-e8bX8verE bt_sst"> <span class="snipcss0-14-131-132 obscure-p7an7J30k">Order #</span></h3>
                                                         <div class="snipcss0-13-130-133 obscure-JkAnk9lqR"><span class="snipcss0-14-133-134 obscure-wgJwgZVx0"><span class="snipcss0-15-134-135 obscure-Rzy6z41e7"></span></span>
                                                             <div class="snipcss0-14-133-136 obscure-ZWy0WPML0">
-                                                                <p class="snipcss0-15-136-137 bt_sst"><?= $order_number ?></p>
+                                                                <p class="snipcss0-15-136-137 bt_sst"><?php echo esc_html($order_number) ?></p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -574,7 +568,7 @@ if(empty($bt_sst_review_subheading_text)){
                                                         <h3 class="snipcss0-13-130-131 obscure-e8bX8verE bt_sst"> <span class="snipcss0-14-131-132 obscure-p7an7J30k">Placed on</span></h3>
                                                         <div class="snipcss0-13-130-133 obscure-JkAnk9lqR"><span class="snipcss0-14-133-134 obscure-wgJwgZVx0"><span class="snipcss0-15-134-135 obscure-Rzy6z41e7"></span></span>
                                                             <div class="snipcss0-14-133-136 obscure-ZWy0WPML0">
-                                                                <p class="snipcss0-15-136-137 bt_sst"> <?=  $ordering_date ?> <strong class="snipcss0-12-117-119">at</strong> <?=  $ordering_time ?></p>
+                                                                <p class="snipcss0-15-136-137 bt_sst"> <?php echo esc_html($ordering_date) ?> <strong class="snipcss0-12-117-119">at</strong> <?php echo esc_html($ordering_time) ?></p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -584,7 +578,7 @@ if(empty($bt_sst_review_subheading_text)){
                                                         <h3 class="snipcss0-13-130-131 obscure-e8bX8verE bt_sst"> <span class="snipcss0-14-131-132 obscure-p7an7J30k">Order Total</span></h3>
                                                         <div class="snipcss0-13-130-133 obscure-JkAnk9lqR"><span class="snipcss0-14-133-134 obscure-wgJwgZVx0"><span class="snipcss0-15-134-135 obscure-Rzy6z41e7"></span></span>
                                                             <div class="snipcss0-14-133-136 obscure-ZWy0WPML0">
-                                                                <p class="snipcss0-15-136-137 bt_sst"><?= $order_total ?></p>
+                                                                <p class="snipcss0-15-136-137 bt_sst"><?php echo $order_total; ?></p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -594,7 +588,7 @@ if(empty($bt_sst_review_subheading_text)){
                                                         <h3 class="snipcss0-13-139-140 obscure-e8bX8verE bt_sst"> <span class="snipcss0-14-140-141 obscure-p7an7J30k">Payment via</span></h3>
                                                         <div class="snipcss0-13-139-142 obscure-JkAnk9lqR"><span class="snipcss0-14-142-143 obscure-wgJwgZVx0"><span class="snipcss0-15-143-144 obscure-Rzy6z41e7"></span></span>
                                                             <div class="snipcss0-14-142-145 obscure-ZWy0WPML0">
-                                                                <p class="snipcss0-15-145-146 bt_sst"><?= $payment_method_name ?></p>
+                                                                <p class="snipcss0-15-145-146 bt_sst"><?php echo esc_html($payment_method_name) ?></p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -604,7 +598,7 @@ if(empty($bt_sst_review_subheading_text)){
                                                         <h3 class="snipcss0-13-148-149 obscure-e8bX8verE bt_sst"> <span class="snipcss0-14-149-150 obscure-p7an7J30k">Shipping</span></h3>
                                                         <div class="snipcss0-13-148-151 obscure-JkAnk9lqR"><span class="snipcss0-14-151-152 obscure-wgJwgZVx0"><span class="snipcss0-15-152-153 obscure-Rzy6z41e7"></span></span>
                                                             <div class="snipcss0-14-151-154 obscure-ZWy0WPML0">
-                                                                <p class="snipcss0-15-154-155 bt_sst"><?= $order_sjipping_method  ?></p>
+                                                                <p class="snipcss0-15-154-155 bt_sst"><?php echo esc_html($order_shipping_method)  ?></p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -632,7 +626,7 @@ if(empty($bt_sst_review_subheading_text)){
                                     <div class="fl-module-rich-text snipcss0-8-158-164 obscure-LzqyzR5x7 obscure-9aVkarqBw" data-node="b5kjxqdpzleu">
                                         <div class="fl-node-content snipcss0-9-164-165 obscure-p7an7J3vr">
                                             <div class="snipcss0-10-165-166 obscure-69p19MbZm">
-                                                <p class="snipcss0-11-166-167 bt_sst"><a href="<?= get_permalink( get_the_ID() ); ?>" class="snipcss0-12-167-168">Track</a> another order.</p>
+                                                <p class="snipcss0-11-166-167 bt_sst"><a href="<?php echo esc_url(get_permalink( get_the_ID() )); ?>" class="snipcss0-12-167-168">Track</a> another order.</p>
                                                 <div class="">
                                                     <a href="https://api.whatsapp.com/send?text=<?php echo urlencode($whatsapp_url); ?>" target="_blank"> Share 
                                                      </a> on WhatsApp
@@ -652,7 +646,7 @@ if(empty($bt_sst_review_subheading_text)){
     <?php if($auto_post) : ?>
       <script>
         document.addEventListener("DOMContentLoaded", function(event) {
-          var enable_ph = '<?= $last_four_digit ?>'
+          var enable_ph = '<?php echo esc_js($last_four_digit) ?>'
     
           if (enable_ph) {
             var ph = prompt("Enter last 4 digits of phone number");
@@ -706,12 +700,12 @@ if(empty($bt_sst_review_subheading_text)){
         // Main function to plot the map with PIN codes
         async function plotMap() {
             // Retrieve PHP variables inside JavaScript
-            var pickupPin = '<?php echo $pickup_pincode; ?>'; // Pickup PIN code
-            var dropoffPin = '<?php echo $delivery_pincode; ?>'; // Delivery PIN code
-            var order_placed_message = `Order placed on <?php echo $ordering_date; ?>`;
-            var estimated_date = `<?php echo $estimated_delivery_date; ?>`;
-            var base_country = '<?php echo $base_country; ?>';
-            var delivery_country = '<?php echo $delivery_country; ?>';
+            var pickupPin = '<?php echo esc_js($pickup_pincode); ?>'; // Pickup PIN code
+            var dropoffPin = '<?php echo esc_js($delivery_pincode); ?>'; // Delivery PIN code
+            var order_placed_message = `Order placed on <?php echo esc_js($ordering_date); ?>`;
+            var estimated_date = `<?php echo esc_js($estimated_delivery_date); ?>`;
+            var base_country = '<?php echo esc_js($base_country); ?>';
+            var delivery_country = '<?php echo esc_js($delivery_country); ?>';
 
             const pickupLocation = await getCoordinates(pickupPin,base_country);
             const dropoffLocation = await getCoordinates(dropoffPin,delivery_country);
@@ -785,14 +779,14 @@ if(empty($bt_sst_review_subheading_text)){
 </div>
 <style>
     @font-face {
-    font-family: 'bt_sst_tracking_widget_font';
-    src: url('<?= $public_dir_url  ?>/css/fonts/bt_sst_tracking_widget_font.eot?40534079');
-    src: url('<?= $public_dir_url  ?>/css/fonts/bt_sst_tracking_widget_font.eot?40534079#iefix') format('embedded-opentype'),
-        url('<?= $public_dir_url  ?>/css/fonts/bt_sst_tracking_widget_font.woff2?40534079') format('woff2'),
-        url('<?= $public_dir_url  ?>/css/fonts/bt_sst_tracking_widget_font.woff?40534079') format('woff'),
-        url('<?= $public_dir_url  ?>/css/fonts/bt_sst_tracking_widget_font.ttf?40534079') format('truetype'),
-        url('<?= $public_dir_url  ?>/css/fonts/bt_sst_tracking_widget_font.svg?40534079#bt_sst_tracking_widget_font') format('svg');
-    font-weight: normal;
-    font-style: normal;
+        font-family: 'bt_sst_tracking_widget_font';
+        src: url('<?php echo esc_url( $public_dir_url ) ?>/css/fonts/bt_sst_tracking_widget_font.eot?40534079');
+        src: url('<?php echo esc_url( $public_dir_url ) ?>/css/fonts/bt_sst_tracking_widget_font.eot?40534079#iefix') format('embedded-opentype'),
+            url('<?php echo esc_url( $public_dir_url ) ?>/css/fonts/bt_sst_tracking_widget_font.woff2?40534079') format('woff2'),
+            url('<?php echo esc_url( $public_dir_url ) ?>/css/fonts/bt_sst_tracking_widget_font.woff?40534079') format('woff'),
+            url('<?php echo esc_url( $public_dir_url ) ?>/css/fonts/bt_sst_tracking_widget_font.ttf?40534079') format('truetype'),
+            url('<?php echo esc_url( $public_dir_url ) ?>/css/fonts/bt_sst_tracking_widget_font.svg?40534079#bt_sst_tracking_widget_font') format('svg');
+        font-weight: normal;
+        font-style: normal;
     }
 </style>
