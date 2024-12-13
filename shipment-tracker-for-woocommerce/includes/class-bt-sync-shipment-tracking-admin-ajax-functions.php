@@ -33,7 +33,7 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
             "response" => ''
         );
 
-        if(empty($order_id = $_POST['order_id'])){
+        if(empty($order_id = sanitize_text_field($_POST['order_id']))){
             $resp = array(
                 "status" => false,
                 "response" => 'Invalid order id.'
@@ -43,7 +43,7 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
         }
         
         try {
-            $tracking_resp = bt_force_sync_order_tracking($order_id);
+            $tracking_resp = bt_force_sync_order_tracking(sanitize_text_field($order_id));
             if(!empty($tracking_resp)) {
                 $resp['status'] = true;
                 $resp['response'] = $tracking_resp;
@@ -68,7 +68,7 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
             "response" => ''
         );
 
-        if(empty($order_id = $_POST['order_id'])){
+        if(empty($order_id = sanitize_text_field($_POST['order_id']))){
             $resp = array(
                 "status" => false,
                 "response" => 'Invalid order id.'
@@ -107,13 +107,13 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
                 wp_send_json($resp);
                 wp_die();
             }
-            Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_ship24_corier_name', $corier_name );
-            Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_ship24_corier_code', $corier_code );
+            Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_ship24_corier_name', sanitize_text_field($corier_name ));
+            Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_ship24_corier_code', sanitize_text_field($corier_code ));
         }
 
         try {
             Bt_Sync_Shipment_Tracking::bt_sst_delete_order_meta($order_id, '_bt_shipment_tracking' );//fix to delete old shipment data so that new awb number can take effect.
-            Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_awb', $awb_number );
+            Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_awb', sanitize_text_field($awb_number ));
             bt_force_sync_order_tracking($order_id);
             $resp['status'] = true;
             $resp['response'] = 'Success';
@@ -145,7 +145,7 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
         }
 
 
-       $the_order = wc_get_order($_POST['order_id']);
+       $the_order = wc_get_order(sanitize_text_field($_POST['order_id']));
         if(empty($the_order)){
             $resp['message'] = 'Order not found!';
             wp_send_json($resp);
@@ -155,7 +155,7 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
         $resp['status'] = true;
         $resp['data']['order_status'] = $the_order->get_status();
 
-        $bt_shipment_tracking =Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($_POST['order_id']);
+        $bt_shipment_tracking =Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id(sanitize_text_field($_POST['order_id']));
 
         if(!empty($bt_shipment_tracking)) {
             $resp['has_tracking'] = isset($bt_shipment_tracking->awb)&&!empty($bt_shipment_tracking->awb);
@@ -176,7 +176,7 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
         );
 
         try {
-            $resp["response"] = $this->manual->update_data($_POST['order_id'], $_POST);
+            $resp["response"] = $this->manual->update_data(sanitize_text_field($_POST['order_id']), $_POST);
             $resp["status"] = true;
         }
         catch(Exception $e) {
@@ -191,7 +191,7 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
     public function post_customer_feedback_to_sever() {
         $current_user = wp_get_current_user();
         $body = array(
-            'your-message'    => esc_html($_POST['feedback']),
+            'your-message'    => sanitize_text_field($_POST['feedback']),
             'your-name'    => esc_html( $current_user->display_name ),
             'your-subject'    => "Plugin Feedback from " . get_site_url(),
             'your-email'    => esc_html(get_bloginfo('admin_email')),

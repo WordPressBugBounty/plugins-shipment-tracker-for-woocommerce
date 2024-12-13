@@ -7,7 +7,10 @@
 		$courier_name = in_array('courier_name',$bt_sst_shipment_info_show_fields); 
 		$awb_number = in_array('awb_number',$bt_sst_shipment_info_show_fields);  
 		$tracking_link =  in_array('tracking_link',$bt_sst_shipment_info_show_fields);  
-
+        $tracking_page_id = get_option( '_bt_sst_tracking_page' );
+        $link = get_permalink( $tracking_page_id );
+        $separator = (strpos($link, '?') !== false) ? '&' : '?';
+        $full_url = $link . $separator . 'order=' . $order->get_id();
         if(!empty($bt_shipment_tracking) && $bt_shipment_tracking instanceof Bt_Sync_Shipment_Tracking_Shipment_Model && !empty($bt_shipment_tracking->awb)){
             try{
                 if ($shipment_status && $bt_shipment_tracking->current_status) {
@@ -26,10 +29,10 @@
                     echo "<a target='_blank' href='" . esc_url($bt_shipment_tracking->get_tracking_link()) . "'>Track</a>" ;
                 }
             }catch(Exception $e){
-                echo '<small>NA</small>';
+			echo '<a href = "'.esc_url($full_url).'"> Track Order </a>';
             }
         }					
         else
-            echo '<small>NA</small>';
+            echo '<a href = "'.esc_url($full_url).'"> Track Order </a>';
     ?>
 </div>

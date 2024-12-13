@@ -205,7 +205,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	public function woocommerce_process_shop_order_meta($order_id){
-		$new_provider=wc_clean( $_POST[ '_bt_shipping_provider' ] ) ;
+		$new_provider=wc_clean( sanitize_text_field($_POST[ '_bt_shipping_provider' ] )) ;
 		Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_provider', $new_provider);
 	}
 
@@ -595,6 +595,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 	public function bt_shipment_status_changed($order_id,$shipment_obj,$old_tracking_obj){
 		// die("dfgfd");
+		// echo "<pre>"; print_r($shipment_obj); die;
 		//shipment status updated..
 		$bt_sst_complete_delivered_orders = carbon_get_theme_option( 'bt_sst_complete_delivered_orders' );
 		if($bt_sst_complete_delivered_orders==1){
@@ -687,7 +688,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
     public function add_meta_boxes() {
 		global $post_id;	
 		if(empty($post_id) && isset($_GET["id"])){
-			$post_id = $_GET["id"];
+			$post_id = sanitize_text_field($_GET['id']);
 		}	
 		if(empty($post_id)){
 			return;
@@ -718,7 +719,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
     public function sync_actions_meta_box() {
         global $post_id;
 		if(empty($post_id)){
-			$post_id = $_GET["id"];
+			$post_id = sanitize_text_field($_GET["id"]);
 		}	
         $bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($post_id);
 		$bt_shipping_provider = $bt_shipment_tracking->shipping_provider;
@@ -732,7 +733,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
         if(!$bt_shipping_provider || ($bt_shipping_provider == 'manual' && $shipping_mode_is_manual_or_ship24 =="manual")){
             include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-manual-metabox.php';
         } else if($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite'|| $bt_shipping_provider == 'nimbuspost'|| $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo'|| $bt_shipping_provider == 'nimbuspost_new'|| $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24=="ship24") {
-			$order_id=isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
+			$order_id=isset($_GET['post']) ? $_GET['post'] : sanitize_text_field($_GET['id']);
 			include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-shipment-tracking-metabox.php';
         }
 		
@@ -743,7 +744,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	public function woocommerce_order_action_update_bt_sst_shipping_provider($order){
-		$new_provider=wc_clean( $_POST[ 'wc_order_action_bt_sst_shipping_provider' ] ) ;
+		$new_provider=wc_clean( sanitize_text_field($_POST[ 'wc_order_action_bt_sst_shipping_provider' ] )) ;
 		Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta( $order->get_id(), '_bt_shipping_provider', $new_provider );
 	}
 
@@ -755,14 +756,14 @@ class Bt_Sync_Shipment_Tracking_Admin {
 			"message" => "Data not found!.."
 		);
 
-		$nonce = $_POST["value"]['nonce'];
+		$nonce = sanitize_text_field($_POST["value"]['nonce']);
 		// $nonce = $_REQUEST['_wpnonce'];
 		if ( ! wp_verify_nonce( $nonce, 'check_user_data_for_premium_features' ) ) {
 			exit; // Get out of here, the nonce is rotten!
 		}
 
-		$user = $_POST["value"]['user'];
-		$password = $_POST["value"]['password'];
+		$user = sanitize_text_field($_POST["value"]['user']);
+		$password = sanitize_text_field($_POST["value"]['password']);
 
 		$received_data = $this->licenser->get_premium_user_data_by_user_password($user, $password);
 		
@@ -793,7 +794,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	public function api_call_for_test_connection() {
-		$nonce = $_GET["value"];
+		$nonce = sanitize_text_field($_GET["value"]);
 		
 		if ( ! wp_verify_nonce( $nonce, 'api_call_for_test_connection' ) ) {
 			exit; // Get out of here, the nonce is rotten!
@@ -844,7 +845,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		die();
 	}
 	public function api_call_for_shipmozo_test_connection() {
-		$nonce = $_GET["value"];
+		$nonce = sanitize_text_field($_GET["value"]);
 	
 		
 		if ( ! wp_verify_nonce( $nonce, 'api_call_for_shipmozo_test_connection' ) ) {
@@ -878,7 +879,8 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 	public function api_call_for_delhivery_test_connection() {
 		// die("rgdrg");
-		$nonce = $_GET["value"];
+		$nonce = sanitize_text_field($_GET["value"]);
+		
 		if ( ! wp_verify_nonce( $nonce, 'api_call_for_delhivery_test_connection' ) ) {
 			// $response = "idfugdf";
 		}
@@ -903,7 +905,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 	public function api_call_for_ship24_test_connection() {
 
-		$nonce = $_GET["value"];
+		$nonce = sanitize_text_field($_GET["value"]);
 		if ( ! wp_verify_nonce( $nonce, 'api_call_for_ship24_test_connection' ) ) {
 			// $response = "idfugdf";
 		}
@@ -929,7 +931,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 
 	public function api_check_for_nimbuspost_test_connection() {
-		$nonce = $_GET["value"];
+		$nonce = sanitize_text_field($_GET["value"]);
 	
 		
 		if ( ! wp_verify_nonce( $nonce, 'api_check_for_nimbuspost_test_connection' ) ) {
@@ -964,7 +966,8 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	public function buy_credit_balance () {
-		$nonce = $_GET["nonce"];		
+		$nonce = sanitize_text_field($_GET["nonce"]);
+			
 		if (!wp_verify_nonce($nonce, 'buy_credit_balance')) {
 			exit; // Get out of here, the nonce is rotten!
 		}
@@ -1009,9 +1012,8 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	public function credit_balance_details() {
-		$nonce = $_GET["value"];
+		$nonce = sanitize_text_field($_GET["value"]);
 	
-		
 		if ( ! wp_verify_nonce( $nonce, '' ) ) {
 			//exit; // Get out of here, the nonce is rotten!
 		}
@@ -1134,7 +1136,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 
 	public function register_for_sms() {
-		$nonce = $_GET["value"];
+		$nonce = sanitize_text_field($_GET["value"]);
 	
 		
 		if ( ! wp_verify_nonce( $nonce, 'register_for_sms' ) ) {
@@ -1181,9 +1183,9 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 	public function get_bt_sst_email_trial() {
 		
-		$nonce = $_GET["value"];
-		$bt_sst_test_email = $_GET["bt_sst_test_email"];
-		$bt_sst_test_email_event = $_GET["bt_sst_test_email_event"];
+		$nonce = sanitize_text_field($_GET["value"]);
+		$bt_sst_test_email = sanitize_text_field($_GET["bt_sst_test_email"]);
+		$bt_sst_test_email_event = sanitize_text_field($_GET["bt_sst_test_email_event"]);
 	
 		
 		if ( ! wp_verify_nonce( $nonce,'get_sms_trial' ) ) {
@@ -1245,9 +1247,9 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	public function get_sms_trial() {
-		$nonce = $_GET["value"];
-		$phoneNumber = $_GET["phonenumber"];
-		$selectValue = $_GET["selectvalue"];
+		$nonce = sanitize_text_field($_GET["value"]);
+		$phoneNumber = sanitize_text_field($_GET["phonenumber"]);
+		$selectValue = sanitize_text_field($_GET["selectvalue"]);
 	
 		
 		if ( ! wp_verify_nonce( $nonce,'get_sms_trial' ) ) {
@@ -1498,12 +1500,12 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 
 	public function api_call_for_sync_order_by_order_id() {
-		$nonce = $_GET['nonce'];
+		$nonce = sanitize_text_field($_GET['nonce']);
 
 		if ( ! wp_verify_nonce( $nonce, 'api_call_for_sync_order_by_order_id' ) ) {
 			exit;
 		}
-		$order_id = $_GET['order_id'];
+		$order_id = sanitize_text_field($_GET['order_id']);
 
 		$responsed = bt_force_sync_order_tracking($order_id);
 		
@@ -1522,12 +1524,12 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	public function api_call_for_sync_order_shipmozo_by_order_id() {
-		$nonce = $_GET['nonce'];
+		$nonce = sanitize_text_field($_GET['nonce']);
 
 		if ( ! wp_verify_nonce( $nonce, 'api_call_for_sync_order_shipmozo_by_order_id' ) ) {
 			exit;
 		}
-		$order_id = $_GET['order_id'];
+		$order_id = sanitize_text_field($_GET['order_id']);
 
 		bt_force_sync_order_tracking($order_id);
 		
@@ -1563,7 +1565,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 			$filter_id = 'bt_shipment_status';
 			$selected = '';
 			if(isset( $_GET[$filter_id] ) && ! empty($_GET[$filter_id])){
-				$selected = $_GET[$filter_id];
+				$selected = sanitize_text_field($_GET[$filter_id]);
 			}
 			echo "<select name='bt_shipment_status' placeholder='Filter by Shipment Status'>";
 			if(empty($selected)){
@@ -1599,12 +1601,12 @@ class Bt_Sync_Shipment_Tracking_Admin {
 				'relation'  => 'OR',
 				array(
 					'key'     => '_bt_shipment_tracking',
-					'value'   => ';s:14:"current_status";s:'.strlen($_GET[$filter_id]).':"'.$_GET[$filter_id].'";',
+					'value'   => ';s:14:"current_status";s:'.strlen(sanitize_text_field($_GET[$filter_id])).':"'.sanitize_text_field($_GET[$filter_id]).'";',
 					'compare' => 'LIKE',
 				),
 				array(
 					'key' => '_bt_shipment_tracking',
-					'value'   => ';s:14:"current_status";s:'.strlen($_GET[$filter_id]).':"'.str_replace("-"," ",$_GET[$filter_id]).'";',
+					'value'   => ';s:14:"current_status";s:'.strlen(sanitize_text_field($_GET[$filter_id])).':"'.str_replace("-"," ",sanitize_text_field($_GET[$filter_id])).'";',
 					'compare' => 'LIKE', 
 				),
 			);
@@ -1750,6 +1752,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	function handle_admin_init(){
+		$_GET = array_map('sanitize_text_field', $_GET);
 		if(isset($_GET['bt_push_to_shiprocket']) && $_GET['bt_push_to_shiprocket']==1 && (isset($_GET['post']) || isset($_GET['id']))){
 			$order_id=isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
 			$this->push_order_to_shiprocket($order_id);
@@ -1786,6 +1789,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 
 	function get_st_form_with_data() {
+		$_GET = array_map('sanitize_text_field', $_GET);
 		$nonce = $_GET['nonce'];
 		if ( ! wp_verify_nonce( $nonce, 'get_st_form_with_data' ) ) {
 			exit; // Get out of here, the nonce is rotten!
@@ -1845,7 +1849,74 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		die();
 	}
 
+	function load_coriures_name_for_manual() {
+		$couriers = get_option('bt_sst_manual_coriures_names_array', array());
+		$plugin_dir = plugin_dir_path(__FILE__); 	
+		$json_file = $plugin_dir."custom_coriures_list.json";
+		
+		if (file_exists($json_file)) {
+			$json_data = file_get_contents($json_file);
+			// echo $json_data;
+		}
 
+		// echo "<pre>"; print_r($combinecouriersd_data); die;
+		$json_data = json_decode($json_data,true);
+		if (is_array($couriers) && sizeof($couriers) > 0) {
+			$combined_data = array_merge($json_data, $couriers);
+		}else{
+			$combined_data = $json_data;
+		}
+		// echo "<pre>"; print_r($combined_data);
+		$combined_data = json_encode($combined_data, true);
+		// echo($combined_data); die;
+		echo $combined_data;
+		wp_die();
+	}
+
+	function bt_sst_save_manual_coriure_name() {
+		$company_name = sanitize_text_field($_POST['company_name']);
+		$region_coverage = sanitize_text_field($_POST['region_coverage']);
+		$company_url = esc_url_raw($_POST['company_url']);
+		$tracking_url = esc_url_raw($_POST['tracking_url']);
+	
+		$couriers = get_option('bt_sst_manual_coriures_names_array', array());
+		$plugin_dir = plugin_dir_path(__FILE__); 	
+		$json_file = $plugin_dir."custom_coriures_list.json";
+		
+		if (file_exists($json_file)) {
+			$json_data = file_get_contents($json_file);
+		}
+
+		$json_data = json_decode($json_data, true);
+
+		if (is_array($couriers) && sizeof($couriers) > 0) {
+			// Merge the arrays if $couriers has elements
+			$combined_data = array_merge($json_data, $couriers);
+		} else {
+			// If $couriers is empty, use $json_data as the result
+			$combined_data = $json_data;
+			$couriers = array();
+		}
+		
+		$id = sizeof($combined_data)+1;
+
+		$couriers[] = array(
+				'serial_no' => $id,
+				'company_name'    => $company_name,
+				'region_coverage' => $region_coverage,
+				'company_url'     => $company_url,
+				'tracking_url'    => $tracking_url
+		);
+		$result = update_option('bt_sst_manual_coriures_names_array', $couriers);
+	
+		if ($result) {
+			wp_send_json_success();
+		} else {
+			wp_send_json_error(array('message' => 'Failed to save courier'));
+		}
+	}
+	
+	
 	// function register_shipment_arrival_order_status() {
 	// 	$enabled_order_status = apply_filters( 'bt_sst_shipping_statuses', BT_SHIPPING_STATUS );;// carbon_get_theme_option( 'bt_sst_enable_order_status' );
 	// 	foreach ($enabled_order_status as $key=>$value) {
@@ -1878,7 +1949,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	// }
 
 	function bt_sst_get_users_list(){
-		if(isset($_POST['task']) && $_POST['task']=='get_pick_up_location'){
+		if ( isset( $_POST['task'] ) && sanitize_text_field( $_POST['task'] ) === 'get_pick_up_location' ) {
 			$pick_up_locations = $this->shiprocket->get_all_pickup_locations();
 			$html_pick_lo = '<label for="bt_sst_vendor_pickup_location" class="label">Pickup Location</label>';
 			$html_pick_lo .= '<div class="control"><div class="select">';
@@ -1939,8 +2010,8 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 	function bt_sst_set_users_list(){
 		if(isset($_POST['vendor_pickup_location']) && isset($_POST['vendor_user_id'])){
-			$vendor_pickup_location = $_POST['vendor_pickup_location'];
-			$vendor_user_id = $_POST['vendor_user_id'];
+			$vendor_pickup_location = sanitize_text_field($_POST['vendor_pickup_location']);
+			$vendor_user_id = sanitize_text_field($_POST['vendor_user_id']);
 			update_user_meta( $vendor_user_id, 'vendor_pickup_location', $vendor_pickup_location );
 			$resp = "success";
 		}else{
@@ -1954,7 +2025,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		$current_user_id = get_current_user_id();
 		// var_dump($current_user_id); die;
 		if(isset($_POST['vendor_user_id'])){
-			$vendor_user_id = $_POST['vendor_user_id'];
+			$vendor_user_id = sanitize_text_field($_POST['vendor_user_id']);
 
 			$vendor_pickup_location = get_user_meta( $vendor_user_id, 'vendor_pickup_location', true );
 			if(!$vendor_user_id){
@@ -1971,7 +2042,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	function create_and_add_tracking_page() {
-		$nonce = $_GET['nonce'];
+		$nonce = sanitize_text_field($_GET['nonce']);
 
 		if ( ! wp_verify_nonce( $nonce, 'create_and_add_tracking_page' ) ) {
 			exit;
@@ -2031,7 +2102,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	function save_product_processing_time_shipping_field( $post_id ) {
 		//$enabled_shipping_providers = carbon_get_theme_option( 'bt_sst_enabled_shipping_providers' );
         //if(is_array($enabled_shipping_providers) && in_array('shiprocket',$enabled_shipping_providers)){
-			$custom_field_value = isset( $_POST['_bt_sst_product_processing_days_field'] ) ? $_POST['_bt_sst_product_processing_days_field'] : '';
+			$custom_field_value = isset( $_POST['_bt_sst_product_processing_days_field'] ) ? sanitize_text_field($_POST['_bt_sst_product_processing_days_field']) : '';
 			Bt_Sync_Shipment_Tracking::bt_sst_update_product_meta( $post_id, '_bt_sst_product_processing_days_field', esc_attr( $custom_field_value ) );
 		//}
 	}
@@ -2080,8 +2151,8 @@ class Bt_Sync_Shipment_Tracking_Admin {
         //if(is_array($enabled_shipping_providers) && in_array('shiprocket',$enabled_shipping_providers)){
 			if ( isset( $_POST['term_meta'] ) ) {
 				$term_meta = $_POST['term_meta'];
-				$term_meta['_bt_sst_product_category_processing_days_field'] = esc_attr( $term_meta['_bt_sst_product_category_processing_days_field'] );
-				update_term_meta( $term_id, '_bt_sst_product_category_processing_days_field', $term_meta['_bt_sst_product_category_processing_days_field'] );
+				$term_meta['_bt_sst_product_category_processing_days_field'] = sanitize_text_field( $term_meta['_bt_sst_product_category_processing_days_field'] );
+				update_term_meta( $term_id, '_bt_sst_product_category_processing_days_field', sanitize_text_field($term_meta['_bt_sst_product_category_processing_days_field'] ));
 			}
 		//}
 	}
@@ -2095,7 +2166,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		$post_id = $order->get_id();
 		$order_id = $order->get_id();
 		if(empty($post_id)){
-			$post_id = $_GET["id"];
+			$post_id = sanitize_text_field($_GET["id"]);
 		}	
 
         $bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($post_id);
@@ -2107,7 +2178,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		echo "<div class='dokan-panel-body'>";
 		if(current_user_can("manage_options" )){
 			if(isset($_POST['wc_order_action_bt_sst_shipping_provider'])){
-				$new_provider = $_POST['wc_order_action_bt_sst_shipping_provider'];
+				$new_provider = sanitize_text_field($_POST['wc_order_action_bt_sst_shipping_provider']);
 				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta( $order->get_id(), '_bt_shipping_provider', $new_provider );
 			}
 
@@ -2184,7 +2255,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	// }
 
 	function download_label_pdf(){
-		$order_id = $_POST['order_id'];
+		$order_id = sanitize_text_field($_POST['order_id']);
 		$bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($order_id);
 		$shipping_provider = $bt_shipment_tracking->shipping_provider;
 
@@ -2192,7 +2263,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		// $shipping_provider = 'delhivery';
 		if($shipping_provider == 'delhivery'){
 			if (isset($_POST['awbs'])){
-				$awb_number = $_POST['awbs'];
+				$awb_number = array_map( 'sanitize_text_field', $_POST['awbs'] );
 				$resp = $this->delhivery->get_order_label_by_awb_numbers($awb_number);
 			}
 		}else if($shipping_provider == 'shiprocket'){
@@ -2204,7 +2275,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		}else if($shipping_provider == 'shipmozo'){
 			// $shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shiprocket_shipment_id', true );
 			if (isset($_POST['awbs'])){
-				$awbs = $_POST['awbs'];
+				$awbs = array_map( 'sanitize_text_field', $_POST['awbs'] );
 				$resp = $this->shipmozo->get_order_label_by_awb_numbers_shipmozo($awbs);
 			}
 		}else if($shipping_provider == 'nimbuspost_new'){
@@ -2231,7 +2302,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 	function handle_stw_wizard_form_data_save(){
 		if (isset($_POST['data'])){
-			$wizard_post_data = $_POST['data'];
+			$wizard_post_data = array_map( 'sanitize_text_field', $_POST['data'] );
 
 			$w_shipping_company        = $wizard_post_data['shipping_company'];
 			$w_create_tracking_page    = $wizard_post_data['create_tracking_page'];

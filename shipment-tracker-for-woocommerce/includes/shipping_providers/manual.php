@@ -18,6 +18,7 @@ class Bt_Sync_Shipment_Tracking_Manual {
 
             if(!empty($order_id)){
                 $shipment_obj = $this->init_model($request, $order_id);
+                
                 Bt_Sync_Shipment_Tracking_Shipment_Model::save_tracking($order_id,$shipment_obj);                
                 return "Shipment details updated successfully.";
             }
@@ -48,7 +49,6 @@ class Bt_Sync_Shipment_Tracking_Manual {
         $obj->current_status = sanitize_text_field($data["shipping_status"]);
         $obj->tracking_url = sanitize_text_field($data["tracking_link"]);
 
-        $obj->delivery = $data;
         if (strtolower($obj->current_status) == "delivered" && empty($obj->delivery_date)) {
             $obj->delivery_date = date('Y-m-d');
         }        

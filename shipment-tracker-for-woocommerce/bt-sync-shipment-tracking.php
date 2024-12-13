@@ -16,7 +16,7 @@
  * Plugin Name:       Shipment Tracker for Woocommerce
  * Plugin URI:        https://shipment-tracker-for-woocommerce.bitss.tech/
  * Description:       Most comprehensive shipment tracking plugin that extends your woocommerce store with shipment related features. Keeps you & your customers informed about shipment movement.
- * Version:           1.4.23.1
+ * Version:           1.4.23.2
  * Author:            Bitss Techniques
  * Author URI:        https://shipment-tracker-for-woocommerce.bitss.tech
  * License:           GPL-2.0+
@@ -36,12 +36,31 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
+
+ $couriers = get_option('bt_sst_manual_coriures_names_array', array());
+ $plugin_dir = plugin_dir_path(__FILE__); 
+ $json_file = $plugin_dir . "admin/custom_coriures_list.json"; // Simplified path	
+ if (file_exists($json_file)) {
+	 $json_data = file_get_contents($json_file);
+ }
+ $json_data = json_decode($json_data,true);
+ if (is_array($couriers) && sizeof($couriers) > 0) {
+	 $combined_data = array_merge($json_data, $couriers);
+ }else{
+	 $combined_data = $json_data;
+ }
+ $default_manual_coriure_name = [''=>'Select Courier Company'];
+ foreach($combined_data as $value){
+	$default_manual_coriure_name[$value['company_name']] = $value['company_name'];
+ }
+
 define( 'Carbon_Fields\URL', trailingslashit( plugin_dir_url( __FILE__ ) ) . 'vendor/htmlburger/carbon-fields/' );//fix for Bitnami installations.
-define( 'BT_SYNC_SHIPMENT_TRACKING_VERSION', '1.4.23.1' );
+define( 'BT_SYNC_SHIPMENT_TRACKING_VERSION', '1.4.23.2' );
 define( 'BT_SHIPPING_PROVIDERS', array('delhivery' =>'Delhivery','nimbuspost' => 'Nimbuspost (Deprecated)','nimbuspost_new' => 'Nimbuspost','shipmozo'=>'Shipmozo','shiprocket' => 'Shiprocket', 'xpressbees' => 'Xpressbees', 'manual' =>'Custom Shipping') );
 define( 'BT_SHIPPING_PROVIDERS_WITH_NONE', array('none' =>'none','delhivery' =>'Delhivery', 'nimbuspost' => 'Nimbuspost (OLD)','nimbuspost_new' => 'Nimbuspost(NEW)','shipmozo'=>'Shipmozo','shiprocket' => 'Shiprocket', 'xpressbees' => 'Xpressbees','manual' =>'Custom Shipping') );
+define( 'BT_SST_MANUAL_DEFAULT_COURIER_NAME', $default_manual_coriure_name);
 define( 'BT_SHIPPING_STATUS', array('pending-pickup' => 'Pending pickup', 'out-for-pickup' => 'Out for pickup', 'in-transit' =>'In Transit', 'out-for-delivery' => 'Out for delivery', 'delivered' => 'Delivered', 'canceled' =>'Canceled', 'rto-in-transit' =>'RTO in Transit', 'rto-delivered' =>'RTO Delivered') );
-define( 'BT_SYNC_SHIPMENT_TRACKING_PREMIUM_PURCHASE_URL', 'https://shipment-tracker-for-woocommerce.bitss.tech/' );
+define( 'BT_SYNC_SHIPMENT_TRACKING_PREMIUM_PURCHASE_URL', 'https://shipment-tracker-for-woocommerce.bitss.tech/pricing-plans/' );
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-bt-sync-shipment-tracking-activator.php

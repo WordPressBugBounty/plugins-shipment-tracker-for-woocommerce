@@ -335,6 +335,7 @@ class Bt_Sync_Shipment_Tracking {
 
 		$plugin_admin = new Bt_Sync_Shipment_Tracking_Admin( $this->get_plugin_name(), $this->get_version(),$this->shiprocket,$this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->shipmozo, $this->nimbuspost_new, $this->delhivery, $this->ship24 );
 		$this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_admin, 'custom_dokan_order_details', 10, 1 );
+		$this->loader->add_action('carbon_fields_save_post',$plugin_admin, 'update_woocommerce_data_on_carbon_fields_save', 10, 3);
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
@@ -403,7 +404,9 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'wp_ajax_bt_sst_set_users_list', $plugin_admin, 'bt_sst_set_users_list' );
 		$this->loader->add_action( 'wp_ajax_bt_sst_check_users_list', $plugin_admin, 'bt_sst_check_users_list' );
 		$this->loader->add_filter( 'woocommerce_email_classes', $plugin_admin, 'register_shipment_email' );
-	
+		$this->loader->add_action('wp_ajax_load_coriures_name_for_manual',$plugin_admin, 'load_coriures_name_for_manual');
+		$this->loader->add_action('wp_ajax_bt_sst_save_manul_coriure_name',$plugin_admin, 'bt_sst_save_manual_coriure_name');
+
 		// Add a dropdown to filter orders by state
 		$this->loader->add_action( 'restrict_manage_posts', $plugin_admin, 'add_shop_order_filter_by_shipment_status' );
 		$this->loader->add_filter( 'request', $plugin_admin, 'process_admin_shop_order_filtering_by_shipment_status', 99 );
@@ -568,8 +571,6 @@ class Bt_Sync_Shipment_Tracking {
 				// ),
 		) );
 
-		
-
 		$args = array(
 			'sort_order' => 'asc',
 			'sort_column' => 'post_title',
@@ -586,7 +587,7 @@ class Bt_Sync_Shipment_Tracking {
 			'offset' => 0,
 			'post_type' => 'page',
 			'post_status' => 'publish'
-		); 
+		);
 		$arr_of_pages = [''=>'Select the page'];
 		$link = "";
 		$page_title = "";
@@ -834,9 +835,14 @@ class Bt_Sync_Shipment_Tracking {
 			Field::make( 'checkbox', 'bt_sst_show_tracking_now_button_myaccount_order_list', __( 'Show \'Track Now\' button in "My Account -> Orders. (Premium Only)' ) )
 				->set_help_text('Allows customer to track their order from order list in My Account section. Shows beautiful tracking page with My Account section. No shortcode needed.')
 				->set_option_value( 'yes' ),
+			
+			
+			
 			Field::make( 'checkbox', 'bt_sst_show_shipment_info_myaccount_orders', __( 'Show shipment info in "My Account -> Orders.' ) )
 				->set_option_value( 'no' ),
 			Field::make( 'checkbox', 'bt_sst_shipment_info_myaccount_order_detail', __( 'Show shipment info in "My Account -> Orders -> Order Detail.' ) )
+				->set_option_value( 'no' ),
+			Field::make( 'checkbox', 'bt_sst_shipment_info_in_woocommerce', __( 'Show shipment info in Woocommerce E-Mail' ) )
 				->set_option_value( 'no' ),
 			Field::make( 'set', 'bt_sst_shipment_info_show_fields', __( 'Show these fields:' ) )
 				->set_options( array(
@@ -844,7 +850,7 @@ class Bt_Sync_Shipment_Tracking {
 					'edd' => 'Estimated Delivery Date',
 					'courier_name' => 'Courier Name',
 					'awb_number' => 'AWB Number',
-					'tracking_link' => 'Shipping Provider\'s Tracking Link',
+					'tracking_link' => 'Tracking Link To',
 					
 				) )->set_conditional_logic( array(
 					'relation' => 'OR', 
@@ -855,8 +861,19 @@ class Bt_Sync_Shipment_Tracking {
 					array(
 						'field' => 'bt_sst_shipment_info_myaccount_order_detail',
 						'value' => true,
+					),
+					array(
+						'field' => 'bt_sst_shipment_info_in_woocommerce',
+						'value' => true,
 					)
 				) ),
+			Field::make( 'select', 'bt_sst_tracking_link_types', __( 'Tracking Link Type' ) )
+				->set_options( array(
+					'shipping_provider' => 'Shipping Provider',
+					'website' => 'Website',
+				) )
+				->set_default_value( 'shipping_provider' ),
+
 			Field::make( 'select', 'bt_sst_tracking_page_template', __( 'Choose Tracking Page template:' ) )
 				->set_options( array(
 					'classic' => 'Classic Template',
@@ -1118,9 +1135,9 @@ class Bt_Sync_Shipment_Tracking {
 					->add_options( $arr_active_cc ),
 
 
-					Field::make( 'text', 'bt_sst_shiprocket_custom_tracking_url', __( 'Custom Tracking URL' ) )
-						->set_attribute( 'placeholder', 'https://yourdomain.com/track/#awb#' )
-						->set_help_text( 'Available variables #awb#, #order_id#. These variables can be used to add awb number or order id in tracking url. Eg. https://yoursite.com/track?awb=#awb#' ),
+					// Field::make( 'text', 'bt_sst_shiprocket_custom_tracking_url', __( 'Custom Tracking URL' ) )
+						// ->set_attribute( 'placeholder', 'https://yourdomain.com/track/#awb#' )
+						// ->set_help_text( 'Available variables #awb#, #order_id#. These variables can be used to add awb number or order id in tracking url. Eg. https://yoursite.com/track?awb=#awb#' ),
 					Field::make( 'html', 'bt_sst_shiprocket_generate_api_key_link' )
                         ->set_html(sprintf( "
 						<div>Shiprocket Quick Links</div>
@@ -1410,7 +1427,9 @@ class Bt_Sync_Shipment_Tracking {
 					->set_attribute( 'readOnly', true )
 			) );
 		}
-
+		$cour_name = carbon_get_theme_option("bt_sst_manual_courier_name");
+		$bt_sst_selected_coriure_name = $cour_name ? $cour_name : 'Select Courier Name';
+		
 
 		if(is_array($enabled_shipping_providers) && in_array('shipmozo',$enabled_shipping_providers)){
 			$shipmozo_webhook_time = get_option('shipmozo_webhook_called', 'never');
@@ -1508,6 +1527,13 @@ class Bt_Sync_Shipment_Tracking {
 					Field::make( 'text', 'bt_sst_delhivery_warehouse_name', __( 'Pickup Location ' ) )
 					->set_attribute( 'placeholder', 'Enter pickup location name' )		
 					->set_help_text( '<a target="_blank" href="https://one.delhivery.com/settings/pickup-locations/domestic">[Click here to get Pickup Location]</a>' ),		
+					Field::make( 'select', 'bt_sst_delhivery_shipping_mode', __( 'Shipping Mode' ) )
+					->add_options( 
+						array(
+							'Express'=>'Express',
+							'Surface'=>'Surface',
+							)
+						),
 					Field::make( 'select', 'bt_sst_delhivery_cron_schedule', __( 'Sync Tracking every (Premium Only)' ) )
 						->add_options( 
 							array(
@@ -1560,15 +1586,17 @@ class Bt_Sync_Shipment_Tracking {
                         )->set_help_text( 'Update tracking data from any 3rd party platform using this rest api.<br>This api works only if Manual shipping provider is enabled. For any help, get in touch with us.' ),
                     Field::make( 'text', 'bt_sst_manual_webhook_secretkey', __( 'API Key' ) )
                         ->set_attribute( 'readOnly', true ),
-					Field::make( 'text', 'bt_sst_manual_courier_name', __( 'Default courier name' ) )						
-						->set_help_text(''),
+					Field::make('select', 'bt_sst_manual_courier_name', __('Default Courier Name'))
+						->add_options( BT_SST_MANUAL_DEFAULT_COURIER_NAME )
+						->set_help_text(__('Please select a courier name.')),
+					
 					Field::make( 'text', 'bt_sst_manual_awb_number', __( 'Default awb number format' ) )
 						->set_attribute( 'placeholder', 'abc-#order_id#' )
 					    ->set_default_value( '#order_id#' )
 						->set_help_text( 'Available variables- #order_id#.' ),
-                    Field::make( 'text', 'bt_sst_manual_tracking_url', __( 'Global Tracking URL' ) )
-						->set_attribute( 'placeholder', 'https://yourdomain.com/track/#awb#' )
-						->set_help_text( 'Available variables- #awb#, #order_id#. These variables can be used to add awb number or order id in tracking url. Eg. https://yoursite.com/track?awb=#awb# <br> Global Tracking URL will be used only if order specific tracking url is not set.' ),
+                    // Field::make( 'text', 'bt_sst_manual_tracking_url', __( 'Global Tracking URL' ) )
+						// ->set_attribute( 'placeholder', 'https://yourdomain.com/track/#awb#' )
+						// ->set_help_text( 'Available variables- #awb#, #order_id#. These variables can be used to add awb number or order id in tracking url. Eg. https://yoursite.com/track?awb=#awb# <br> Global Tracking URL will be used only if order specific tracking url is not set.' ),
 					// Field::make( 'checkbox', 'bt_sst_manual_ud_shipment_details', __( 'Enable update shipment details on order list page' ) )						
 					// 	->set_help_text(''),
 					 ) );
@@ -2495,7 +2523,7 @@ class Bt_Sync_Shipment_Tracking {
 
 		// $pincode_checker_location_hook = carbon_get_theme_option( 'bt_sst_pincode_checker_location' );
 		// $this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_public, 'custom_dokan_order_details', 10, 1 );
-
+		$this->loader->add_action('woocommerce_email_after_order_table', $plugin_public, 'add_tracking_data_after_order_in_email', 10, 4);
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_filter( 'woocommerce_account_orders_columns', $plugin_public, 'wc_add_my_account_orders_column' );

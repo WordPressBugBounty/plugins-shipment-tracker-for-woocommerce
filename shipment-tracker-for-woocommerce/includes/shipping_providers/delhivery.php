@@ -201,6 +201,10 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         if(false == $order = wc_get_order( $order_id )){
             return false;
         }
+        $delhivery_shipping_mode = carbon_get_theme_option( 'bt_sst_delhivery_shipping_mode' );
+        if(!$delhivery_shipping_mode){
+            $delhivery_shipping_mode = 'Surface';
+        }
         $phoneNumber = $this->extractPhoneNumber($order->get_billing_phone());
         $pickup_location = carbon_get_theme_option( 'bt_sst_delhivery_warehouse_name' );
         $destination_postcode = $order->get_shipping_postcode();
@@ -255,7 +259,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
                     "shipment_height" => "",
                     "weight" => "",
                     "seller_gst_tin" => "",
-                    "shipping_mode" => "Express",
+                    "shipping_mode" => $delhivery_shipping_mode,
                     "address_type" => ""
                 )
             ),

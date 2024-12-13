@@ -1,0 +1,310 @@
+[
+    {
+      "serial_no": 1,
+      "company_name": "DTDC",
+      "region_coverage": "India + International",
+      "company_url": "https://www.dtdc.in/tracking.asp",
+      "tracking_url": "https://www.dtdc.in/trace.asp"
+    },
+    {
+      "serial_no": 2,
+      "company_name": "Blue Dart",
+      "region_coverage": "India + International",
+      "company_url": "https://www.bluedart.com/tracking",
+      "tracking_url": "https://bluedart.com/tracking"
+    },
+    {
+      "serial_no": 3,
+      "company_name": "DHL",
+      "region_coverage": "Global",
+      "company_url": "https://www.dhl.com/tracking",
+      "tracking_url": "https://www.dhl.com/en/express/tracking.html?AWB={AWB}"
+    },
+    {
+      "serial_no": 4,
+      "company_name": "FedEx",
+      "region_coverage": "Global",
+      "company_url": "https://www.fedex.com/tracking",
+      "tracking_url": "https://www.fedex.com/fedextrack/?trknbr={AWB}"
+    },
+    {
+      "serial_no": 5,
+      "company_name": "UPS",
+      "region_coverage": "Global",
+      "company_url": "https://www.ups.com/track",
+      "tracking_url": "https://www.ups.com/track?loc=en_US&tracknum={AWB}"
+    },
+    {
+      "serial_no": 6,
+      "company_name": "Delhivery",
+      "region_coverage": "India",
+      "company_url": "https://www.delhivery.com/track/",
+      "tracking_url": "https://www.delhivery.com/track/package/{AWB}"
+    },
+    {
+      "serial_no": 7,
+      "company_name": "XpressBees",
+      "region_coverage": "India",
+      "company_url": "https://www.xpressbees.com/track",
+      "tracking_url": "https://www.xpressbees.com/shipment/tracking?awbNo={AWB}"
+    },
+    {
+      "serial_no": 8,
+      "company_name": "Professional Couriers",
+      "region_coverage": "India + International",
+      "company_url": "https://www.tpcindia.com/track-and-trace.aspx",
+      "tracking_url": "https://www.tpcindia.com/TPCTrackView.aspx?id={AWB}"
+    },
+    {
+      "serial_no": 9,
+      "company_name": "TNT",
+      "region_coverage": "Global",
+      "company_url": "https://www.tnt.com/express/en_gb/site/shipping-tools/tracking.html",
+      "tracking_url": "https://www.tnt.com/express/en_gb/site/shipping-tools/tracking.html?searchType=con&cons={AWB}"
+    },
+    {
+      "serial_no": 10,
+      "company_name": "Aramex",
+      "region_coverage": "Global",
+      "company_url": "https://www.aramex.com/track/shipments",
+      "tracking_url": "https://www.aramex.com/track/results?ShipmentNumber={AWB}"
+    },
+    {
+      "serial_no": 11,
+      "company_name": "SF Express",
+      "region_coverage": "Asia + Global",
+      "company_url": "https://www.sf-express.com/cn/en/dynamic_function/waybill/",
+      "tracking_url": "https://www.sf-express.com/cn/en/dynamic_function/waybill/?search={AWB}"
+    },
+    {
+      "serial_no": 12,
+      "company_name": "Kerry Express",
+      "region_coverage": "Asia",
+      "company_url": "https://th.kerryexpress.com/en/track",
+      "tracking_url": "https://th.kerryexpress.com/en/track/?track={AWB}"
+    },
+    {
+      "serial_no": 13,
+      "company_name": "DB Schenker",
+      "region_coverage": "Global",
+      "company_url": "https://www.dbschenker.com/global/tracking",
+      "tracking_url": "https://www.dbschenker.com/app/tracking-public/?refNumber={AWB}"
+    },
+    {
+      "serial_no": 14,
+      "company_name": "Ekart Logistics",
+      "region_coverage": "India",
+      "company_url": "https://ekartlogistics.com/shipmentTracking",
+      "tracking_url": "https://ekartlogistics.com/shipmenttrack/{AWB}"
+    },
+    {
+      "serial_no": 15,
+      "company_name": "Ecom Express",
+      "region_coverage": "India",
+      "company_url": "https://ecomexpress.in/tracking/",
+      "tracking_url": "https://www.ecomexpress.in/tracking/?awb_field={AWB}"
+    },
+    {
+      "serial_no": 16,
+      "company_name": "Australia Post",
+      "region_coverage": "Australia + International",
+      "company_url": "https://auspost.com.au/mypost/track/",
+      "tracking_url": "https://auspost.com.au/mypost/track/#/details/{AWB}"
+    },
+    {
+      "serial_no": 17,
+      "company_name": "Canada Post",
+      "region_coverage": "Canada + International",
+      "company_url": "https://www.canadapost-postescanada.ca/track-reperage/en",
+      "tracking_url": "https://www.canadapost-postescanada.ca/track-reperage/en#/search?searchFor={AWB}"
+    },
+    {
+      "serial_no": 18,
+      "company_name": "Royal Mail",
+      "region_coverage": "UK + International",
+      "company_url": "https://www.royalmail.com/track-your-item",
+      "tracking_url": "https://www.royalmail.com/track-your-item"
+    },
+    {
+      "serial_no": 19,
+      "company_name": "Japan Post",
+      "region_coverage": "Japan + International",
+      "company_url": "https://trackings.post.japanpost.jp/services/srv/search/",
+      "tracking_url": "https://trackings.post.japanpost.jp/services/srv/search/direct?reqCodeNo1={AWB}"
+    },
+    {
+      "serial_no": 20,
+      "company_name": "First Flight",
+      "region_coverage": "India + International",
+      "company_url": "https://www.firstflight.net/track",
+      "tracking_url": "https://www.aftership.com/track?t={awb}&c=first-flight"
+    },
+    {
+      "serial_no": 21,
+      "company_name": "Gati Limited",
+      "region_coverage": "India + International",
+      "company_url": "https://www.gati.com/track-your-shipment",
+      "tracking_url": "https://www.gati.com/track-by-docket/"
+    },
+    {
+      "serial_no": 22,
+      "company_name": "PostNL",
+      "region_coverage": "Netherlands + International",
+      "company_url": "https://www.postnl.nl/en/customer-service/track-trace",
+      "tracking_url": "https://jouw.postnl.nl/track-and-trace/{AWB}"
+    },
+    {
+      "serial_no": 23,
+      "company_name": "Deutsche Post DHL",
+      "region_coverage": "Germany + International",
+      "company_url": "https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html",
+      "tracking_url": "https://www.dhl.de/de/privatkunden/pakete-empfangen/verfolgen.html?piececode={AWB}"
+    },
+    {
+      "serial_no": 24,
+      "company_name": "La Poste",
+      "region_coverage": "France + International",
+      "company_url": "https://www.laposte.fr/outils/suivre-vos-envois",
+      "tracking_url": "https://www.laposte.fr/outils/suivre-vos-envois?code={AWB}"
+    },
+    {
+      "serial_no": 25,
+      "company_name": "Correos",
+      "region_coverage": "Spain + International",
+      "company_url": "https://www.correos.es/es/es/herramientas/localizador/envios",
+      "tracking_url": "https://www.correos.es/es/es/herramientas/localizador/envios/{AWB}"
+    },
+    {
+      "serial_no": 26,
+      "company_name": "Singapore Post",
+      "region_coverage": "Singapore + International",
+      "company_url": "https://www.singpost.com/track-items",
+      "tracking_url": "https://www.singpost.com/track-items?trackingid={AWB}"
+    },
+    {
+      "serial_no": 27,
+      "company_name": "China Post",
+      "region_coverage": "China + International",
+      "company_url": "http://www.11183.com.cn/english.html",
+      "tracking_url": "https://www.11183.com.cn/english/"
+    },
+    {
+      "serial_no": 28,
+      "company_name": "Russian Post",
+      "region_coverage": "Russia + International",
+      "company_url": "https://www.pochta.ru/tracking",
+      "tracking_url": "https://www.pochta.ru/tracking#{AWB}"
+    },
+    {
+      "serial_no": 29,
+      "company_name": "Yamato Transport",
+      "region_coverage": "Japan",
+      "company_url": "https://www.kuronekoyamato.co.jp/ytc/en/track/",
+      "tracking_url": "https://track.kuronekoyamato.co.jp/english/tracking"
+    },
+    {
+      "serial_no": 30,
+      "company_name": "Sagawa Express",
+      "region_coverage": "Japan",
+      "company_url": "https://k2k.sagawa-exp.co.jp/p/web/okurijosearch.do",
+      "tracking_url": "https://k2k.sagawa-exp.co.jp/p/web/okurijosearch.do?okurijoNo={AWB}"
+    },
+    {
+      "serial_no": 31,
+      "company_name": "Korea Post",
+      "region_coverage": "South Korea + International",
+      "company_url": "https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm",
+      "tracking_url": "https://service.epost.go.kr/trace.RetrieveDomRigiTraceList.comm?sid1={AWB}"
+    },
+    {
+      "serial_no": 32,
+      "company_name": "Brazil Post (Correios)",
+      "region_coverage": "Brazil + International",
+      "company_url": "https://www.correios.com.br/english",
+      "tracking_url": "https://www2.correios.com.br/sistemas/rastreamento/resultado.cfm?objetos={AWB}"
+    },
+    {
+      "serial_no": 33,
+      "company_name": "Safexpress",
+      "region_coverage": "India",
+      "company_url": "https://www.safexpress.com/tracking",
+      "tracking_url": "https://www.safexpress.com/Tracking/?awbno={AWB}"
+    },
+    {
+      "serial_no": 34,
+      "company_name": "Kerry Indev",
+      "region_coverage": "India + International",
+      "company_url": "https://www.kerryindev.com/track-shipment/",
+      "tracking_url": "https://www.kerryindev.com/track-result/?awbno={AWB}"
+    },
+    {
+      "serial_no": 35,
+      "company_name": "Spoton Logistics",
+      "region_coverage": "India",
+      "company_url": "https://www.spoton.co.in/tracking",
+      "tracking_url": "https://trackcourier.io/track-and-trace/spoton-courier/{AWB}"
+    },
+    {
+      "serial_no": 36,
+      "company_name": "Rivigo",
+      "region_coverage": "India",
+      "company_url": "https://www.rivigo.com/track-consignment",
+      "tracking_url": "https://www.rivigo.com/track?trackingNumber={AWB}"
+    },
+    {
+      "serial_no": 37,
+      "company_name": "Dependo Logistics",
+      "region_coverage": "India",
+      "company_url": "https://www.dependo.com/tracking",
+      "tracking_url": "https://www.dependo.com/track?awb={AWB}"
+    },
+    {
+      "serial_no": 38,
+      "company_name": "Dax Air",
+      "region_coverage": "India",
+      "company_url": "https://www.daxair.in/Tracking.aspx",
+      "tracking_url": "https://daxair.co.uk/"
+    },
+    {
+      "serial_no": 39,
+      "company_name": "Shree Tirupati Courier",
+      "region_coverage": "India",
+      "company_url": "https://www.tirupaticouriers.com/tracking.php",
+      "tracking_url": "https://www.tirupaticouriers.com/tracking_result.php?awb={AWB}"
+    },
+    {
+      "serial_no": 40,
+      "company_name": "South African Post",
+      "region_coverage": "South Africa + International",
+      "company_url": "https://www.postoffice.co.za/tools/trackandtrace.html",
+      "tracking_url": "https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx"
+    },
+    {
+      "serial_no": 41,
+      "company_name": "New Zealand Post",
+      "region_coverage": "NZ + International",
+      "company_url": "https://www.nzpost.co.nz/tools/tracking",
+      "tracking_url": "https://www.nzpost.co.nz/tools/tracking/item/{AWB}"
+    },
+    {
+      "serial_no": 42,
+      "company_name": "Swiss Post",
+      "region_coverage": "Switzerland + International",
+      "company_url": "https://www.post.ch/en/tracking",
+      "tracking_url": "https://www.post.ch/track?formattedParcelCodes={AWB}"
+    },
+    {
+      "serial_no": 43,
+      "company_name": "Asendia",
+      "region_coverage": "Global",
+      "company_url": "https://tracking.asendia.com/tracking",
+      "tracking_url": "https://tracking.asendia.com/tracking/{AWB}"
+    },
+    {
+      "serial_no": 44,
+      "company_name": "EMS",
+      "region_coverage": "Global",
+      "company_url": "https://www.ems.post/en/global-network/tracking",
+      "tracking_url": "https://www.ems.post/en/global-network/tracking/{AWB}"
+    }
+  ]

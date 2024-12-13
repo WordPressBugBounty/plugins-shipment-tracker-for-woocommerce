@@ -164,16 +164,16 @@ if(empty($bt_sst_review_subheading_text)){
 
                     if($days_remaining>0){
                         if($days_remaining==1){
-                            $days_remaining = "In ".$days_remaining." Day"; 
+                            $days_remaining = "(In ".$days_remaining." Day)"; 
                         }else{
-                            $days_remaining = "In ".$days_remaining." Days"; 
+                            $days_remaining = "(In ".$days_remaining." Days)"; 
                         }
                     }else if($days_remaining===0){
-                        $days_remaining = " Today ";
+                        $days_remaining = "( Today )";
                     }
                     
                     if ($delivery_status !="" && $shipment_status != "canceled"):    
-                        $estimated_delivery_date = $delivery_status." ".$estimated_delivery_date." (".$days_remaining.")"; 
+                        $estimated_delivery_date = $delivery_status." ".$estimated_delivery_date." ".$days_remaining; 
                     endif;
                 }
 

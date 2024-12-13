@@ -18,6 +18,8 @@ class Bt_Sync_Shipment_Tracking_Shipment_Model{
 
     public static function get_tracking_by_order_id($order_id) {
         $bt_shipment_tracking = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shipment_tracking', true );
+        // echo "<pre>"; print_r($bt_shipment_tracking); die;
+
         if(!empty($bt_shipment_tracking) && $bt_shipment_tracking instanceof Bt_Sync_Shipment_Tracking_Shipment_Model){
             $bt_shipping_provider = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shipping_provider', true );
             $bt_shipping_awb_number = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shipping_awb', true );
@@ -46,6 +48,7 @@ class Bt_Sync_Shipment_Tracking_Shipment_Model{
         //important to add as wc_email classes are not available before this call.
         $mailer = WC()->mailer();
         $bt_shipment_tracking_old = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($order_id);
+
         Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipment_tracking', $shipment_obj);
         Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_provider', $shipment_obj->shipping_provider );
         Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_awb', $shipment_obj->awb  );
@@ -70,73 +73,82 @@ class Bt_Sync_Shipment_Tracking_Shipment_Model{
     }
 
 
-    public function get_tracking_link(){
-        if(empty($this->awb)){
-            return "#"; //if awb is empty, return #.
-        }
+    public function get_tracking_link($WebsiteOrCourier='courier'){
+      
 
-        if($this->shipping_provider=="shyplite"){
-            return "https://tracklite.in/track/" . $this->awb;
-        }else if($this->shipping_provider=="shiprocket"){
-            $bt_sst_shiprocket_custom_tracking_url=carbon_get_theme_option( 'bt_sst_shiprocket_custom_tracking_url' );
-            if(empty($bt_sst_shiprocket_custom_tracking_url)){
-                return "https://shiprocket.co/tracking/" . $this->awb;
-            }else{
-                $bt_sst_shiprocket_custom_tracking_url = str_replace("#awb#",$this->awb,$bt_sst_shiprocket_custom_tracking_url);
-                $bt_sst_shiprocket_custom_tracking_url = str_replace("#order_id#",$this->order_id,$bt_sst_shiprocket_custom_tracking_url);
-                if (strpos($bt_sst_shiprocket_custom_tracking_url, 'http') !== 0) {
-                    $bt_sst_shiprocket_custom_tracking_url = "https://" . $bt_sst_shiprocket_custom_tracking_url;
-                }
-                return $bt_sst_shiprocket_custom_tracking_url;
-            }
-            
-        }else if($this->shipping_provider=="nimbuspost"){
-            return "https://ship.nimbuspost.com/shipping/tracking/" . $this->awb;
-        }else if($this->shipping_provider=="nimbuspost_new"){
-            return "https://ship.nimbuspost.com/shipping/tracking/" . $this->awb;
-        }else if($this->shipping_provider=="manual"){  
-            $manual_tracking_url = "#";
-            // $enabled_shipping_providers = carbon_get_theme_option( 'bt_sst_enabled_custom_shipping_mode' );
-            $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($this->order_id, '_bt_sst_custom_shipping_mode', true);
-
-            if ($shipping_mode_is_manual_or_ship24 == "ship24") {
-                $tracking_page_id = get_option('_bt_sst_tracking_page');
-                $page_url = get_permalink($tracking_page_id);
-                if ($page_url) {
-                    $manual_tracking_url = $page_url . '?order=' . $this->order_id;
-                    return $manual_tracking_url;
-                } else {
-                    return '#';
-                }
-            }
-
+        if($WebsiteOrCourier=='courier'){
+            //try to get it from current object since courier tracking urls are store in current object
             if(!empty($this->tracking_url)){
+                $manual_tracking_url ="";
                 if (strpos($this->tracking_url, "http") === 0) {
                     $manual_tracking_url = $this->tracking_url;
                 } else{
                     $manual_tracking_url = 'https://' . $this->tracking_url;
                 }
-            }else{
-                $bt_sst_manual_tracking_url=carbon_get_theme_option( 'bt_sst_manual_tracking_url' );
-                if(!empty($bt_sst_manual_tracking_url)){
-                    $bt_sst_manual_tracking_url = str_replace("#awb#",$this->awb,$bt_sst_manual_tracking_url);
-                    $bt_sst_manual_tracking_url = str_replace("#order_id#",$this->order_id,$bt_sst_manual_tracking_url);
-                    if (strpos($bt_sst_manual_tracking_url, 'http') !== 0) {
-                        $bt_sst_manual_tracking_url = "https://" . $bt_sst_manual_tracking_url;
-                    }
-                    $manual_tracking_url = $bt_sst_manual_tracking_url;
-                }
+                $manual_tracking_url = strtolower($manual_tracking_url);
+                $manual_tracking_url = str_replace('#awb#', $this->awb, $manual_tracking_url);
+                $manual_tracking_url = str_replace('#orderid#', $this->order_id, $manual_tracking_url);
+                $manual_tracking_url = str_replace('{awb}', $this->awb, $manual_tracking_url);
+                $manual_tracking_url = str_replace('{orderid}', $this->order_id, $manual_tracking_url);
+                return $manual_tracking_url;
             }
-            
-            return $manual_tracking_url;
-        }else if($this->shipping_provider=="xpressbees"){
-            return "https://shipment.xpressbees.com/shipping/tracking/" . $this->awb;
-        }else if($this->shipping_provider=="shipmozo"){
-            return "https://app.shipmozo.com/track-order?awb=" . $this->awb;
-        }else if($this->shipping_provider=="delhivery"){
-            return "https://www.delhivery.com/track/package/" . $this->awb;
-        }else{
-            return "#";
+
+            //if came this far, try to get it based on provider
+            if($this->shipping_provider=="shyplite"){
+                return "https://tracklite.in/track/" . $this->awb;
+            }else if($this->shipping_provider=="shiprocket"){
+                return "https://shiprocket.co/tracking/" . $this->awb; 
+            }else if($this->shipping_provider=="nimbuspost"){
+                return "https://ship.nimbuspost.com/shipping/tracking/" . $this->awb;
+            }else if($this->shipping_provider=="nimbuspost_new"){
+                return "https://ship.nimbuspost.com/shipping/tracking/" . $this->awb;
+            }else if($this->shipping_provider === "manual"){  
+                $manual_tracking_url = "#";
+                $shipping_mode_is_manual_or_ship24 = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($this->order_id, '_bt_sst_custom_shipping_mode', true);
+    
+                if ($shipping_mode_is_manual_or_ship24 == "ship24") {
+                    $tracking_page_id = get_option('_bt_sst_tracking_page');
+                    $page_url = get_permalink($tracking_page_id);
+                    if ($page_url) {
+                        $manual_tracking_url = $page_url . '?order=' . $this->order_id;
+                        return $manual_tracking_url;
+                    } else {
+                        return '#';
+                    }
+                }
+
+                if(!empty($this->tracking_url)){
+                    if (strpos($this->tracking_url, "http") === 0) {
+                        $manual_tracking_url = $this->tracking_url;
+                    } else{
+                        $manual_tracking_url = 'https://' . $this->tracking_url;
+                    }
+                    $manual_tracking_url = str_replace('#awb#', $this->awb, $manual_tracking_url);
+
+                }
+                
+                return $manual_tracking_url;
+            }else if($this->shipping_provider=="xpressbees"){
+                return "https://shipment.xpressbees.com/shipping/tracking/" . $this->awb;
+            }else if($this->shipping_provider=="shipmozo"){
+                return "https://app.shipmozo.com/track-order?awb=" . $this->awb;
+            }else if($this->shipping_provider=="delhivery"){
+                return "https://www.delhivery.com/track/package/" . $this->awb;
+            }
+
         }
+
+
+        //if came this far, try to get it from tracking page.
+        $tracking_page_id = get_option( '_bt_sst_tracking_page' );
+        if($tracking_page_id ){
+            $link = get_permalink( $tracking_page_id );
+            $separator = (strpos($link, '?') !== false) ? '&' : '?';
+            return $link . $separator . 'order=' . $this->order_id;
+        }
+
+      return "#";
+
+
     }
 }

@@ -250,22 +250,19 @@ class Bt_Sync_Shipment_Tracking_Public
 	/**Show Input box & Button(pincode checker) on product page */
 	public function show_pincode_input_box()
 	{
-		$is_premium = $this->licenser->should_activate_premium_features();
-		if (!$is_premium)
-			return;
-		$pincode_checker = carbon_get_theme_option('bt_sst_shiprocket_pincode_checker');
-		if ($pincode_checker != 1) {
-			return;
-		}
-		// $pincode_data_provider = carbon_get_theme_option(
-		// 	"bt_sst_pincode_data_provider"
-		// );
-		// if ($pincode_data_provider == 'shiprocket' || $pincode_data_provider == 'generic') {
-			// die("fdsfsd");
-			
-				wp_enqueue_style('bt-sync-shipment-tracking-public-css');
-				wp_enqueue_script('bt-sync-shipment-tracking-public');
-			// }
+		$product_id = get_the_ID();
+		$product = wc_get_product($product_id);
+		if ($product && !$product->is_virtual()) {
+			$is_premium = $this->licenser->should_activate_premium_features();
+			if (!$is_premium)
+				return;
+			$pincode_checker = carbon_get_theme_option('bt_sst_shiprocket_pincode_checker');
+			if ($pincode_checker != 1) {
+				return;
+			}
+			wp_enqueue_style('bt-sync-shipment-tracking-public-css');
+			wp_enqueue_script('bt-sync-shipment-tracking-public');
+
 			$check_templet = carbon_get_theme_option('bt_sst_pincode_box_template');
 
 			if($check_templet == "realistic"){
@@ -275,8 +272,8 @@ class Bt_Sync_Shipment_Tracking_Public
 			}else{
 				include plugin_dir_path(dirname(__FILE__)) . 'public/partials/input_box_pincode_show_data.php';
 			}
-			
-		// }
+
+		}
 	}
 
 	function bt_estimated_delivery_widget()
@@ -317,8 +314,13 @@ class Bt_Sync_Shipment_Tracking_Public
 	/**To Show Delivery data on Product Page using Pincode */
 	function get_pincode_data_product_page()
 	{
-	
+		
+		if (isset($_POST["value"]) && is_array($_POST["value"])) {
+			$_POST["value"] = array_map('sanitize_text_field', $_POST["value"]);
+		} 
+
 		$nonce = $_POST["value"]['n'];
+
 		if (!wp_verify_nonce($nonce, 'get_pincode_data_product_page')) {
 			exit; // Get out of here, the nonce is rotten!
 		}
@@ -901,7 +903,7 @@ class Bt_Sync_Shipment_Tracking_Public
 				}
 			}	
 
-			
+
 			
 			if (empty($bt_sst_message_text_template)) {
 				$bt_sst_message_text_template = 'Estimated delivery by <b>#min_date#</b> <br> Delivering to #city#';
@@ -2526,6 +2528,46 @@ class Bt_Sync_Shipment_Tracking_Public
     //     }
 		
 	// }
+	function add_tracking_data_after_order_in_email($order){
+		$bt_sst_shipment_info_in_woocommerce = carbon_get_theme_option( 'bt_sst_shipment_info_in_woocommerce' );
+
+		if($bt_sst_shipment_info_in_woocommerce==1){
+			$bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($order->get_id());
+			$bt_shipping_provider = $bt_shipment_tracking->shipping_provider;
+			if(!empty($bt_shipment_tracking) && $bt_shipment_tracking instanceof Bt_Sync_Shipment_Tracking_Shipment_Model && !empty($bt_shipment_tracking->awb)){
+
+				echo '<table id="m_-3526290118834812421addresses" cellspacing="0" cellpadding="0" border="0" style="width:100%;vertical-align:top;margin-bottom:40px;padding:0" width="100%">
+						<tbody>
+							<tr>
+								<td valign="top" width="50%" style="text-align:left;font-family:\'Helvetica Neue\',Helvetica,Roboto,Arial,sans-serif;border:0;padding:0" align="left">
+									<h2 style="color:#7f54b3;display:block;font-family: \'Helvetica Neue\',Helvetica,Roboto,Arial,sans-serif;font-size:18px;font-weight:bold;line-height:130%;margin:0 0 18px;text-align:left">Order Tracking</h2>
+									<div style="padding: 12px;color: #636363;border: 1px solid #e5e5e5;">';
+										include plugin_dir_path(dirname(__FILE__)) . 'public/partials/order_shipment_details.php';
+				echo 				'</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>';
+			}else{
+				$tracking_page_id = get_option( '_bt_sst_tracking_page' );
+				$link = get_permalink( $tracking_page_id );
+				$separator = (strpos($link, '?') !== false) ? '&' : '?';
+				$full_url = $link . $separator . 'order=' . $order->get_id();
+				echo '<table id="m_-3526290118834812421addresses" cellspacing="0" cellpadding="0" border="0" style="width:100%;vertical-align:top;margin-bottom:40px;padding:0" width="100%">
+						<tbody>
+							<tr>
+								<td valign="top" width="50%" style="text-align:left;font-family:\'Helvetica Neue\',Helvetica,Roboto,Arial,sans-serif;border:0;padding:0" align="left">
+									<h2 style="color:#7f54b3;display:block;font-family: \'Helvetica Neue\',Helvetica,Roboto,Arial,sans-serif;font-size:18px;font-weight:bold;line-height:130%;margin:0 0 18px;text-align:left">Order Tracking</h2>
+									<div style="padding: 12px;color: #636363;border: 1px solid #e5e5e5;">
+										<a href = "'.esc_url($full_url).'"> Track Order </a>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>';
+			}
+		}
+	}
 
 
 }
