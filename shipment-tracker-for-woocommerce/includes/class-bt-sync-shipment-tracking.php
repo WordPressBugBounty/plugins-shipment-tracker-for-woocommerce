@@ -336,6 +336,7 @@ class Bt_Sync_Shipment_Tracking {
 		$plugin_admin = new Bt_Sync_Shipment_Tracking_Admin( $this->get_plugin_name(), $this->get_version(),$this->shiprocket,$this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->shipmozo, $this->nimbuspost_new, $this->delhivery, $this->ship24 );
 		$this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_admin, 'custom_dokan_order_details', 10, 1 );
 		$this->loader->add_action('carbon_fields_save_post',$plugin_admin, 'update_woocommerce_data_on_carbon_fields_save', 10, 3);
+		$this->loader->add_action( 'woocommerce_order_status_changed',$plugin_admin, 'woocommerce_order_status_changed_of_shipment_tracker', 10, 3 );
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
@@ -358,7 +359,8 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'woocommerce_order_status_processing', $plugin_admin, 'woocommerce_order_status_processing',20,1 );
 		$this->loader->add_action( 'woocommerce_order_status_on-hold', $plugin_admin, 'woocommerce_order_status_on_hold' );
 		$this->loader->add_action( 'init', $this->crons, 'schedule_recurring_events');
-
+		$this->loader->add_action( 'init', $plugin_admin, 'bt_sst_add_custom_order_statuses');
+		$this->loader->	add_filter('wc_order_statuses',$plugin_admin, 'add_custom_status_to_wc_order_statuses');
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'handle_admin_init');
 		//$this->loader->add_action( 'init', $plugin_admin, 'register_shipment_arrival_order_status');
 		//$this->loader->add_filter( 'wc_order_statuses', $plugin_admin, 'add_awaiting_shipment_to_order_statuses' );
@@ -406,6 +408,8 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_filter( 'woocommerce_email_classes', $plugin_admin, 'register_shipment_email' );
 		$this->loader->add_action('wp_ajax_load_coriures_name_for_manual',$plugin_admin, 'load_coriures_name_for_manual');
 		$this->loader->add_action('wp_ajax_bt_sst_save_manul_coriure_name',$plugin_admin, 'bt_sst_save_manual_coriure_name');
+		$this->loader->add_action('wp_ajax_bt_sst_save_new_order_status',$plugin_admin, 'bt_sst_save_new_order_status');
+		$this->loader->add_action('wp_ajax_bt_sst_update_status_mapping',$plugin_admin, 'bt_sst_update_status_mapping');
 
 		// Add a dropdown to filter orders by state
 		$this->loader->add_action( 'restrict_manage_posts', $plugin_admin, 'add_shop_order_filter_by_shipment_status' );
@@ -489,7 +493,16 @@ class Bt_Sync_Shipment_Tracking {
 		
 		}
 
-	
+		// $mapping_html = file_get_contents(plugin_dir_path( dirname( __FILE__ ) )  . 'admin/partials/bt-shipment-order-status-mappig.php');
+		$file_path = plugin_dir_path(dirname(__FILE__)) . 'admin/partials/bt-shipment-order-status-mappig.php';
+		if (file_exists($file_path)) {
+			ob_start();
+			include $file_path; // Executes the PHP file
+			$mapping_html = ob_get_clean(); // Captures the output
+		} else {
+			// Fallback for missing file
+			$mapping_html = '<p>Error: Mapping file not found.</p>';
+		}
 		$weight_unit = get_option( 'woocommerce_weight_unit' );
 		$dimension_unit = get_option( 'woocommerce_dimension_unit' );	
 		$container = Container::make( 'theme_options', __( 'Shipment Tracking' ) )
@@ -523,9 +536,23 @@ class Bt_Sync_Shipment_Tracking {
 			Field::make( 'checkbox', 'bt_sst_complete_delivered_orders', __( 'Automatically Change Status of Delivered Orders to Completed') )
 				->set_option_value( 'yes' ),
 
-			Field::make( 'multiselect', 'bt_sst_order_statuses_to_sync', __( 'Orders Statuses' ) )
-				->add_options( $order_statuses )->set_default_value( 'any' )
-				->set_help_text( 'Tracking will be auto synced for orders with the selected statuses.' ),
+			// Field::make( 'multiselect', 'bt_sst_order_statuses_to_sync', __( 'Orders Statuses' ) )
+			// 	->add_options( $order_statuses )->set_default_value( 'any' )
+			// 	->set_help_text( 'Tracking will be auto synced for orders with the selected statuses.' ),
+			Field::make('checkbox', 'bt_sst_enable_orde_status_mapping', __('Enable Order <-> Shipment Status Mapping (Premium Only)'))
+			->set_help_text('Plugin will automatically update order status based on shipment status and vice versa.')
+			->set_option_value('no'),
+
+			Field::make('html', 'bt_sst_order_mapping_status', __('Order Mapping Status'))
+				->set_html($mapping_html)
+				->set_help_text('Select Shipment to Order Status Mapping. Changes are automatically saved.')
+				->set_conditional_logic(array(
+					array(
+						'field' => 'bt_sst_enable_orde_status_mapping',
+						'value' => true,
+					)
+					)),
+
 			Field::make( 'select', 'bt_sst_sync_orders_date', __( 'Sync Tracking for' ) )
 				->set_options( array(
 					'10' => '10 Days',
@@ -1559,6 +1586,7 @@ class Bt_Sync_Shipment_Tracking {
 
 			) );
 		}
+		$add_corier_popup_html = file_get_contents(plugin_dir_path( dirname( __FILE__ ) )  . 'admin/partials/bt-shipment-tracker-get-and-save-couriers.php');
 
 		if(is_array($enabled_shipping_providers) && in_array('manual',$enabled_shipping_providers)){
                 $random_rest_secret = get_option( 'bt-sync-shipment-tracking-random-manual-secret-key','' );
@@ -1588,7 +1616,9 @@ class Bt_Sync_Shipment_Tracking {
                         ->set_attribute( 'readOnly', true ),
 					Field::make('select', 'bt_sst_manual_courier_name', __('Default Courier Name'))
 						->add_options( BT_SST_MANUAL_DEFAULT_COURIER_NAME )
-						->set_help_text(__('Please select a courier name.')),
+						->set_help_text(__('<div>Please select a courier name.</div>
+						<a id="bt_sst_add_coriures" href="#" ">Add More couriers</a>  
+						'.$add_corier_popup_html)),
 					
 					Field::make( 'text', 'bt_sst_manual_awb_number', __( 'Default awb number format' ) )
 						->set_attribute( 'placeholder', 'abc-#order_id#' )
@@ -1607,7 +1637,7 @@ class Bt_Sync_Shipment_Tracking {
 	
 		$login_html = file_get_contents(plugin_dir_path( dirname( __FILE__ ) )  . 'includes/licenser/partials/premium_conformation_login_form.php');
 		// $csrf =  wp_nonce_field( 'check_user_data_for_premium_features','_wpnonce',true,false );
-		// $login_html = str_replace("##csrf##", $csrf, $login_html);
+		// $login_html = str_ireplace("##csrf##", $csrf, $login_html);
 		$woocommerce_settings_url = admin_url('admin.php?page=wc-settings');
 		
 		$container = $container->add_tab( __( 'Product Page  (Premium Only)' ), array(
@@ -2338,10 +2368,10 @@ class Bt_Sync_Shipment_Tracking {
 		if(is_admin() && isset($_GET["page"]) && $_GET['page']=="crb_carbon_fields_container_shipment_tracking.php"){
 			$premium_html = file_get_contents(plugin_dir_path( dirname( __FILE__ ) )  . 'admin/partials/bt-st-buy-premium-feature-tab.php');
 			$csrf =  wp_nonce_field( 'check_user_data_for_premium_features','_wpnonce',true,false );
-			$premium_html = str_replace("##csrf##", $csrf, $premium_html);
+			$premium_html = str_ireplace("##csrf##", $csrf, $premium_html);
 			$bulma = plugin_dir_url(dirname(__FILE__)) . 'admin/css/bulma.min.css';
-			$premium_html = str_replace("##bulma##",$bulma,$premium_html);
-			$premium_html = str_replace("##premiumfeatures##",$login_html,$premium_html);
+			$premium_html = str_ireplace("##bulma##",$bulma,$premium_html);
+			$premium_html = str_ireplace("##premiumfeatures##",$login_html,$premium_html);
 			$container = $container->add_tab( __( 'Buy Premium' ), array(
 				Field::make( 'html', 'bt_sst_premium_html', __( 'Buy Premium Features' ) )
 					->set_html(

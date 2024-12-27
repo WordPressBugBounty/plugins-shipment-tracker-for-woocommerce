@@ -175,12 +175,12 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
                                 Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipmozo_order_id', $shipmozo_order_id);
                             }
                          
-                            $bt_sst_order_statuses_to_sync = carbon_get_theme_option( 'bt_sst_order_statuses_to_sync' );
+                            // $bt_sst_order_statuses_to_sync = carbon_get_theme_option( 'bt_sst_order_statuses_to_sync' );
                             $bt_sst_sync_orders_date = carbon_get_theme_option( 'bt_sst_sync_orders_date' );
         
                             $order_status = 'wc-' . $order->get_status();
         
-                            if(in_array($order_status,$bt_sst_order_statuses_to_sync) || in_array('any',$bt_sst_order_statuses_to_sync)){
+                            // if(in_array($order_status,$bt_sst_order_statuses_to_sync) || in_array('any',$bt_sst_order_statuses_to_sync)){
         
                                 $date_created_dt = $order->get_date_created(); // Get order date created WC_DateTime Object
                                 $timezone        = $date_created_dt->getTimezone(); // Get the timezone
@@ -201,9 +201,9 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
                                 }else{
                                     return "Thanks Shipmozo! Order too old.";
                                 }
-                            }else{
-                                return "Thanks Shipmozo! Order status out of scope.";
-                            }
+                            // }else{
+                            //     return "Thanks Shipmozo! Order status out of scope.";
+                            // }
                         }
                     }
                 }                    
@@ -432,7 +432,6 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
         $sku_count=1;
         $sku_count_map = array();
         foreach ($order->get_items() as $item_id => $a) {
-            
             if (is_a($a, 'WC_Order_Item_Product')) {
                 $product = $a->get_product();
                 $product_sku = $product->get_sku();
@@ -452,7 +451,7 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
                     "sku_number"=>  $product_sku,
                     "quantity"=> $a->get_quantity(),
                     "discount"=> "",
-                    "unit_price"=>  $order->get_item_total( $a, true, true ),
+                    "unit_price"=>  $order->get_item_total( $a, true ),
                     "hsn"=> "",
                     "product_category"=> ""
                 ); 
@@ -472,15 +471,17 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
                 }
             }
         }
-        $so["product_detail"][] =array(
-            "name"=>"Shipping Charges",
-            "sku_number"=>  "shipping_charges",
-            "quantity"=> 1,
-            "discount"=> "",
-            "unit_price"=>  $order->get_total_shipping(),
-            "hsn"=> "",
-            "product_category"=> ""
-        ); 
+        if($order->get_total_shipping()>0){
+            $so["product_detail"][] =array(
+                "name"=>"Shipping Charges",
+                "sku_number"=>  "shipping_charges",
+                "quantity"=> 1,
+                "discount"=> "",
+                "unit_price"=>  $order->get_total_shipping(),
+                "hsn"=> "",
+                "product_category"=> ""
+            ); 
+        }
         $weight_unit = get_option('woocommerce_weight_unit');
         $dimension_unit = get_option('woocommerce_dimension_unit');
 
@@ -500,7 +501,6 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
         $so["width"] = $total_width_cm>0?$total_width_cm:5;
         $so["height"] = $total_height_cm>0?$total_height_cm:5;
         $so["weight"] = $total_weight_kg>0?$total_weight_kg:100;
-
         return $so;
         
 
@@ -510,7 +510,65 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
         $resp=null;
         if(!empty($awb_number = Bt_Sync_Shipment_Tracking_Shipment_Model::get_awb_by_order_id($order_id))){
             $resp= $this->get_order_tracking_by_awb_number($awb_number);
-        } 
+        } else{
+            $bt_shipmozo_order_id = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_shipmozo_order_id', true);
+            // $bt_shipmozo_order_id = "4681AP252435974430";
+            // var_dump($bt_shipmozo_order_id); die;
+            if (!empty($bt_shipmozo_order_id)) {
+                $this->init_params();
+            
+                if (!empty($this->public_key) && !empty($this->private_key)) {
+                    $api_url = 'https://shipping-api.com/app/api/v1/get-order-detail/' . $bt_shipmozo_order_id;
+            
+                    $headers = array(
+                        'public-key'  => $this->public_key,
+                        'private-key' => $this->private_key,
+                    );
+            
+                    $args = array(
+                        'headers' => $headers,
+                    );
+            
+                    $response = wp_remote_get($api_url, $args);
+            
+                    if (is_wp_error($response)) {
+                        error_log('API request failed: ' . $response->get_error_message());
+                        return false;
+                    }
+            
+                    $body = wp_remote_retrieve_body($response);
+                    $decoded_body = json_decode($body, true);
+            
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        error_log('Failed to decode JSON response: ' . json_last_error_msg());
+                        return false;
+                    }
+            
+                    if (!empty($decoded_body['data'][0]['shipping_details']['awb_number'])) {
+                        $awb_number = $decoded_body['data'][0]['shipping_details']['awb_number'];
+                        $resp = $this->get_order_tracking_by_awb_number($awb_number);
+                    } else {
+                        $order = wc_get_order( $order_id );
+                        $order->add_order_note('AWB missing in Shipmozo order');                    
+                    }
+                } else {
+                    error_log('Public or private key is missing');
+                    return false;
+                }
+            } else {
+                error_log('Shipmozo order ID is missing');
+                return false;
+            }
+            
+            
+            
+            //if awb is not found, get shipmozo order id exist in order meta.
+            //if shipmoze order id exist, then fetch order details from shipmozo 'https://shipping-api.com/app/api/v1/get-order-detail/{}' api
+           //check if awb is assiged in the order
+           //if awb is not assigned, then add order note "AWB is not yet assigned on shipmozo"
+           //if awb is assigned, then fetch tracking using the awb number"get_order_tracking_by_awb_number".
+
+        }
 
         if($resp!=null && $resp["result"] == "1" && $resp["data"] != null){
             $shipment_obj = $this->init_model($resp["data"], $order_id);

@@ -1018,17 +1018,17 @@ class Bt_Sync_Shipment_Tracking_Public
 
 	function update_message_text_template($bt_sst_message_text_template, $min_date, $max_date, $delivery_pincode, $city, $min_date_charges, $max_date_charges, $cut_of_time,$edit_postcode)
 	{
-		$mess_text = str_replace("#min_date#", $min_date, $bt_sst_message_text_template);
-		$mess_text = str_replace("#max_date#", $max_date, $mess_text);
-		$mess_text = str_replace("#pincode#", $delivery_pincode, $mess_text);
-		$mess_text = str_replace("#city#", $city, $mess_text);
-		$mess_text = str_replace("#min_date_charges#", $min_date_charges, $mess_text);
-		$mess_text = str_replace("#max_date_charges#", $max_date_charges, $mess_text);
-		$mess_text = str_replace("#cutoff_time#", $cut_of_time, $mess_text);
+		$mess_text = str_ireplace("#min_date#", $min_date, $bt_sst_message_text_template);
+		$mess_text = str_ireplace("#max_date#", $max_date, $mess_text);
+		$mess_text = str_ireplace("#pincode#", $delivery_pincode, $mess_text);
+		$mess_text = str_ireplace("#city#", $city, $mess_text);
+		$mess_text = str_ireplace("#min_date_charges#", $min_date_charges, $mess_text);
+		$mess_text = str_ireplace("#max_date_charges#", $max_date_charges, $mess_text);
+		$mess_text = str_ireplace("#cutoff_time#", $cut_of_time, $mess_text);
 		if (strpos($mess_text, '#edit#') === false) {
 			$mess_text .= ' #edit#';
 		}
-		$mess_text = str_replace("#edit#", $edit_postcode, $mess_text);
+		$mess_text = str_ireplace("#edit#", $edit_postcode, $mess_text);
 		
 		return $mess_text;
 	}
@@ -2448,7 +2448,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		
 		
 		// return the string with new placeholder replacements
-		return str_replace( array_keys( $new_placeholders ), array_values( $new_placeholders ), $string );
+		return str_ireplace( array_keys( $new_placeholders ), array_values( $new_placeholders ), $string );
 	}
 	
 

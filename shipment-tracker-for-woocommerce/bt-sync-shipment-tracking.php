@@ -16,7 +16,7 @@
  * Plugin Name:       Shipment Tracker for Woocommerce
  * Plugin URI:        https://shipment-tracker-for-woocommerce.bitss.tech/
  * Description:       Most comprehensive shipment tracking plugin that extends your woocommerce store with shipment related features. Keeps you & your customers informed about shipment movement.
- * Version:           1.4.23.2
+ * Version:           1.4.23.3
  * Author:            Bitss Techniques
  * Author URI:        https://shipment-tracker-for-woocommerce.bitss.tech
  * License:           GPL-2.0+
@@ -49,13 +49,16 @@ if ( ! defined( 'WPINC' ) ) {
  }else{
 	 $combined_data = $json_data;
  }
- $default_manual_coriure_name = [''=>'Select Courier Company'];
+ $default_manual_coriure_name = [' '=>'Select Courier Company'];
+ foreach($combined_data as $value){
+	$default_manual_coriure_name[$value['company_name']] = $value['company_name'];
+ }
  foreach($combined_data as $value){
 	$default_manual_coriure_name[$value['company_name']] = $value['company_name'];
  }
 
 define( 'Carbon_Fields\URL', trailingslashit( plugin_dir_url( __FILE__ ) ) . 'vendor/htmlburger/carbon-fields/' );//fix for Bitnami installations.
-define( 'BT_SYNC_SHIPMENT_TRACKING_VERSION', '1.4.23.2' );
+define( 'BT_SYNC_SHIPMENT_TRACKING_VERSION', '1.4.23.4.3' );
 define( 'BT_SHIPPING_PROVIDERS', array('delhivery' =>'Delhivery','nimbuspost' => 'Nimbuspost (Deprecated)','nimbuspost_new' => 'Nimbuspost','shipmozo'=>'Shipmozo','shiprocket' => 'Shiprocket', 'xpressbees' => 'Xpressbees', 'manual' =>'Custom Shipping') );
 define( 'BT_SHIPPING_PROVIDERS_WITH_NONE', array('none' =>'none','delhivery' =>'Delhivery', 'nimbuspost' => 'Nimbuspost (OLD)','nimbuspost_new' => 'Nimbuspost(NEW)','shipmozo'=>'Shipmozo','shiprocket' => 'Shiprocket', 'xpressbees' => 'Xpressbees','manual' =>'Custom Shipping') );
 define( 'BT_SST_MANUAL_DEFAULT_COURIER_NAME', $default_manual_coriure_name);

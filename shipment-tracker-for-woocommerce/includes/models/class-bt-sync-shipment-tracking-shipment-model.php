@@ -85,11 +85,11 @@ class Bt_Sync_Shipment_Tracking_Shipment_Model{
                 } else{
                     $manual_tracking_url = 'https://' . $this->tracking_url;
                 }
-                $manual_tracking_url = strtolower($manual_tracking_url);
-                $manual_tracking_url = str_replace('#awb#', $this->awb, $manual_tracking_url);
-                $manual_tracking_url = str_replace('#orderid#', $this->order_id, $manual_tracking_url);
-                $manual_tracking_url = str_replace('{awb}', $this->awb, $manual_tracking_url);
-                $manual_tracking_url = str_replace('{orderid}', $this->order_id, $manual_tracking_url);
+               // $manual_tracking_url = strtolower($manual_tracking_url); do not lower case, causes issue for some couriers.
+                $manual_tracking_url = str_ireplace('#awb#', $this->awb, $manual_tracking_url);
+                $manual_tracking_url = str_ireplace('#orderid#', $this->order_id, $manual_tracking_url);
+                $manual_tracking_url = str_ireplace('{awb}', $this->awb, $manual_tracking_url);
+                $manual_tracking_url = str_ireplace('{orderid}', $this->order_id, $manual_tracking_url);
                 return $manual_tracking_url;
             }
 
@@ -123,7 +123,7 @@ class Bt_Sync_Shipment_Tracking_Shipment_Model{
                     } else{
                         $manual_tracking_url = 'https://' . $this->tracking_url;
                     }
-                    $manual_tracking_url = str_replace('#awb#', $this->awb, $manual_tracking_url);
+                    $manual_tracking_url = str_ireplace('#awb#', $this->awb, $manual_tracking_url);
 
                 }
                 

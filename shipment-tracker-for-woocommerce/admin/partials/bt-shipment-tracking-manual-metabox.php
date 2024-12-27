@@ -8,8 +8,8 @@
     if(!isset($order_id)){
         $order_id=isset($_GET['post']) ? $_GET['post'] : sanitize_text_field($_GET['id']);
     }
-    $awb_n = isset($awb_n) ? $awb_n : '';
-    $awb_n = str_replace('#order_id#', $order_id, $awb_n);
+    $awb_n = isset($awb_n) ? $awb_n : '#order_id#';
+    $awb_n = str_ireplace('#order_id#', $order_id, $awb_n);
 
     $tracking_page_id = get_option( '_bt_sst_tracking_page' );
     $full_url="";
@@ -19,75 +19,15 @@
         $full_url = $link . $separator . 'order=' . $order_id;
     }
 ?>
-<style>
-.bt_sst_modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
 
-.bt_sst_modal_content {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 500px;
-}
-
-.bt_sst_modal_close {
-    color:black;
-    float: inline-end;
-    font-size: 20px;
-    cursor: pointer;
-}
-
-.bt_sst_field {
-    margin-bottom: 15px;
-}
-
-.bt_sst_field label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.bt_sst_field input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.bt_sst_field button {
-    background-color: #007BFF;
-    color: #fff;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.bt_sst_field button:hover {
-    background-color: #0056b3;
-}
-
-</style>
 <input type="hidden" name="order_id" value="<?php echo esc_attr( $order_id ) ?>"/>
 <p class="form-field ">
     <label for="bt_manual_awb_number">AWB Number *</label><br>
-    <input required type="text" class="short" style="" name="bt_manual_awb_number" id="bt_manual_awb_number" value="<?php echo (isset($bt_shipment_tracking['awb'])&& !empty($bt_shipment_tracking['awb'])) ? $bt_shipment_tracking['awb'] : $awb_n; ?>" placeholder="<?php echo esc_attr($awb_n) ?>">
+    <input type="text" class="short" style="" name="bt_manual_awb_number" id="bt_manual_awb_number" value="<?php echo (isset($bt_shipment_tracking['awb'])&& !empty($bt_shipment_tracking['awb'])) ? $bt_shipment_tracking['awb'] : $awb_n; ?>" placeholder="<?php echo esc_attr($awb_n) ?>">
 </p>
 <p class="form-field ">
     <label for="bt_manual_awb_number_coriure">Courier *</label><br>
-    <select required style="min-width:80%" class="bt_manual_awb_number_coriure" name="bt_manual_awb_number_coriure">
+    <select style="min-width:80%" class="bt_manual_awb_number_coriure" name="bt_manual_awb_number_coriure">
         <option value="<?php echo isset($bt_shipment_tracking['courier_name']) && !empty($bt_shipment_tracking['courier_name']) ? $bt_shipment_tracking['courier_name'] : ''; ?>" 
             selected>
             <?php echo !empty($bt_shipment_tracking['courier_name']) ? $bt_shipment_tracking['courier_name'] : 'Select Courier Company'; ?>
@@ -111,7 +51,7 @@
             'value'    => isset($bt_shipment_tracking['current_status'])?$bt_shipment_tracking['current_status']:"",
             'options' => apply_filters( 'bt_sst_shipping_statuses', BT_SHIPPING_STATUS )
         ]);
-
+// echo "<pre>"; print_r($bt_shipment_tracking); die;
 	?>
 </p>
 <p class="form-field ">
@@ -134,43 +74,9 @@
    
 </p><p><small>Tracking Page Shortcode: [bt_shipping_tracking_form_2]</small></p><br>
 <span class="spinner"></span> <button type="button" id="bt_manual_save" class="button" href='#'>Save</button>
-<!-- Modal Popup Form -->
-
-<div id="bt_sst_manual_courier_popup" class="bt_sst_modal" style="display:none;">
-    <div class="bt_sst_modal_background"></div>
-    <div class="bt_sst_modal_content">
-        <div class="bt_sst_box">
-            <span class="bt_sst_modal_close" aria-label="close">x</span>
-            <h3 class="bt_sst_title">Add New Courier</h3>
-            <form id="bt_sst_manual_courier_form">
-                <div class="bt_sst_field">
-                    <label for="bt_sst_manual_courier_company_name">Company Name</label>
-                    <input type="text" id="bt_sst_manual_courier_company_name" name="company_name">
-                </div>
-
-                <div class="bt_sst_field">
-                    <label for="bt_sst_manual_courier_region_coverage">Region Coverage</label>
-                    <input type="text" id="bt_sst_manual_courier_region_coverage" name="region_coverage">
-                </div>
-
-                <div class="bt_sst_field">
-                    <label for="bt_sst_manual_courier_company_url">Company URL</label>
-                    <input type="text" id="bt_sst_manual_courier_company_url" name="company_url">
-                </div>
-
-                <div class="bt_sst_field">
-                    <label for="bt_sst_manual_courier_tracking_url">Tracking URL</label>
-                    <input type="text" id="bt_sst_manual_courier_tracking_url" name="tracking_url">
-                </div>
-
-                <div class="bt_sst_field">
-                    <button type="button" id="bt_sst_manual_courier_save">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
+<?php
+include plugin_dir_path(__FILE__).'bt-shipment-tracker-get-and-save-couriers.php';
+?>
 <script>
     jQuery('#bt_manual_save').click(function () {
         var bt_manual_courier_name = jQuery('.bt_manual_awb_number_coriure').val();
@@ -239,7 +145,12 @@
             }, 2000);
         });
   
-        jQuery(document).on('click', '.bt_manual_awb_number_coriure', function () {
+        // jQuery(document).on('click', '.bt_manual_awb_number_coriure', function () {
+        //     jQuery('.bt_manual_awb_number_coriure').select2({
+        //                 placeholder: "Select Courier Company",
+        //                 allowClear: true
+        //             });
+        // });
             jQuery.ajax({
                 url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                 type: 'POST',
@@ -252,7 +163,9 @@
 
                     // Group companies by region_coverage
                     var groupedData = {};
-
+                    var bt_shipment_tracking = '<?php echo $bt_shipment_tracking['courier_name'] ?>';
+                    var default_cor_name = '<?php echo $cour_n ?>';
+                    
                     // Group the companies by region_coverage
                     data.forEach(function(company) {
                         var region = company.region_coverage || 'Other'; // Default to 'Other' if no region_coverage
@@ -265,20 +178,26 @@
                     // Clear the dropdown before adding new options
                     jQuery('.bt_manual_awb_number_coriure').empty();
                     jQuery('.bt_manual_awb_number_coriure').append('<option value="">Select Courier Company</option>');
-
                     // Loop through grouped data and append <optgroup> elements
                     for (var region in groupedData) {
                         var $optgroup = jQuery('<optgroup>', { label: region });
                         groupedData[region].forEach(function(company) {
+                            let selecteddata = '';
+                            // console.log(company.company_name);
+                            if (bt_shipment_tracking === company.company_name) {
+                                selecteddata = 'selected';
+                            }
+                            else if (default_cor_name === company.company_name) {
+                                selecteddata = 'selected';
+                            }
                             $optgroup.append(
-                                '<option value="' + company.company_name + '" data-tracking-url="' + company.tracking_url + '">' +
-                                company.company_name +
-                                '</option>'
+                                `<option ${selecteddata} value="${company.company_name}" data-tracking-url="${company.tracking_url}">
+                                    ${company.company_name}
+                                </option>`
                             );
                         });
                         jQuery('.bt_manual_awb_number_coriure').append($optgroup);
                     }
-
                     // Initialize Select2 with placeholder
                     jQuery('.bt_manual_awb_number_coriure').select2({
                         placeholder: "Select Courier Company",
@@ -289,54 +208,13 @@
                     alert('Error loading company data.');
                 }
             });
-        });
+        // });
 
         jQuery(document).on('change', '.bt_manual_awb_number_coriure', function () {
             const selectedOption = $(this).find('option:selected');
             const trackingUrl = selectedOption.data('tracking-url');
             jQuery('#bt_manual_tracking_link').val(trackingUrl);
 
-        });
-
-        jQuery(document).on("click", "#bt_sst_add_coriures", function() {
-            jQuery("#bt_sst_manual_courier_popup").css('display', 'flex');
-            jQuery("#bt_sst_manual_courier_popup").addClass("is-active");
-        });
-
-        jQuery(document).on("click", ".bt_sst_modal_close", function() {
-            jQuery("#bt_sst_manual_courier_popup").css('display', 'none');
-            jQuery("#bt_sst_manual_courier_popup").removeClass("is-active");
-        });
-
-        jQuery(document).on('click', '#bt_sst_manual_courier_save', function(e) {
-            e.preventDefault();
-
-            var formData = {
-                company_name: jQuery('#bt_sst_manual_courier_company_name').val(),
-                region_coverage: jQuery('#bt_sst_manual_courier_region_coverage').val(),
-                company_url: jQuery('#bt_sst_manual_courier_company_url').val(),
-                tracking_url: jQuery('#bt_sst_manual_courier_tracking_url').val(),
-                action: 'bt_sst_save_manul_coriure_name',
-
-            };
-
-            jQuery.ajax({
-                url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
-                type: 'POST',
-                data: formData,
-                success: function(response) {
-                    if (response.success) {
-                        alert('Courier saved successfully!');
-                        $('#bt_sst_manual_courier_popup').hide();
-                        location.reload();
-                    } else {
-                        alert('Error: ' + response.data.message);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    alert('Request failed: ' + error);
-                }
-            });
         });
 
     });

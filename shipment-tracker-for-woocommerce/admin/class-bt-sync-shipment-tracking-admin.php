@@ -484,7 +484,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 					if(isset($push_resp["result"] ) && $push_resp["result"]=="1"){
 
 						$shipmozo_orderid = $push_resp["data"]["order_id"];
-						Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_nimbuspost_order_id', $shipmozo_orderid);
+						Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipmozo_order_id', $shipmozo_orderid);
 						$order->add_order_note( "Order pushed to shipmozo. Shipmozo Order ID: " . $shipmozo_orderid . "\n\n- Shipment tracker for woocommerce", false );
 
 					}else{
@@ -618,41 +618,109 @@ class Bt_Sync_Shipment_Tracking_Admin {
 				}
 				if(!empty($bt_sst_order_note_template)){
 					$order = wc_get_order( $order_id );
-					$note = str_replace("#old_status#",bt_format_shipment_status($old_tracking_obj == null?"":$old_tracking_obj->current_status),$bt_sst_order_note_template);
-					$note = str_replace("#new_status#",bt_format_shipment_status($shipment_obj->current_status),$note);
-					$note = str_replace("#track_url#",$shipment_obj->get_tracking_link() ,$note);
+					$note = str_ireplace("#old_status#",bt_format_shipment_status($old_tracking_obj == null?"":$old_tracking_obj->current_status),$bt_sst_order_note_template);
+					$note = str_ireplace("#new_status#",bt_format_shipment_status($shipment_obj->current_status),$note);
+					$note = str_ireplace("#track_url#",$shipment_obj->get_tracking_link() ,$note);
 					
-					$note = str_replace("#courier_name#",$shipment_obj->courier_name ,$note);
-					$note = str_replace("#awb_tracking_number#",$shipment_obj->awb ,$note);
+					$note = str_ireplace("#courier_name#",$shipment_obj->courier_name ,$note);
+					$note = str_ireplace("#awb_tracking_number#",$shipment_obj->awb ,$note);
 
 					if(!empty($shipment_obj->etd)){
 						try {
 							$date = new DateTime($shipment_obj->etd);
-							$note = str_replace("#estimated_delivery#",$date->format('l, jS F Y'),$note);
+							$note = str_ireplace("#estimated_delivery#",$date->format('l, jS F Y'),$note);
 
 						} catch (Exception $e) {
 							//parse failed, just use the value from object.
-							$note = str_replace("#estimated_delivery#",$shipment_obj->etd,$note);
+							$note = str_ireplace("#estimated_delivery#",$shipment_obj->etd,$note);
 						}
 						
 					}else{
-						$note = str_replace("#estimated_delivery#",'NA',$note);
+						$note = str_ireplace("#estimated_delivery#",'NA',$note);
 					}
 					
 
-					$note = str_replace("#track_link#",'<a target="_blank" href="' . $shipment_obj->get_tracking_link() . '">Track</a>',$note);
+					$note = str_ireplace("#track_link#",'<a target="_blank" href="' . $shipment_obj->get_tracking_link() . '">Track</a>',$note);
 					$order->add_order_note( $note, $bt_sst_order_note_type=='customer' );
 				}
 			}
 		}
 		// $send_data ="";
 		// $order_data = wc_get_order( $order_id );
+
+		$is_premium = $this->licenser->is_license_active();
+		//call woocommerce webhook to post shipment updates to 3rd party.
 		if($old_tracking_obj == null || $shipment_obj->current_status != $old_tracking_obj->current_status){
-			$is_premium = $this->licenser->is_license_active();
 			if($is_premium){
 				do_action( 'bt_sst_order_shipment_updated', $order_id );
 			}
 			
+		}
+
+		
+		//Custom order status mapping
+		if($is_premium){
+			$wc_order_statuses = array_map('strtolower', wc_get_order_statuses());
+			$saved_statuses_keys_values = get_option('bt_sst_order_and_shipp_status_keys_array',[]);
+
+			$mapped_order_status = '';
+			if(isset($saved_statuses_keys_values[$shipment_obj->current_status])){
+				$mapped_order_status = $saved_statuses_keys_values[$shipment_obj->current_status];
+			}
+
+			if (!empty($mapped_order_status)  && array_key_exists($mapped_order_status , $wc_order_statuses)) {
+				
+				$order = wc_get_order($order_id);
+				// Get the current order status (strip 'wc-' prefix)
+				$current_status =  $order->get_status();
+				$current_status = 'wc-' . $current_status;
+
+				// Update only if the new status is different from the current status
+				if ($current_status !== $mapped_order_status) {
+				$order->update_status($mapped_order_status, "Order status updated to " . $mapped_order_status);
+				}
+			}
+		}
+
+	}
+	function findKeysByValue(string $value, array $array = null): array {
+		
+		if ($array === null) {
+			global $status_map; // Access the global $status_map if no array is provided.
+			$array = $status_map;
+		}
+	
+		$keys = array_keys($array, $value);
+		return $keys;
+	}
+
+	function woocommerce_order_status_changed_of_shipment_tracker($order_id, $old_order_status, $new_order_status){
+		$is_premium = $this->licenser->is_license_active();
+		//custom order status mapping
+		if(!$is_premium){
+			return;
+		}
+		$courier_name = "";
+		$awb_number = $order_id;
+		$edd = "";
+		$tracking_link = "";
+		$saved_statuses_keys_values = get_option('bt_sst_order_and_shipp_status_keys_array',[]);
+		$mapped_shipment_status = $this->findKeysByValue('wc-' .$new_order_status, $saved_statuses_keys_values);
+		$tracking_data = bt_get_shipping_tracking($order_id);
+		foreach ($mapped_shipment_status as $key => $value) {
+			
+			
+			if (!empty($tracking_data['tracking_data'])) {
+				if($value == $tracking_data["tracking_data"]["current_status"]){
+					continue;
+				}
+				$courier_name = $tracking_data['tracking_data']['courier_name'];
+				$awb_number = $tracking_data['tracking_data']['awb'];
+				$edd = $tracking_data['tracking_data']['etd'];
+				$tracking_link = $tracking_data['tracking_data']['tracking_url'];
+			}
+			bt_update_shipment_tracking($order_id, $courier_name, $awb_number, $value, $edd, $tracking_link);
+			break;
 		}
 	}
 
@@ -1606,7 +1674,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 				),
 				array(
 					'key' => '_bt_shipment_tracking',
-					'value'   => ';s:14:"current_status";s:'.strlen(sanitize_text_field($_GET[$filter_id])).':"'.str_replace("-"," ",sanitize_text_field($_GET[$filter_id])).'";',
+					'value'   => ';s:14:"current_status";s:'.strlen(sanitize_text_field($_GET[$filter_id])).':"'.str_ireplace("-"," ",sanitize_text_field($_GET[$filter_id])).'";',
 					'compare' => 'LIKE', 
 				),
 			);
@@ -1873,6 +1941,172 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		wp_die();
 	}
 
+	function bt_sst_save_new_order_status() {
+	
+		// Validate and sanitize input data
+		if (empty($_POST['data']['title']) || empty($_POST['data']['slug'])) {
+			wp_send_json_error(array('message' => 'Both title and slug are required'), 400);
+			return;
+		}
+		$title = sanitize_text_field($_POST['data']['title']);
+		$slug = sanitize_title($_POST['data']['slug']);
+		$shipping_status = sanitize_title($_POST['data']['shipping_status']);
+		// Retrieve the current list of order statuses
+		$order_status_array = get_option('bt_sst_order_status_list', array());
+		
+		if(!$order_status_array){
+			$order_status_array = [];
+		}
+		// Check if slug already exists
+		foreach ($order_status_array as $status) {
+			if ($status['slug'] === $slug) {
+				wp_send_json_error(array('message' => 'Slug already exists'), 400);
+				return;
+			}
+		}
+		// Add the new order status to the array
+		$order_status_array[] = array(
+			'title' => $title,
+			'slug'  => $slug
+		);
+
+		$result = update_option('bt_sst_order_status_list', $order_status_array);
+		$updated_order_and_shipp_status_keys_array = get_option('bt_sst_order_and_shipp_status_keys_array', array());
+		$updated_order_and_shipp_status_keys_array[$shipping_status] = "wc-".$slug;
+		$result2 = update_option('bt_sst_order_and_shipp_status_keys_array', $updated_order_and_shipp_status_keys_array);
+
+		// Send appropriate response
+		if ($result) {
+			wp_send_json_success(array('message' => 'Order status saved successfully'));
+		} else {
+			wp_send_json_error(array('message' => 'Failed to save the order status'), 500);
+		}
+	}
+	
+
+	function bt_sst_add_custom_order_statuses() {
+		// Retrieve the custom order statuses from the options table
+		$order_status_array = get_option('bt_sst_order_status_list', array());
+	
+		// Check if the array is not empty
+		if (!empty($order_status_array) && is_array($order_status_array)) {
+			foreach ($order_status_array as $order_status) {
+				// Validate required fields
+				if (isset($order_status['title'], $order_status['slug'])) {
+					$slug = sanitize_title($order_status['slug']); // Sanitize the slug
+					$title = sanitize_text_field($order_status['title']); // Sanitize the title
+					
+					// Register the custom order status
+					register_post_status('wc-' . $slug, array(
+						'label'                     => _x($title, 'Order status', 'your-textdomain'),
+						'public'                    => true,
+						'exclude_from_search'       => false,
+						'show_in_admin_all_list'    => true,
+						'show_in_admin_status_list' => true,
+						'label_count'               => _n_noop($title . ' (%s)', $title . ' (%s)', 'your-textdomain'),
+					));
+				}
+			}
+		}
+	}
+	
+
+	// Add custom statuses to the list of WooCommerce order statuses
+	function add_custom_status_to_wc_order_statuses($order_statuses) {
+		// Retrieve the custom order statuses from the options table
+		$order_status_array = get_option('bt_sst_order_status_list', array());
+
+		// Check if the array is not empty
+		if (!empty($order_status_array) && is_array($order_status_array)) {
+			foreach ($order_status_array as $order_status) {
+				// Validate required fields
+				if (isset($order_status['title'], $order_status['slug'])) {
+					$slug = sanitize_title($order_status['slug']); // Sanitize the slug
+					$title = sanitize_text_field($order_status['title']); // Sanitize the title
+
+					// Add the custom status to the order statuses array
+					$order_statuses['wc-' . $slug] = _x($title, 'Order status', 'your-textdomain');
+				}
+			}
+		}
+
+		return $order_statuses;
+	}
+
+
+	// function bt_sst_save_new_order_status() {
+	// 	// Check for required fields
+	// 	if (empty($_POST['data']['title']) || empty($_POST['data']['slug']) || empty($_POST['data']['icon'])) {
+	// 		wp_send_json_error(array('message' => 'Invalid input data'));
+	// 	}
+	
+	// 	// Sanitize inputs
+	// 	$title = sanitize_text_field($_POST['data']['title']);
+	// 	$slug = sanitize_text_field($_POST['data']['title']);
+	// 	$icon = sanitize_text_field($_POST['data']['icon']);
+	// 	$slug = strtolower(str_ireplace(' ', '-', $slug));
+	
+	// 	// Get existing order statuses or initialize an empty array
+	// 	$order_status_array = get_option('bt_sst_order_status_list', array());
+	
+	// 	// Add the new status to the custom status list
+	// 	$order_status_array[] = array(
+	// 		'title' => $title,
+	// 		'slug'  => $slug,
+	// 		'icon'  => $icon,
+	// 	);
+	
+	// 	// Update the custom order status list
+	// 	$result = update_option('bt_sst_order_status_list', $order_status_array);
+	
+	// 	// Register the new status dynamically
+	// 	register_post_status('wc-' . sanitize_title($slug), array(
+	// 		'label'                     => $title,
+	// 		'public'                    => true,
+	// 		'exclude_from_search'       => false,
+	// 		'show_in_admin_all_list'    => true,
+	// 		'show_in_admin_status_list' => true,
+	// 		'label_count'               => _n_noop($title . ' <span class="count">(%s)</span>', $title . ' <span class="count">(%s)</span>'),
+	// 	));
+	
+	// 	// Hook into WooCommerce to add the new status
+	// 	add_filter('wc_order_statuses', function ($statuses) use ($title, $slug) {
+	// 		$statuses['wc-' . sanitize_title($slug)] = $title;
+	// 		return $statuses;
+	// 	});
+	
+	// 	// Return success or failure
+	// 	if ($result) {
+	// 		wp_send_json_success(array('message' => 'Status added successfully'));
+	// 	} else {
+	// 		wp_send_json_error(array('message' => 'Failed to save status'));
+	// 	}
+	// }
+
+	function bt_sst_update_status_mapping(){
+		$is_premium = $this->licenser->is_license_active();
+		if($is_premium){
+			$order_status_key = sanitize_text_field($_POST['shipping_data']['shippingValue']);
+			$shipping_status_Key = sanitize_text_field($_POST['shipping_data']['shippingKey']);
+			$updated_order_and_shipp_status_keys_array = get_option('bt_sst_order_and_shipp_status_keys_array', array());
+			if(empty($order_status_key)){
+				unset($updated_order_and_shipp_status_keys_array[$shipping_status_Key]);
+			}else{
+				$updated_order_and_shipp_status_keys_array[$shipping_status_Key] = $order_status_key;
+			}
+			
+			$result = update_option('bt_sst_order_and_shipp_status_keys_array', $updated_order_and_shipp_status_keys_array);
+			wp_send_json_success(array('message' => 'Updated Status Successfully'));
+		}else{
+			wp_send_json_error(array('message' => 'Upgrade to premium version to activate custom order status mapping.'));
+		}
+
+		
+	}
+	
+
+	
+	
 	function bt_sst_save_manual_coriure_name() {
 		$company_name = sanitize_text_field($_POST['company_name']);
 		$region_coverage = sanitize_text_field($_POST['region_coverage']);
@@ -1915,6 +2149,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 			wp_send_json_error(array('message' => 'Failed to save courier'));
 		}
 	}
+
 	
 	
 	// function register_shipment_arrival_order_status() {
@@ -2122,7 +2357,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	function save_variable_product_processing_time_shipping_field( $variation_id, $i ) {
-		$bt_sst_product_processing_days_field = isset( $_POST['_bt_sst_product_processing_days_field_' . $i] ) ? sanitize_text_field( $_POST['_bt_sst_product_processing_days_field_' . $i] ) : '';
+		$bt_sst_product_days_field = isset( $_POST['_bt_sst_product_days_field_' . $i] ) ? sanitize_text_field( $_POST['_bt_sst_product_processing_days_field_' . $i] ) : '';
 		Bt_Sync_Shipment_Tracking::bt_sst_update_product_meta( $variation_id, '_bt_sst_product_processing_days_field', $bt_sst_product_processing_days_field );
 	}
 

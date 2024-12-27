@@ -35,7 +35,7 @@ class Bt_Sync_Shipment_Tracking_Manual {
         $obj->awb = sanitize_text_field($data["awb_number"]);
         if ($obj->awb == '') {
             $awb_n = carbon_get_theme_option("bt_sst_manual_awb_number");
-            $obj->awb = str_replace('#order_id#', $order_id, $awb_n);
+            $obj->awb = str_ireplace('#order_id#', $order_id, $awb_n);
         }
 
         $obj->courier_name = sanitize_text_field($data["courier_name"]);
@@ -148,12 +148,12 @@ class Bt_Sync_Shipment_Tracking_Manual {
                 if(!empty($order_id)){
                     if(false !== $order = wc_get_order( $order_id )){
     
-                        $bt_sst_order_statuses_to_sync = carbon_get_theme_option( 'bt_sst_order_statuses_to_sync' );
+                        // $bt_sst_order_statuses_to_sync = carbon_get_theme_option( 'bt_sst_order_statuses_to_sync' );
                         $bt_sst_sync_orders_date = carbon_get_theme_option( 'bt_sst_sync_orders_date' );
     
                         $order_status = 'wc-' . $order->get_status();
     
-                        if(in_array($order_status,$bt_sst_order_statuses_to_sync)|| in_array('any',$bt_sst_order_statuses_to_sync)){
+                        // if(in_array($order_status)){
     
                             $date_created_dt = $order->get_date_created(); // Get order date created WC_DateTime Object
                             $timezone        = $date_created_dt->getTimezone(); // Get the timezone
@@ -174,9 +174,9 @@ class Bt_Sync_Shipment_Tracking_Manual {
                             }else{
                                 $results[] = array( $order_id=>"Order #".$order_id." too old.");                                
                             }
-                        }else{
-                            $results[] = array( $order_id=>"Order #".$order_id." Status out of scope.");  
-                        }
+                        // }else{
+                        //     $results[] = array( $order_id=>"Order #".$order_id." Status out of scope.");  
+                        // }
                     }
                 }
             }

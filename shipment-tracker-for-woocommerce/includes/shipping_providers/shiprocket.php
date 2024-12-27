@@ -313,12 +313,12 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
                     if(!empty($order_id)){
                         if(false !== $order = wc_get_order( $order_id )){
         
-                            $bt_sst_order_statuses_to_sync = carbon_get_theme_option( 'bt_sst_order_statuses_to_sync' );
+                            // $bt_sst_order_statuses_to_sync = carbon_get_theme_option( 'bt_sst_order_statuses_to_sync' );
                             $bt_sst_sync_orders_date = carbon_get_theme_option( 'bt_sst_sync_orders_date' );
         
                             $order_status = 'wc-' . $order->get_status();
         
-                            if(in_array($order_status,$bt_sst_order_statuses_to_sync) || in_array('any',$bt_sst_order_statuses_to_sync)){
+                            // if(in_array($order_status,$bt_sst_order_statuses_to_sync) || in_array('any',$bt_sst_order_statuses_to_sync)){
         
                                 $date_created_dt = $order->get_date_created(); // Get order date created WC_DateTime Object
                                 $timezone        = $date_created_dt->getTimezone(); // Get the timezone
@@ -339,9 +339,9 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
                                 }else{
                                     return "Thanks Shiprocket! Order too old.";
                                 }
-                            }else{
-                                return "Thanks Shiprocket! Order status out of scope.";
-                            }
+                            // }else{
+                            //     return "Thanks Shiprocket! Order status out of scope.";
+                            // }
                         }
                     }
                 }                    

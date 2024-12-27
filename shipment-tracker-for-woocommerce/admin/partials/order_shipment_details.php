@@ -11,7 +11,14 @@ if(isset($order_id)){
         $get_awb_no = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shipping_awb', true );
 
         if ((!$bt_shipping_provider) || ($bt_shipping_provider == "manual" && $shipping_mode_is_manual_or_ship24 == "manual")) {
-            $edit = "<br><a data-order-id='".$order_id."' class='show_st_popup' href='#'>Update Tracking</a>";
+            if (isset( $_GET['action'] ) ) {
+                $action = $_GET['action'];
+                if ( $action != 'edit' ) {
+                    $edit = "<br><a data-order-id='".$order_id."' class='show_st_popup' href='#'>Update Tracking</a>";
+                }
+            }else{
+                $edit = "<br><a data-order-id='".$order_id."' class='show_st_popup' href='#'>Update Tracking</a>";
+            }
         }else if($bt_shipping_provider == "manual" && $shipping_mode_is_manual_or_ship24=="ship24") {
             if($get_awb_no){
                 $edit =  "<br><a class='bt_sync_order_tracking' data-order-id='$order_id' href='#'>Sync Now</a>";

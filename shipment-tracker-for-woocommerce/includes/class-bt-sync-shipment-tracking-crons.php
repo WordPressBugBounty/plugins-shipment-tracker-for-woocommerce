@@ -97,7 +97,7 @@ class Bt_Sync_Shipment_Tracking_Crons {
     }
 
     private function get_orders($provider){
-        $order_statuses = carbon_get_theme_option('bt_sst_order_statuses_to_sync');
+        // $order_statuses = carbon_get_theme_option('bt_sst_order_statuses_to_sync');
         $orders_date = carbon_get_theme_option('bt_sst_sync_orders_date');
         $fromTime = date("Y-m-d", strtotime("-$orders_date day"));
     
@@ -117,9 +117,9 @@ class Bt_Sync_Shipment_Tracking_Crons {
                 )
             )
         );
-        if(!in_array('any', $order_statuses)){
-            $args["status"] = $order_statuses;
-        }
+        // if(!in_array('any', $order_statuses)){
+        //     $args["status"] = $order_statuses;
+        // }
 
         $query = new WC_Order_Query($args);
         $order_ids = $query->get_orders();
