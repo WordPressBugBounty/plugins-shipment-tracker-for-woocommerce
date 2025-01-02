@@ -1,6 +1,7 @@
 <style>
     /* Table Styling */
 .bt_sst_status_mapping_table {
+    position: relative;
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
@@ -43,9 +44,14 @@
     background-color: #fff;
 }
 
-.bt_sst_add_order_status:hover{
+.bt_sst_remove_order_status, .bt_sst_add_order_status:hover{
     cursor: pointer;
 }
+.disabled {
+    pointer-events: none;
+    opacity: 0.5; /* Make it look disabled */
+}
+
 
 /* pop-up css  */
 /* Overlay background for the popup */
@@ -123,6 +129,12 @@
     justify-content: space-between;
 }
 
+.bt_sst_status_mapping_table .spinner{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+}
+
 
 </style>
 <?php
@@ -142,6 +154,7 @@
         </tr>
     </thead>
     <tbody>
+    <!-- <span class="spinner"></span> -->
         <?php foreach ($shipping_statuses as $shipping_key => $shipping_status):?>
             <tr class="bt_sst_status_mapping_row">
                 <td class="bt_sst_status_mapping_cell"><?php echo esc_html($shipping_status); ?></td>
@@ -171,7 +184,12 @@
                         endforeach; ?>
                     </select>
                 </td>
-                <td class="bt_sst_status_mapping_cell"><button data-shipping_status="<?php echo esc_attr($shipping_status); ?>" data-shipping_key="<?php echo esc_attr($shipping_key); ?>" class="bt_sst_add_order_status" type="button">+</button></td>
+                <div>
+                    <td class="bt_sst_status_mapping_cell">
+                        <button data-shipping_status="<?php echo esc_attr($shipping_status); ?>" data-shipping_key="<?php echo esc_attr($shipping_key); ?>" class="bt_sst_add_order_status" type="button">+</button>
+                        <button data-shipping_status="<?php echo esc_attr($shipping_status); ?>" data-shipping_key="<?php echo esc_attr($shipping_key); ?>" class="bt_sst_remove_order_status" type="button">-</button>
+                    </td>
+                </div>
             </tr>
         <?php endforeach;?>
     </tbody>

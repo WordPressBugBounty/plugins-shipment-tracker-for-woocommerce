@@ -410,7 +410,12 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action('wp_ajax_bt_sst_save_manul_coriure_name',$plugin_admin, 'bt_sst_save_manual_coriure_name');
 		$this->loader->add_action('wp_ajax_bt_sst_save_new_order_status',$plugin_admin, 'bt_sst_save_new_order_status');
 		$this->loader->add_action('wp_ajax_bt_sst_update_status_mapping',$plugin_admin, 'bt_sst_update_status_mapping');
+		$this->loader->add_action('wp_ajax_bt_sst_remove_status_mapping',$plugin_admin, 'bt_sst_remove_status_mapping');
 
+		$this->loader->add_filter('bulk_actions-edit-shop_order', $plugin_admin,'status_orders_bulk_actions');
+		$this->loader->add_filter('bulk_actions-woocommerce_page_wc-orders', $plugin_admin,'status_orders_bulk_actions');
+		$this->loader->add_filter('handle_bulk_actions-edit-shop_order', $plugin_admin, 'status_bulk_action_edit_shop_order', 10, 3);
+		$this->loader->add_filter('handle_bulk_actions-woocommerce_page_wc-orders', $plugin_admin, 'status_bulk_action_edit_shop_order', 10, 3);
 		// Add a dropdown to filter orders by state
 		$this->loader->add_action( 'restrict_manage_posts', $plugin_admin, 'add_shop_order_filter_by_shipment_status' );
 		$this->loader->add_filter( 'request', $plugin_admin, 'process_admin_shop_order_filtering_by_shipment_status', 99 );

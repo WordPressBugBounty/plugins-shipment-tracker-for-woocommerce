@@ -1475,45 +1475,49 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 	function bt_quickengage_messaging_api( $order_id,$shipment_obj,$shipment_obj_old) {
 		$order = wc_get_order( $order_id );
-		$blog_title = get_bloginfo( 'name' );
-		$site_url=get_site_url();
-		$bt_sst_sms_review_url = carbon_get_theme_option( 'bt_sst_sms_review_url' );
-		
-		$body = array(
-			"order" => $order->get_data(),
-			"shipment_current" => (array)$shipment_obj,
-			"shipment_old" => (array)$shipment_obj_old,
-			"store_name"=>$blog_title,
-			"store_url"=>$site_url,
-			"review_url"=>$bt_sst_sms_review_url,
-		);
-		$event_name = $this->getEventId($body );
-		if(empty($event_name)) return;
-		if($this->should_send_msg($event_name)){
+		try {
+			$blog_title = get_bloginfo( 'name' );
+			$site_url=get_site_url();
+			$bt_sst_sms_review_url = carbon_get_theme_option( 'bt_sst_sms_review_url' );
+			$order_data = json_encode($order->get_data());
+			$order_data = json_decode($order_data);
 			
-			$auth_token = get_option('register_for_sms_apy_key');
-
-			$args = array(
-			'body'        => $body,
-			//'timeout'   => 0.01,
-			//'blocking'  => false,
-			'sslverify' => false,
-			'headers'     => array(
-				'Authorization' => 'Bearer ' . $auth_token,
-				'Content-Type: multipart/form-data'
-			),
+			$body = array(
+				"order" => $order_data,
+				"shipment_current" => (array)$shipment_obj,
+				"shipment_old" => (array)$shipment_obj_old,
+				"store_name"=>$blog_title,
+				"store_url"=>$site_url,
+				"review_url"=>$bt_sst_sms_review_url,
 			);
-		
-			$url =  "https://quickengage.bitss.in/trigger/message";
-			$response = wp_remote_post( $url,$args ); //its a non-blocking call. so website's speed is not effected.
-			$body     = wp_remote_retrieve_body( $response );
-			//$resp = json_decode($body,true);
-		
-			$order = wc_get_order( $order_id );
-			$order->add_order_note("'$event_name'" . ' SMS Sent. Request ID: ' .  $body  . "\n\n- Shipment tracker for woocommerce", false );
-		}else{
-			$order = wc_get_order( $order_id );
-			$order->add_order_note("'$event_name'" . " SMS Inactive. \n\n- Shipment tracker for woocommerce", false );
+			$event_name = $this->getEventId($body );
+			if(empty($event_name)) return;
+			if($this->should_send_msg($event_name)){
+				
+				$auth_token = get_option('register_for_sms_apy_key');
+
+				$args = array(
+				'body'        => $body,
+				'sslverify' => false,
+				'headers'     => array(
+					'Authorization' => 'Bearer ' . $auth_token,
+					'Content-Type: multipart/form-data'
+				),
+				);
+			
+				$url =  "https://quickengage.bitss.in/trigger/message";
+				$response = wp_remote_post( $url,$args ); //its a non-blocking call. so website's speed is not effected.
+				$body     = wp_remote_retrieve_body( $response );
+				//$resp = json_decode($body,true);
+			
+				$order = wc_get_order( $order_id );
+				$order->add_order_note("'$event_name'" . ' SMS Sent. Request ID: ' .  $body  . "\n\n- Shipment tracker for woocommerce", false );
+			}else{
+				$order = wc_get_order( $order_id );
+				$order->add_order_note("'$event_name'" . " SMS Inactive. \n\n- Shipment tracker for woocommerce", false );
+			}
+		} catch (Exception $Exception) {
+			$order->add_order_note('An error '.$Exception->getMessage());
 		}
 		
 	}
@@ -2102,6 +2106,52 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		}
 
 		
+	}
+	function bt_sst_remove_status_mapping(){
+		$is_premium = $this->licenser->is_license_active();
+		if($is_premium){
+			$shipping_status_Key = sanitize_text_field($_POST['shipping_key']);
+			$updated_order_and_shipp_status_keys_array = get_option('bt_sst_order_and_shipp_status_keys_array', array());
+			if($shipping_status_Key){
+				unset($updated_order_and_shipp_status_keys_array[$shipping_status_Key]);
+			}
+			
+			$result = update_option('bt_sst_order_and_shipp_status_keys_array', $updated_order_and_shipp_status_keys_array);
+			wp_send_json_success(array('message' => 'Remove Status Successfully'));
+		}else{
+			wp_send_json_error(array('message' => 'Upgrade to premium version to activate custom order status mapping.'));
+		}
+
+		
+	}
+
+	function status_orders_bulk_actions($bulk_actions) {
+		// $updated_order_and_shipp_status_keys_array = get_option('bt_sst_order_and_shipp_status_keys_array', array());
+		$order_status_array = get_option('bt_sst_order_status_list', array());
+
+		// $enabled_order_status = apply_filters( 'bt_sst_shipping_statuses', BT_SHIPPING_STATUS );
+		foreach ($order_status_array as $key => $value) {
+			if (!isset($bulk_actions[$value['slug']])) {
+				$bulk_actions[$value['slug']] = __('Change to '.$value['title']);
+			}
+		}
+		return $bulk_actions;
+	}
+
+	function status_bulk_action_edit_shop_order($redirect_to, $action, $post_ids) {
+		$order_status_array = get_option('bt_sst_order_status_list', array());
+
+		$slugs = array_column($order_status_array, 'slug');
+		if(in_array($action, $slugs)){
+			foreach ($post_ids as $post_id) {
+				$order = wc_get_order($post_id);
+					$order->update_status($action);
+			} 
+		}
+		
+
+		
+		return $redirect_to;
 	}
 	
 

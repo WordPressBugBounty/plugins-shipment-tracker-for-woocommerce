@@ -331,7 +331,6 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
                                 $allowed_seconds = $bt_sst_sync_orders_date * 24 * 60 * 60; // bt_sst_sync_orders_date in seconds
         
                                 $diff_in_seconds = $now_ts - $date_created_ts; // Get the difference (in seconds)
-        
                                 if ( $diff_in_seconds <= $allowed_seconds ) {
                                     $shipment_obj = $this->init_model($request, $order_id);
                                     Bt_Sync_Shipment_Tracking_Shipment_Model::save_tracking($order_id,$shipment_obj);                           
@@ -447,7 +446,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
                 $obj->etd = sanitize_text_field(!empty($shipment)?$shipment["etd"]:"");
                 $obj->etd = !empty($obj->etd)?$obj->etd:sanitize_text_field(!empty($shipment)?$shipment["delivered_date"]:"");
                 $obj->scans = [];
-                $obj->current_status = sanitize_text_field(!empty($data["data"][0]["status"])?$data["data"][0]["status"]:"");
+                $obj->current_status = $this->convert_string_to_slug(sanitize_text_field(!empty($data["data"][0]["status"])?$data["data"][0]["status"]:""));
             }
         }
         else if(isset($data["awb"])){
@@ -457,7 +456,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             $obj->courier_name = sanitize_text_field($data["courier_name"]);
             $obj->etd = sanitize_text_field($data["etd"]);
             $obj->scans = $data["scans"];
-            $obj->current_status = sanitize_text_field($data["current_status"]);
+            $obj->current_status = $this->convert_string_to_slug(sanitize_text_field($data["current_status"]));
         }else{
             $obj=null;
         }
@@ -465,10 +464,18 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
         if (is_array($data) && sizeof($data) > 0 && strtolower($obj->current_status) == "delivered" && empty($obj->delivery_date)) {
             $obj->delivery_date = date('Y-m-d');
         }        
-        
-
 
         return $obj;
+    }
+
+    public function convert_string_to_slug($text){
+            $text = (string)$text;
+            $text = strtolower($text);
+            $text = trim($text);
+            $text = preg_replace('/[\s_]+/', '-', $text);
+            $text = preg_replace('/[^\w\-]/', '', $text);
+            $text = preg_replace('/\-+/', '-', $text);
+            return $text;
     }
 
     public function update_order_shipment_status($order_id){

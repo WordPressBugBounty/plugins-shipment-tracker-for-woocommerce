@@ -614,8 +614,39 @@
 			
 			
 		}
+		jQuery('.cf-container__fields').on('click','button.bt_sst_remove_order_status', function () {
+			var confirmation = confirm('Are you sure you want to delete this status?');
+			if (!confirmation) {
+				return;
+			}
+			var shipping_key = jQuery(this).attr('data-shipping_key');
+
+			jQuery('.bt_sst_status_mapping_table').addClass('disabled');
+
+			jQuery.ajax({
+				url: bt_sync_shipment_track_data.ajax_url,
+				type: 'POST',
+				data: {
+					action: 'bt_sst_remove_status_mapping',
+					shipping_key: shipping_key,
+				},
+				success: function (response) {
+					if (response.success) {
+						alert('Status remove successfully!');
+						window.location.reload();
+					} else {
+						alert('Failed to update status mapping: ' + response.data.message);
+					}
+				},
+				error: function () {
+					alert('An error occurred while processing the request.');
+					jQuery('.bt_sst_status_mapping_table').removeClass('disabled');
+				},
+			});
+		});
 		jQuery(document).on("change", ".bt_sst_status_mapping_select", function () {
 
+			jQuery('.bt_sst_status_mapping_table').addClass('disabled');
 			// jQuery('.bt_sst_status_mapping_select').on('change', function () {
 				var shippingValue = jQuery(this).val();
 				var shippingKey = jQuery(this).attr('data-shipping-key');
@@ -633,6 +664,7 @@
 					success: function (response) {
 						if (response.success) {
 							alert('Status mapping updated successfully!');
+							jQuery('.bt_sst_status_mapping_table').removeClass('disabled');
 							// window.location.reload();
 						} else {
 							alert('Failed to update status mapping: ' + response.data.message);
@@ -640,6 +672,7 @@
 					},
 					error: function () {
 						alert('An error occurred while processing the request.');
+						jQuery('.bt_sst_status_mapping_table').removeClass('disabled');
 					},
 				});
 			});
