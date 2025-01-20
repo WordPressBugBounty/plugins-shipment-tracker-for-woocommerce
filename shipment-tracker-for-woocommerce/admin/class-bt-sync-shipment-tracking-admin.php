@@ -1758,7 +1758,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 						</div>
 					</div>
 					<div class="notice notice-warning is-dismissible bt-sst-review-notice">
-						<p>We're actively developing this plugin. <b>Help us make it better</b> by <a id="bt-feedback" href="" target="_blank">sharing your feedback</a>. Liked this plugin? Spread the word, <a href="https://wordpress.org/support/plugin/shipment-tracker-for-woocommerce/reviews/#new-post" target="_blank">give ⭐⭐⭐⭐⭐ on wordress.</a></p>
+						<p>We're actively developing <em>Shipment Tracker for Woocommerce</em>. <b>Help us make it better</b> by <a id="bt-feedback" href="" target="_blank">sharing your feedback</a>. Liked this plugin? Spread the word, <a href="https://wordpress.org/support/plugin/shipment-tracker-for-woocommerce/reviews/#new-post" target="_blank">give ⭐⭐⭐⭐⭐ on wordress.</a> As a thank you, enjoy a ₹500 free gift voucher for premium plugins, SMS, OTPs, domain, hosting, and more on our website for sharing your feedback or review. </p>
 					</div>
 					 <!-- The Modal -->
 					 <div id="bt-feedback-modal" style="display:none;"  title="Shipment Tracker for Woocommerce">

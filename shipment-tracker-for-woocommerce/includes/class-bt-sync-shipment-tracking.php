@@ -512,6 +512,10 @@ class Bt_Sync_Shipment_Tracking {
 		$dimension_unit = get_option( 'woocommerce_dimension_unit' );	
 		$container = Container::make( 'theme_options', __( 'Shipment Tracking' ) )
 		->set_page_parent( "woocommerce" )
+		// ->add_tab( __( 'Overview' ), array(
+		// 	Field::make( 'html', 'crb_information_text' )
+    	// 	->set_html( '<h2>Lorem ipsum</h2><p>Quisque mattis ligula.</p>' )
+		// ) )
 		->add_tab( __( 'General' ), array(
 			Field::make( 'set', 'bt_sst_enabled_shipping_providers', __( 'Enabled Shipping Providers' ) )
 				->set_options( $shipping_provides_with_premium )
@@ -1018,6 +1022,20 @@ class Bt_Sync_Shipment_Tracking {
 		if(is_array($enabled_shipping_providers) && in_array('shiprocket',$enabled_shipping_providers)){
 				$random_rest_route = get_option( 'bt-sync-shipment-tracking-random-route','' );
 				$container = $container->add_tab( __( 'Shiprocket' ), array(
+					Field::make( 'html', 'shiprocket_message', __( 'Custom HTML Field' ) )
+					->set_html( '
+							<b>Shiprocket Integration Steps: </b> 
+							<p>
+								<ol type="1" style="margin-left: 20px;">
+									<li><a target="_blank" href="https://www.shiprocket.in/">If not already have, Create & Activate Shiprocket Account</a></li>
+									<li><a target="_blank" href="https://app.shiprocket.in/api-user">Create Api User</a></li>
+									<li><a target="_blank" href="https://app.shiprocket.in/shipment-webhook">Configure Webhook URL</a></li>
+									<li><a target="_blank" href="https://app.shiprocket.in/channels">Get Channel ID</a></li>
+									<li>Copy API user, Api password and Channel ID to Shiprocket Tab.</li>
+								</ol>
+								
+							</p>
+					' ),
 					Field::make( 'html', 'bt_sst_shiprocket_webhook_html', __( 'Shiprocket Webhook URL' ) )
 						->set_html(
 							sprintf( '
@@ -1306,7 +1324,22 @@ class Bt_Sync_Shipment_Tracking {
 				$nimbuspost_new_webhook_time = date('Y-m-d H:i:s', $nimbuspost_new_webhook_time);
 			}
                 $random_rest_secret = get_option( 'bt-sync-shipment-tracking-random-secret-key','' );
-                $container = $container->add_tab( __( 'Nimbuspost (NEW) (Premium Only)' ), array(
+                $container = $container->add_tab( __( 'Nimbuspost (NEW)' ), array(
+					Field::make( 'html', 'nimbuspost_new_message', __( 'Custom HTML Field' ) )
+					->set_html( '
+							<em>Nimbuspost integration is a premium feature.</em> <br>
+							<b> Integration Steps: </b> 
+							<p>
+								<ol type="1" style="margin-left: 20px;">
+									<li><a target="_blank" href="https://www.nimbuspost.com/">Create & Activate Nimbuspost Account</a></li>
+									<li><a target="_blank" href="https://ship.nimbuspost.com/user_api">Generate Api Key</a></li>
+									<li><a target="_blank" href="https://ship.nimbuspost.com/webhook/add">Configure Webhook URL</a></li>
+									<li>Copy API key to Nimbuspost Tab.</li>
+								</ol>
+								
+							</p>
+
+					' ),
                     Field::make( 'html', 'bt_sst_nimbuspost_new_webhook_html', __( 'Nimbuspost_New Webhook URL' ) )
                         ->set_html(
                             sprintf( '
@@ -1645,7 +1678,11 @@ class Bt_Sync_Shipment_Tracking {
 		// $login_html = str_ireplace("##csrf##", $csrf, $login_html);
 		$woocommerce_settings_url = admin_url('admin.php?page=wc-settings');
 		
-		$container = $container->add_tab( __( 'Product Page  (Premium Only)' ), array(
+		$container = $container->add_tab( __( 'Product Page' ), array(
+			Field::make( 'html', 'product_message', __( 'Custom HTML Field' ) )
+			->set_html( '
+					This is a premium feature. <em>Administrators can test all premium features on product, checkout, and tracking pages while logged in.</em> 
+			' ),
 			Field::make( 'checkbox', 'bt_sst_shiprocket_pincode_checker', __( 'Enable "Estimated Delivery Date Checker" widget.') )
 				->set_classes( 'title is-6' )
 				->set_help_text('Allows user to check estimated delivery date, shipping charges etc based on delivery pincode.
@@ -2039,7 +2076,11 @@ class Bt_Sync_Shipment_Tracking {
 
 		$woocommerce_shipping_settings_url = admin_url('admin.php?page=wc-settings&tab=shipping');
 			
-		$container = $container->add_tab( __( 'Checkout Page (Premium Only)' ), array(
+		$container = $container->add_tab( __( 'Checkout Page' ), array(
+			Field::make( 'html', 'checkout_message', __( 'Custom HTML Field' ) )
+			->set_html( '
+					This is a premium feature. <em>Administrators can test all premium features on product, checkout, and tracking pages while logged in.</em> 
+			' ),
 			Field::make( 'checkbox', 'bt_sst_auto_fill_city_state', __( 'Automatically fetch city & state from pincode.') )
 				->set_option_value( 'no' )
 				->set_classes( 'title is-6' )
@@ -2377,87 +2418,14 @@ class Bt_Sync_Shipment_Tracking {
 			$bulma = plugin_dir_url(dirname(__FILE__)) . 'admin/css/bulma.min.css';
 			$premium_html = str_ireplace("##bulma##",$bulma,$premium_html);
 			$premium_html = str_ireplace("##premiumfeatures##",$login_html,$premium_html);
-			$container = $container->add_tab( __( 'Buy Premium' ), array(
+			$container = $container->add_tab( __( 'Premium Activation' ), array(
 				Field::make( 'html', 'bt_sst_premium_html', __( 'Buy Premium Features' ) )
 					->set_html(
 						$premium_html
 					),
 			) );
 
-			$developer_html = file_get_contents(plugin_dir_path( dirname( __FILE__ ) )  . 'admin/partials/developer-doc.html');
-			$container = $container->add_tab( __( 'Developer' ), array(
-				Field::make( 'html', 'bt_sst_developer_html', __( 'Developer Options HTML' ) )
-					->set_html(
-						sprintf( $developer_html)
-					),
-			) );
-
-			$container = $container->add_tab( __( 'Help' ), array(
-				Field::make( 'html', 'bt_sst_help_html', __( 'Help HTML' ) )
-					->set_html(
-						sprintf( '
-						<div class="content">
-							<b>Shiprocket Integration Steps: </b> 
-							<p>
-								<ol type="1">
-									<li>Enable Shiprocket in General Tab.</li>
-									<li><a target="_blank" href="https://www.shiprocket.in/">Create & Activate Shiprocket Account</a></li>
-									<li><a target="_blank" href="https://app.shiprocket.in/api-user">Create Api User</a></li>
-									<li><a target="_blank" href="https://app.shiprocket.in/shipment-webhook">Configure Webhook URL</a></li>
-									<li><a target="_blank" href="https://app.shiprocket.in/channels">Get Channel ID</a></li>
-									<li>Copy API user, Api password and Channel ID to Shiprocket Tab.</li>
-								</ol>
-								
-							</p>
-							<b>Shyplite Integration Steps: </b> 
-							<p>
-								<ol type="1">
-									<li>Enable Shyplite in General Tab.</li>
-									<li><a target="_blank" href="https://shyplite.com/">Create & Activate Shyplite Account</a></li>
-									<li><a target="_blank" href="https://pitneybowes.shyplite.com/settings/api">Enable API</a></li>
-									<li>Copy Seller Id, App ID, Public key and Secret Key to Shyplite Tab.</li>
-								</ol>
-								
-							</p>	
-							<b>Nimbuspost Integration Steps: </b> 
-							<p>
-								<ol type="1">
-									<li>Enable Nimbuspost in General Tab.</li>
-									<li><a target="_blank" href="https://www.nimbuspost.com/">Create & Activate Nimbuspost Account</a></li>
-									<li><a target="_blank" href="https://ship.nimbuspost.com/user_api">Generate Api Key</a></li>
-									<li><a target="_blank" href="https://ship.nimbuspost.com/webhook/add">Configure Webhook URL</a></li>
-									<li>Copy API key to Nimbuspost Tab.</li>
-								</ol>
-								
-							</p>						
-							<b>To force Sync tracking of specific order:</b>
-							<p>
-									<ol>
-										<li>Go to order details page.</li>
-										<li>Click edit icon of Shipping info.</li>
-										<li>Select for correct Shipping Provider of the order.</li>
-										<li>Go to Sync Shipping Tracking meta box in right side.</li>
-										<li>Click on "Sync Tracking Now" button.</li>
-										<li>The shipment tracking will be synced from respective shipping provider.</li>
-									</ol>
-									
-							</p>
-							<b>To manually add shipment tracking information of specific order:</b>
-							<p>
-									<ol>
-										<li>Go to order details page.</li>
-										<li>Click edit icon of Shipping info.</li>
-										<li>Select "Manual" option from Shipping Provider dropdown.</li>
-										<li>Update order and the shipment tracking fields will be visible in right side meta box.</li>
-										<li>Fill the all necessary information and update the order.</li>
-										<li>Done!</li>
-									</ol>
-									
-							</p>
-							</div>
-						')
-					),
-			) );
+		
 
 			$container = $container->add_tab( __( 'About' ), array(
 				Field::make( 'html', 'bt_sst_about_html', __( 'About HTML' ) )

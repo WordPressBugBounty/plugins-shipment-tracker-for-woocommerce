@@ -208,13 +208,15 @@
 
 		$(document).on('click', '#bt_st_buy_premium_login_submit_btn', function (e) {
 			e.preventDefault();
-			$(this).addClass('is-loading');
+			
 			var email = $('#bt_st_buy_premium_login_email').val();
 			var password = $('#bt_st_buy_premium_login_password').val();
-			var nonce = $('#_wpnonce').val();
-			if (email.trim() === "" || password.trim() === "") {
+			if(email.trim()=="" || password.trim()==""){
+				alert("Please enter your registered email/password to activate premium.");
 				return;
 			}
+			$(this).addClass('is-loading');
+			var nonce = $('#_wpnonce').val();
 			check_user_for_premium_features(email, password, nonce);
 		});
 
@@ -686,6 +688,7 @@
 				.replace(/\-\-+/g, '-'); // Replace multiple hyphens with a single hyphen
 		}
 
+		jQuery('#theme-options-form').attr('novalidate','novalidate');
 	});
 
 	function copy_text(element) {

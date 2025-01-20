@@ -12,7 +12,7 @@
           <div class="control">
             <div class="field">
               <p class="control has-icons-left has-icons-right">
-                <input  id="bt_st_buy_premium_login_email" class="input is-medium" type="email" placeholder="Email">
+                <input  id="bt_st_buy_premium_login_email"  class="input is-medium" type="email" placeholder="Email">
                 <span class="icon is-small is-left">
                   <span class="dashicons dashicons-email"></span>
                 </span>
