@@ -107,7 +107,7 @@ class Bt_Sync_Shipment_Tracking_Ship24 {
             } else {
                 $obj->scans[] = $data["events"];
             }
-            $obj->current_status = sanitize_text_field($data["shipment"]["statusMilestone"]);
+            $obj->current_status = Bt_Sync_Shipment_Tracking_Shipment_Model::convert_string_to_slug(sanitize_text_field($data["shipment"]["statusMilestone"]));
             
             if (isset($data["statistics"])) {
                 $obj->delivery_date = sanitize_text_field($data["statistics"]['timestamps']["deliveredDatetime"]);

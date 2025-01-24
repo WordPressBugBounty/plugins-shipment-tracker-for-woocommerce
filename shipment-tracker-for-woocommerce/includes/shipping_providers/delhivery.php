@@ -103,7 +103,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         if (sizeof($data) > 0) {
             $shipment = $data[0]['Shipment'];
             $obj->awb = $shipment['AWB'];
-            $obj->current_status = $shipment['Status']['Status'];
+            $obj->current_status = Bt_Sync_Shipment_Tracking_Shipment_Model::convert_string_to_slug($shipment['Status']['Status']);
             $obj->etd = $shipment['ExpectedDeliveryDate'];
             $obj->scans = $shipment['Scans'];
 

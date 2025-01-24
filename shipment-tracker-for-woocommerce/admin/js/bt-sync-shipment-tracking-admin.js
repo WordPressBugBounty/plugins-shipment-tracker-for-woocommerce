@@ -12,32 +12,6 @@
 			// });
 		}, 3000);
 
-
-		jQuery(document).on('change', 'input[name="carbon_fields_compact_input[_bt_sst_message_text_template]"]', function () {
-			var selectedValue = $(this).val();
-			const replacements = {
-				'#min_date#': 'Oct 08, 2024',
-				'#max_date#': 'Oct 08, 2024',
-				'#pincode#': '850011',
-				'#city#': 'Mumbai',
-				'#min_date_charges#': '50',
-				'#max_date_charges#': '80',
-				'#cutoff_time#': 'If ordered within 10 hrs 52 mins',
-				'#edit#': '<a href="#">Change</a>'
-			};
-			for (const [key, value] of Object.entries(replacements)) {
-				const regex = new RegExp(key, 'g');
-				selectedValue = selectedValue.replace(regex, value);
-			}
-			jQuery("#bt_sst_pin_and_date_show_preiview").html(selectedValue);
-			jQuery("#bt_sst_pin_and_date_show_preiview").css("display", "block");
-		});
-
-		jQuery(document).on('change', '#bt_sst_pin_and_date_preview', function () {
-			jQuery("input[name='carbon_fields_compact_input[_bt_sst_message_text_template]']").val(jQuery(this).val());
-			jQuery("input[name='carbon_fields_compact_input[_bt_sst_message_text_template]']").trigger('change');
-		});
-
 		setTimeout(() => {
 			var previewImage = jQuery('#template-preview-img');
 			var imageFilenames = {
@@ -93,14 +67,6 @@
 			});
 		}, 3000);
 
-
-		jQuery('#bt_sst_sync_now_awb').click(function () {
-			jQuery('#bt_sst_awbPopup').show();
-			$(this).html("Loading...");
-			var order_id = $(this).attr("data-order-id");
-			save_tracking_data(order_id, this, "ship24");
-		});
-
 		setTimeout(() => {
 			var company_name = localStorage.getItem('triggerCompanyTab');
 			if (company_name === 'delhivery') {
@@ -148,6 +114,42 @@
 			}
 			localStorage.removeItem('triggerCompanyTab');
 		}, 3000);
+
+		jQuery(document).on('change', 'input[name="carbon_fields_compact_input[_bt_sst_message_text_template]"]', function () {
+			var selectedValue = $(this).val();
+			const replacements = {
+				'#min_date#': 'Oct 08, 2024',
+				'#max_date#': 'Oct 08, 2024',
+				'#pincode#': '850011',
+				'#city#': 'Mumbai',
+				'#min_date_charges#': '50',
+				'#max_date_charges#': '80',
+				'#cutoff_time#': 'If ordered within 10 hrs 52 mins',
+				'#edit#': '<a href="#">Change</a>'
+			};
+			for (const [key, value] of Object.entries(replacements)) {
+				const regex = new RegExp(key, 'g');
+				selectedValue = selectedValue.replace(regex, value);
+			}
+			jQuery("#bt_sst_pin_and_date_show_preiview").html(selectedValue);
+			jQuery("#bt_sst_pin_and_date_show_preiview").css("display", "block");
+		});
+
+		jQuery(document).on('change', '#bt_sst_pin_and_date_preview', function () {
+			jQuery("input[name='carbon_fields_compact_input[_bt_sst_message_text_template]']").val(jQuery(this).val());
+			jQuery("input[name='carbon_fields_compact_input[_bt_sst_message_text_template]']").trigger('change');
+		});
+
+
+
+		jQuery('#bt_sst_sync_now_awb').click(function () {
+			jQuery('#bt_sst_awbPopup').show();
+			$(this).html("Loading...");
+			var order_id = $(this).attr("data-order-id");
+			save_tracking_data(order_id, this, "ship24");
+		});
+
+
 
 
 		$(document).on('click', '#api_test_connection_btn', function (e) {
@@ -255,58 +257,50 @@
 			$('button:contains("Buy Premium")').trigger('click');
 		}
 
-		$('.show_st_popup').click(function (e) {
+		
+		$(document).on('click', '.show_st_popup', function (e) {
 			e.preventDefault();
 			$(this).html("Loading...");
 			var order_id = $(this).attr("data-order-id");
 			save_tracking_data(order_id, this, '');
 		});
-
-		$('.bt_sst_copy_link').click(function (e) {
+		$(document).on('click', '.bt_sst_copy_link', function (e) {
 			$(this).html('');
 			e.preventDefault();
 			var value = $(this).closest("p");
 			copy_text(value);
 		});
-
-		$('#bt_sst_select_track_page').click(function (e) {
+		$(document).on('click', '#bt_sst_select_track_page', function (e) {
 			e.preventDefault();
 			$(this).html("Creating a page...");
 			create_add_tracking_page();
 		});
-
-		$('#api_tc_m_close_btn').click(function (e) {
+		$(document).on('click', '#api_tc_m_close_btn', function (e) {
 			$('#api_test_connection_modal').removeClass('is-active');
 			$('#get_sms_trial_test_connection_modal').removeClass('is-active');
 
 		});
-
-		$('#api_tc_m_close_btn_delh').click(function (e) {
+		$(document).on('click', '#api_tc_m_close_btn_delh', function (e) {
 			$('#api_test_connection_modal_delh').removeClass('is-active');
 		});
-		$('#api_tc_m_close_btn_ship24').click(function (e) {
+		$(document).on('click', '#api_tc_m_close_btn_ship24', function (e) {
 			$('#api_test_connection_modal_ship24').removeClass('is-active');
 			$('#api_test_connection_modal_ship24').css('display', 'none');
 
 		});
-
-		$('#api_shipmozo_tc_m_close_btn').click(function (e) {
+		$(document).on('click', '#api_shipmozo_tc_m_close_btn', function (e) {
 			$('#api_shipmozo_test_connection_modal').removeClass('is-active');
 		});
-
-		$('#api_nimbuspost_tc_m_close_btn').click(function (e) {
+		$(document).on('click', '#api_nimbuspost_tc_m_close_btn', function (e) {
 			$('#api_nimbuspost_test_connection_modal').removeClass('is-active');
 		});
-
-		$('#buy_credit_tc_m_close_btn').click(function (e) {
+		$(document).on('click', '#buy_credit_tc_m_close_btn', function (e) {
 			$('#buy_credit_test_connection_modal').removeClass('is-active');
 		});
-
-		$('#register_get_api_key_tc_m_close_btn').click(function (e) {
+		$(document).on('click', '#register_get_api_key_tc_m_close_btn', function (e) {
 			$('#register_get_api_key_test_connection_modal').removeClass('is-active');
 		});
-
-		$('#get_sms_trial_tc_m_close_btn').click(function (e) {
+		$(document).on('click', '#get_sms_trial_tc_m_close_btn', function (e) {
 			$('#get_sms_trial_test_connection_modal').removeClass('is-active');
 		});
 
@@ -848,7 +842,7 @@
 	}
 
 	function api_test_connection() {
-		console.log("hello1");
+		
 		var nonce = bt_sync_shipment_track_data.test_conn_nonce;
 		$.get(
 			bt_sync_shipment_track_data.ajax_url,

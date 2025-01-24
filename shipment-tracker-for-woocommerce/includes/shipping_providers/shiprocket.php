@@ -226,9 +226,14 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
         $response = wp_remote_post( "https://apiv2.shiprocket.in/v1/external/auth/login", $args );
 
         $body = wp_remote_retrieve_body( $response );
-        //error_log("4. ". json_encode($body));
-
         $body = json_decode($body,true);
+        //error_log("4. ". json_encode($body));
+        $token= isset($body ["token"])?$body ["token"]:"";
+        if(!empty($token)){
+            set_transient('bt_sst_shiprocket_auth_token',$token , 600);
+        }
+       
+       
         return  $body;
 
     }
@@ -258,7 +263,12 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
 
         $body = json_decode($body,true);
 
-        return isset($body ["token"])?$body ["token"]:"";
+        $token= isset($body ["token"])?$body ["token"]:"";
+        if(!empty($token)){
+            set_transient('bt_sst_shiprocket_auth_token',$token , 600);
+        }
+       
+        return $token;
 
     }
 
@@ -446,7 +456,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
                 $obj->etd = sanitize_text_field(!empty($shipment)?$shipment["etd"]:"");
                 $obj->etd = !empty($obj->etd)?$obj->etd:sanitize_text_field(!empty($shipment)?$shipment["delivered_date"]:"");
                 $obj->scans = [];
-                $obj->current_status = $this->convert_string_to_slug(sanitize_text_field(!empty($data["data"][0]["status"])?$data["data"][0]["status"]:""));
+                $obj->current_status = Bt_Sync_Shipment_Tracking_Shipment_Model::convert_string_to_slug(sanitize_text_field(!empty($data["data"][0]["status"])?$data["data"][0]["status"]:""));
             }
         }
         else if(isset($data["awb"])){
@@ -456,7 +466,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             $obj->courier_name = sanitize_text_field($data["courier_name"]);
             $obj->etd = sanitize_text_field($data["etd"]);
             $obj->scans = $data["scans"];
-            $obj->current_status = $this->convert_string_to_slug(sanitize_text_field($data["current_status"]));
+            $obj->current_status = Bt_Sync_Shipment_Tracking_Shipment_Model::convert_string_to_slug(sanitize_text_field($data["current_status"]));
         }else{
             $obj=null;
         }
@@ -468,15 +478,15 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
         return $obj;
     }
 
-    public function convert_string_to_slug($text){
-            $text = (string)$text;
-            $text = strtolower($text);
-            $text = trim($text);
-            $text = preg_replace('/[\s_]+/', '-', $text);
-            $text = preg_replace('/[^\w\-]/', '', $text);
-            $text = preg_replace('/\-+/', '-', $text);
-            return $text;
-    }
+    // public function convert_string_to_slug($text){
+    //         $text = (string)$text;
+    //         $text = strtolower($text);
+    //         $text = trim($text);
+    //         $text = preg_replace('/[\s_]+/', '-', $text);
+    //         $text = preg_replace('/[^\w\-]/', '', $text);
+    //         $text = preg_replace('/\-+/', '-', $text);
+    //         return $text;
+    // }
 
     public function update_order_shipment_status($order_id){
         $resp=null;

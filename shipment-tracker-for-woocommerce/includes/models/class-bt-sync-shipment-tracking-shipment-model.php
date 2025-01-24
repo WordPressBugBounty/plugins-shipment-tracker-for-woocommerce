@@ -151,4 +151,16 @@ class Bt_Sync_Shipment_Tracking_Shipment_Model{
 
 
     }
+
+    public static function convert_string_to_slug($text){
+        if($text){
+            $text = (string)$text;
+            $text = strtolower($text);
+            $text = trim($text);
+            $text = preg_replace('/[\s_]+/', '-', $text);
+            $text = preg_replace('/[^\w\-]/', '', $text);
+            $text = preg_replace('/\-+/', '-', $text);
+        }
+        return $text;
+}
 }

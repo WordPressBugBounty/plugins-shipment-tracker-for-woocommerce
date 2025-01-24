@@ -131,7 +131,7 @@ class Bt_Sync_Shipment_Tracking_Xpressbees {
                 "message" => sanitize_text_field($data["message"]),
                 "rto_awb" => sanitize_text_field($data["rto_awb"]));
         }
-        $obj->current_status = sanitize_text_field($data["status"]);
+        $obj->current_status = Bt_Sync_Shipment_Tracking_Shipment_Model::convert_string_to_slug(sanitize_text_field($data["status"]));
         if (strtolower($obj->current_status) == "delivered" && empty($obj->delivery_date)) {
             $obj->delivery_date = date('Y-m-d');
         }        

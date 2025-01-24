@@ -46,7 +46,7 @@ class Bt_Sync_Shipment_Tracking_Manual {
 
         $obj->etd = sanitize_text_field($data["etd"]);
         $obj->scans = array();
-        $obj->current_status = sanitize_text_field($data["shipping_status"]);
+        $obj->current_status = Bt_Sync_Shipment_Tracking_Shipment_Model::convert_string_to_slug(sanitize_text_field($data["shipping_status"]));
         $obj->tracking_url = sanitize_text_field($data["tracking_link"]);
 
         if (strtolower($obj->current_status) == "delivered" && empty($obj->delivery_date)) {
