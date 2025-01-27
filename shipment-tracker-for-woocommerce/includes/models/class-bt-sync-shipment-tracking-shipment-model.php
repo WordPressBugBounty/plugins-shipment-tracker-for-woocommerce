@@ -162,5 +162,5 @@ class Bt_Sync_Shipment_Tracking_Shipment_Model{
             $text = preg_replace('/\-+/', '-', $text);
         }
         return $text;
-}
+    }
 }

@@ -233,7 +233,7 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
             $obj->courier_name = sanitize_text_field($data["courier"]);
         }
         
-        $obj->current_status =  Bt_Sync_Shipment_Tracking_Shipment_Model::convert_string_to_slug(convert_string_to_slug(sanitize_text_field($data["current_status"])));
+        $obj->current_status =  Bt_Sync_Shipment_Tracking_Shipment_Model::convert_string_to_slug(sanitize_text_field($data["current_status"]));
         if (strtolower($obj->current_status) == "delivered" && empty($obj->delivery_date)) {
             $obj->delivery_date = date('Y-m-d');
         }        

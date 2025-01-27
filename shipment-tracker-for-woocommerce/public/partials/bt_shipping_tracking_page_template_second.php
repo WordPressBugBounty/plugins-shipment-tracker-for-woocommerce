@@ -323,6 +323,7 @@ if(empty($bt_sst_review_subheading_text)){
                                             if($delivery_pincode || $pickup_pincode){
                                             ?>
                                             <script>
+                                                document.addEventListener("DOMContentLoaded", function () {
                                                 // Function to get coordinates from PIN code using Nominatim API
                                                 async function getCoordinates(pinCode, base_country) {
                                                     const url = `https://nominatim.openstreetmap.org/search?postalcode=${pinCode}&country=${base_country}&format=json&limit=1`;
@@ -389,7 +390,7 @@ if(empty($bt_sst_review_subheading_text)){
                                                 }
 
                                                 plotMap(); // Call the function to plot the map
-
+                                            });
                                             </script>
                                             <div class="">
                                                 <div id="bt_sst_leaflet_map_location" class="bt_sst_leaflet_map_location_shipment" style="width:100%; border:unset;"></div>
@@ -1152,6 +1153,7 @@ if(empty($bt_sst_review_subheading_text)){
 
     .uabb-timeline-card-date { 
         display: inline-block;
+        height: 45px;
     } 
 
     .fl-node-nyo8u0s1p4eh .uabb-timeline-connector .slick-current .uabb-timeline-marker .timeline-icon-new  { 
