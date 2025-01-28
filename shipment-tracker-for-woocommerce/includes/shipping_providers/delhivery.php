@@ -348,16 +348,30 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
             }else{
             $all_methods = [];
             if($body_express){
+                $express_tat = $this->get_tat("E",$delivery_pincode, $pickup_pincode);
+                if($express_tat && isset($express_tat["data"]) && isset($express_tat["data"]["tat"])){
+                    $express_tat = $express_tat["data"]["tat"];
+                }else{
+                    $express_tat = null;
+                }
                 foreach ($body_express as  $value) {
                     $value['mode'] = "express";
+                    $value['tat'] = $express_tat;
                     $all_methods[] = $value;
                 }
             }
             if($body_surface){
+                $surface_tat = $this->get_tat("S",$delivery_pincode, $pickup_pincode);
+                if($surface_tat && isset($surface_tat["data"]) && isset($surface_tat["data"]["tat"])){
+                    $surface_tat = $surface_tat["data"]["tat"];
+                }else{
+                    $surface_tat = null;
+                }
                 foreach ($body_surface as  $value) {
                     $value['mode'] = "surface";
+                    $value['tat'] = $surface_tat;
                     $all_methods[] = $value;
-            }
+                }
             }
 
         }
@@ -368,6 +382,29 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         }
     }
     
+    public function get_tat($mode, $delivery_pincode, $pickup_pincode) {
+        $body = array(
+            'mot' => $mode,
+            //'pdt' => "B2C", //optional
+            'destination_pin' => $delivery_pincode,
+            'origin_pin' => $pickup_pincode,
+        );
+    
+        $args = array(
+            'headers' => array(
+                'Authorization' => 'Token ' . $this->public_key
+            )
+        );
+    
+        $url = 'https://track.delhivery.com/api/dc/expected_tat?' . http_build_query($body);
+        $response = wp_remote_get($url, $args);
+       
+        $body     = wp_remote_retrieve_body( $response );
+            
+        $resp = json_decode($body,true);
+
+        return  $resp ;
+    }
 
     function getDataForExpressAndSurface($mode, $delivery_pincode, $pickup_pincode, $weight_in_kg, $auth_key) {
         $body = array(

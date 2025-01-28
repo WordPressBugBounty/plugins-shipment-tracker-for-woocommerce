@@ -1592,13 +1592,7 @@ class Bt_Sync_Shipment_Tracking {
 					Field::make( 'text', 'bt_sst_delhivery_warehouse_name', __( 'Pickup Location ' ) )
 					->set_attribute( 'placeholder', 'Enter pickup location name' )		
 					->set_help_text( '<a target="_blank" href="https://one.delhivery.com/settings/pickup-locations/domestic">[Click here to get Pickup Location]</a>' ),		
-					Field::make( 'select', 'bt_sst_delhivery_shipping_mode', __( 'Shipping Mode' ) )
-					->add_options( 
-						array(
-							'Express'=>'Express',
-							'Surface'=>'Surface',
-							)
-						),
+					
 					Field::make( 'select', 'bt_sst_delhivery_cron_schedule', __( 'Sync Tracking every (Premium Only)' ) )
 						->add_options( 
 							array(
@@ -1616,10 +1610,20 @@ class Bt_Sync_Shipment_Tracking {
 						You can still push orders by clicking "Push Now" link available in individual order.
 						<br>This feature also pushes correct order weight and dimensions of package to delhivery, it helps in reducing weight discrepancy issues.
 						<br>For this option to work, make sure that the weight and dimensions are correctly set for every product. Keep some packaging buffer for better accuracy in calculation. 
-						<a target="_blank" href="https://shipment-tracker-for-woocommerce.bitss.tech/delhivery-woocommerce-integration">See Demo</a>
+						<a target="_blank" href="https://shipment-tracker-for-woocommerce.bitss.tech/supported-shipping-companies/delhivery-integration-in-woocommerce/">See Demo</a>
 						' )
 						->set_option_value( '1' )
-						->set_default_value( '0' )
+						->set_default_value( '0' ),
+					Field::make( 'select', 'bt_sst_delhivery_shipping_mode', __( 'Default Shipping Mode' ) )
+					->add_options( 
+						array(
+							'Express'=>'Express',
+							'Surface'=>'Surface',
+							)
+						)
+						->set_help_text(
+							'This order is pushed to one delhivery portal using this shipping mode.'
+						),
 					
 
 			) );
@@ -1770,6 +1774,8 @@ class Bt_Sync_Shipment_Tracking {
 				) )
 				->set_help_text('
 				<p><b>Shiprocket:</b> Courier names along with estimated delivery date and rates are fetched from Shiprocket on realtime basis. <br>Make sure the Shiprocket\'s API settings are correctly set to use this provider. <a href="https://www.youtube.com/watch?v=8nds10GbsVE" target="_blank">See Video</a></p>
+				<p><b>Delhivery:</b> Shipping rates along with estimated delivery date are fetched from Delhivery on realtime basis. <br>Make sure the Delhivery\'s API settings are correctly set to use this provider. </p>
+			
 				<p><b>Custom Shipping:</b> Select this provider to define custom rules yourself. Google Api is used to fetch pin code details.</p>
 				<p>NOTE: Pin Code data is cached for 12 hours.</p>
 				<p>International shipping is supported if more than one "Shipping location(s)" are set in <a target="_blank" href="'.$woocommerce_settings_url.'">woocommerce settings.</a></p>
@@ -1836,29 +1842,8 @@ class Bt_Sync_Shipment_Tracking {
 				) ),
 
 
-				Field::make( 'text', 'bt_sst_delhivey_min_day_picker', __( 'Minimum Day' ) )
-				->set_conditional_logic( array(
-					array(
-						'field' => 'bt_sst_shiprocket_pincode_checker',
-						'value' => true,
-					),
-					array(
-						'field' => 'bt_sst_pincode_data_provider',
-						'value' => 'delhivery',
-					)
-				) ),
-
-				Field::make( 'text', 'bt_sst_delhivey_max_day_picker', __( 'Maximum Day' ) )
-				->set_conditional_logic( array(
-					array(
-						'field' => 'bt_sst_shiprocket_pincode_checker',
-						'value' => true,
-					),
-					array(
-						'field' => 'bt_sst_pincode_data_provider',
-						'value' => 'delhivery',
-					)
-				) ),
+			
+				
 				Field::make( 'text', 'bt_sst_nimbuspost_pickup_pincode', __( 'Pickup Pincode' ) )
 				->set_default_value( $base_postcode )
 				->set_help_text( 'Required. Enter pincode of your warehouse/pickup point. Should be same as given in shipping aggregator.' )

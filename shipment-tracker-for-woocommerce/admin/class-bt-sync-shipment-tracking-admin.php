@@ -2662,8 +2662,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 				carbon_set_theme_option('bt_sst_pincode_checker_location', 'woocommerce_after_add_to_cart_button');
 				if($w_shipping_company == "delhivery"){
 					carbon_set_theme_option('bt_sst_pincode_data_provider', $w_shipping_company);
-					carbon_set_theme_option('bt_sst_delhivey_min_day_picker', "3");
-					carbon_set_theme_option('bt_sst_delhivey_max_day_picker', "5");
 					carbon_set_theme_option('bt_sst_shiprocket_processing_days', "1");
 					carbon_set_theme_option('bt_sst_shiprocket_processing_days_location', "woocommerce_after_add_to_cart_button");
 				}elseif ($w_shipping_company == "nimbuspost") {

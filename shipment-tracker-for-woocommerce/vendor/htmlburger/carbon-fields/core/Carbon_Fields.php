@@ -230,7 +230,7 @@ final class Carbon_Fields {
 		$count = 0;
 
 		# Sanitize directory separator on Windows
-		$url = str_replace( '\\' ,'/', $url );
+		$url = str_ireplace( '\\' ,'/', $url );
 
 		$possible_locations = array(
 			WP_PLUGIN_DIR => \plugins_url(), # If installed as a plugin
@@ -239,8 +239,8 @@ final class Carbon_Fields {
 		);
 
 		foreach ( $possible_locations as $test_dir => $test_url ) {
-			$test_dir_normalized = str_replace( '\\' ,'/', $test_dir );
-			$url = str_replace( $test_dir_normalized, $test_url, $url, $count );
+			$test_dir_normalized = str_ireplace( '\\' ,'/', $test_dir );
+			$url = str_ireplace( $test_dir_normalized, $test_url, $url, $count );
 
 			if ( $count > 0 ) {
 				return \untrailingslashit( $url );

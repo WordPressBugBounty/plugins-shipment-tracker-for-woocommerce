@@ -819,7 +819,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					$bt_sst_message_text_template = "Delivery not available. Try a different pincode or contact support.";
 				}
 			}else if ($pickup_data_provider == 'delhivery') {
-			
+				$express_tat = null;
 				if ( false === ( $bt_sst_cached_delivery_estimates_delhivery = get_transient( 'bt_sst_cached_delivery_estimates_delhivery' ) ) ) {
 					$bt_sst_cached_delivery_estimates_delhivery = array();
 				}
@@ -828,15 +828,23 @@ class Bt_Sync_Shipment_Tracking_Public
 						"bt_sst_delhivery_pincodepickup"
 					);
 					if (!empty($pickup_pin)) {
-						$cached_pincode_key = $pickup_pin . "_" . $delivery_pincode;
+						$cached_pincode_key = $pickup_pin . "_" . $delivery_pincode . "_1";
 						if(isset($bt_sst_cached_delivery_estimates_delhivery[$cached_pincode_key])){
-							$push_resp = $bt_sst_cached_delivery_estimates_delhivery[$cached_pincode_key];
+							$push_resp = $bt_sst_cached_delivery_estimates_delhivery[$cached_pincode_key][0];
+							$express_tat = $$bt_sst_cached_delivery_estimates_delhivery[$cached_pincode_key][1];
 							$response["message"] = "Data fetched from cache.";
 						}else{
 							$push_resp = $this->delhivery->get_rate_calcultor_and_date('E', 'Delivered',$pickup_pin, $delivery_pincode, '500');
 							
 							if ($push_resp != null && !empty($push_resp ) && sizeof($push_resp)>0 ) {
-								$bt_sst_cached_delivery_estimates_delhivery[$cached_pincode_key] =  $push_resp;
+
+								$express_tat = $this->delhivery->get_tat("E",$delivery_pincode, $pickup_pin);
+								if($express_tat && isset($express_tat["data"]) && isset($express_tat["data"]["tat"])){
+									$express_tat = $express_tat["data"]["tat"];
+								}else{
+									$express_tat = null;
+								}
+								$bt_sst_cached_delivery_estimates_delhivery[$cached_pincode_key] =  [$push_resp,$express_tat];
 								set_transient( 'bt_sst_cached_delivery_estimates_delhivery', $bt_sst_cached_delivery_estimates_delhivery, 1 * HOUR_IN_SECONDS );
 								$response["message"] = "Data fetched from Delhivery.";
 							}else{
@@ -864,12 +872,13 @@ class Bt_Sync_Shipment_Tracking_Public
 						$max_courier_name = 'delhivery';
 						$min_courier_name = 'delhivery';
 
-						$min_days = carbon_get_theme_option(
-							"bt_sst_delhivey_min_day_picker"
-						);
-						$max_days = carbon_get_theme_option(
-							"bt_sst_delhivey_max_day_picker"
-						);
+						$min_days = 2;
+						$max_days = 5;
+
+						if($express_tat!=null){
+							$min_days = $express_tat;
+							$max_days = $express_tat;
+						}
 
 						if(!$min_days){
 							$min_days =1;
@@ -1917,7 +1926,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					$cost = carbon_get_theme_option( "bt_sst_delhivery_fall_back_rate" );
 					if($cost && $cost>0){
 						$WC_Shipping_Rate = new WC_Shipping_Rate();
-						$id = 'flat_rate:shipmozo:fallback';
+						$id = 'flat_rate:delhivery:fallback';
 						$WC_Shipping_Rate->set_id($id);
 						$WC_Shipping_Rate->set_label('Flat rate');
 						$WC_Shipping_Rate->set_method_id($id);
@@ -1959,7 +1968,10 @@ class Bt_Sync_Shipment_Tracking_Public
 						// 	$id = 'flat_rate:delhivery:Surface';
 						// }
 
-						$lable = "Delhivery ".$rb['mode'];
+						$lable = "Delhivery ".ucfirst($rb['mode']);
+						if(isset($rb['tat']) && $rb['tat']!=null){
+							$lable .= " / ".$rb['tat'] . ($rb['tat']>1?" days ":" day");
+						}
 						$id = 'flat_rate:delhivery:'.$rb['mode'];
 						$method_id = 'flat_rate';
 						$markup_cost = carbon_get_theme_option(
