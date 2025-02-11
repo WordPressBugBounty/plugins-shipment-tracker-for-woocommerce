@@ -1,9 +1,9 @@
 === Shipment Tracker for Woocommerce ===
 Contributors: amitmital
 Donate link: https://pmny.in/6JB4CzvwowVL
-Tags: shiprocket, shyplite, nimbuspost, xpressbees, shipmozo, delhivery, order tracking, shipment tracking, order tracking page, tracking page, shipment sms, shipment email, tracking link, shipping 
+Tags: shiprocket, nimbuspost, xpressbees, shipmozo, delhivery, order tracking, shipment tracking, tracking page 
 Requires at least: 4.6
-Tested up to: 6.6
+Tested up to: 6.7.1
 Stable tag: trunk
 Requires PHP: 5.6
 License: GPLv2 or later

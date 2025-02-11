@@ -67,6 +67,69 @@
 			});
 		}, 3000);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		setTimeout(() => {
+			var templatePreviewImage = jQuery('#tracking-template-preview-img-2');
+			var templateImagePaths = {
+				'classic_template': 'admin/images/tmp-2.png',
+				'prime_template': 'admin/images/tmp-1.png'
+			};
+			var selectedTemplate = $('select[name="carbon_fields_compact_input[_bt_sst_selected_tracking_template]"]').val();
+			
+			if (templateImagePaths[selectedTemplate]) {
+				var templateBasePath = jQuery('#bt_sst_tracking_page_template_preview_img_2').val();
+				templatePreviewImage.attr('src', templateBasePath + templateImagePaths[selectedTemplate]);
+				jQuery('#tracking_page_template_preview_img_href_2').attr('href', templateBasePath + templateImagePaths[selectedTemplate]);
+				templatePreviewImage.show();
+			} else {
+				templatePreviewImage.hide();
+			}
+		
+			jQuery(document).on('change', 'select[name="carbon_fields_compact_input[_bt_sst_selected_tracking_template]"]', function () {
+				var templateBasePath = jQuery('#bt_sst_tracking_page_template_preview_img_2').val();
+				var selectedTemplate = jQuery(this).val();
+		
+				if (templateImagePaths[selectedTemplate]) {
+					templatePreviewImage.attr('src', templateBasePath + templateImagePaths[selectedTemplate]);
+					jQuery('#tracking_page_template_preview_img_href_2').attr('href', templateBasePath + templateImagePaths[selectedTemplate]);
+					templatePreviewImage.show();
+				} else {
+					templatePreviewImage.hide();
+				}
+			});
+		}, 3000);
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 		setTimeout(() => {
 			var company_name = localStorage.getItem('triggerCompanyTab');
 			if (company_name === 'delhivery') {

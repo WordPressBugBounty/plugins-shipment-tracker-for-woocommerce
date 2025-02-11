@@ -86,7 +86,7 @@ class Bt_Licenser {
 	function is_license_active() {
 		$premium = $this->get_license();
 		$premium = isset($premium['is_active'])?$premium['is_active']:false;
-		//$premium=true;
+		//$premium=false;
 		return $premium;
 	}
 

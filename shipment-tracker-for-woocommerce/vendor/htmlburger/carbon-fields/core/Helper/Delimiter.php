@@ -22,7 +22,7 @@ class Delimiter {
 	 * @return string
 	 */
 	public static function quote( $value, $delimiter ) {
-		return str_ireplace( $delimiter, static::$escape_character . $delimiter, $value );
+		return str_replace( $delimiter, static::$escape_character . $delimiter, $value );
 	}
 
 	/**
@@ -33,7 +33,7 @@ class Delimiter {
 	 * @return string
 	 */
 	public static function unquote( $value, $delimiter ) {
-		return str_ireplace( static::$escape_character . $delimiter, $delimiter, $value );
+		return str_replace( static::$escape_character . $delimiter, $delimiter, $value );
 	}
 
 	/**

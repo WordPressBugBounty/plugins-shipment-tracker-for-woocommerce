@@ -26,64 +26,13 @@ if(empty($bt_sst_review_subheading_text)){
     ?>
     <?php 
       
-      if ($the_order==false){ ?>
-        <div class="fl-module-subscribe-form snipcss-oLzae obscure-5eL1eW3kd obscure-1wJ5wR9d8" data-node="krpof3agj2mn">
-            <div class="fl-node-content obscure-9aVJaXpd0">
-                <div class="fl-subscribe-form-name-show fl-form obscure-n0E90mPMb obscure-avzkvjx5A obscure-r3av3mwX0">
-                    <!-- <form class="bt_tracking_form" action="" method="post" class="bt_track_order_form"> -->
-                        <div class="">
-                            <?php
-                                if($message){
-                                    echo '<div class="bt_sst_error_message">'.$message.'</div>';
-                                }
-                            ?>
-                        </div>
-                        <div class="v3931_251">
-                            <form class="bt_tracking_form" action="" method="post" class="bt_track_order_form">
-                                <div class="v3931_252">
-                                    <div class="v3931_253">Track Your Order</div>
-                                    <div class="v3931_254">
-                                        <div class="v3931_266"></div>
-                                        <div class="v3931_255">
-                                            <!-- <form class="bt_tracking_form" action="" method="post" class="bt_track_order_form"> -->
-                                            <input type="hidden" name="bt_tracking_form_nonce" value="<?php echo esc_attr(wp_create_nonce('bt_shipping_tracking_form_2')); ?>">
-                                                
-                                                <div class="v3931_259">
-                                                    <!-- <div class="v3931_260"></div> -->
-                                                    <span class="v3931_261">Order Id/ AWB No</span>
-                                                    <input required 
-                                                    style="background: rgba(255,255,255,1); height: 52px; border-radius: 10px; border: 1px solid rgba(241,241,241,1); top: 30px;" 
-                                                    type="text" value="<?php echo esc_attr($bt_track_order_id) ?>" name="bt_track_order_id" placeholder="Your order id/ AWB No" id="bt_track_order_id">
-                                                </div>
-                                                
-                                                <?php if ($last_four_digit) { ?>
-                                                        <!-- <div class="v3931_263"></div> -->
-                                                        <div class="v3931_262">
-                                                            <span class="v3931_261">Mobile No (last 4 digits)</span>
-                                                            <input required style="background: rgba(255,255,255,1); height: 52px; border-radius: 10px; border: 1px solid rgba(241,241,241,1); top: 30px;" type="text" value="<?php echo esc_attr($bt_last_four_digit) ?>" name="bt_track_order_phone" placeholder="Last 4 digits of mobile number" id="bt_last_four_digit_no">                              
-                                                        </div>
-                                                <?php } ?>
-                                                
-                                                <div class="obscure-69pk9aPdz" data-wait-text="Please Wait...">
-                                                    <div class="v3931_256">
-                                                        <button type="submit" class="v3931_257" role="button">
-                                                            <span class="fl-button-text">Track Now</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            <!-- </form> -->
-                                        </div>
-                                    </div>
-                                   
-                                </div>
-                            </form>    
-                        </div>
-                    <!-- </form>     -->
-                </div>
-            </div>
-        </div>
-                
-        <?php 
+        if ($the_order==false){
+            $bt_sst_selected_tracking_template = carbon_get_theme_option('bt_sst_selected_tracking_template');
+            if($bt_sst_selected_tracking_template=="classic_template" || !$is_premium){
+                require_once plugin_dir_path(dirname(__FILE__)) . 'partials/bt_shipping_tracking_page_primary_template_first.php';
+            }else if($bt_sst_selected_tracking_template=="prime_template"){ 
+                require_once plugin_dir_path(dirname(__FILE__)) . 'partials/bt_shipping_tracking_page_primary_template_second.php';
+            }
       
         } else if ($the_order==false && !empty($bt_track_order_id))
         {
@@ -228,25 +177,32 @@ if(empty($bt_sst_review_subheading_text)){
             $whatsapp_url .= $estimated_delivery_date . "\n";
             }
             if($estimated_delivery_date=="NA" || !$estimated_delivery_date){
-                $estimated_delivery_date = "Arriving Soon";
+                if(stripos($shipment_status,'delivered')!==false && stripos($shipment_status,'rto')===false){
+                    $estimated_delivery_date = "Delivered";
+                }else{
+                    $estimated_delivery_date = "Arriving Soon";
+                }
             }
             $delivery_pincode = $the_order->get_shipping_postcode();
-                                            // $delivery_pincode = "";
-                                            $billing_pincode = $the_order->get_billing_postcode();
-                                            // $billing_pincode = "";
-                                            $delivery_country = $the_order->get_shipping_country();
-                                            $billing_country = $the_order->get_billing_country();
-                                            $pickup_pincode = WC()->countries->get_base_postcode() ;
-                                            // $pickup_pincode = "";
-                                            $base_country = WC()->countries->get_base_country() ;
+                                                // $delivery_pincode = "";
+                                                $billing_pincode = $the_order->get_billing_postcode();
+                                                // $billing_pincode = "";
+                                                $delivery_country = $the_order->get_shipping_country();
+                                                $billing_country = $the_order->get_billing_country();
+                                                $pickup_pincode = WC()->countries->get_base_postcode() ;
+                                                // $pickup_pincode = "";
+                                                $base_country = WC()->countries->get_base_country() ;
 
-                                            if($billing_pincode && !$delivery_pincode){
-                                                $delivery_country = $billing_country;
-                                                $delivery_pincode = $billing_pincode;
-                                            }else if(!$delivery_pincode && $pickup_pincode){
-                                                $delivery_country = $base_country;
-                                                $delivery_pincode = $pickup_pincode;
-                                            }
+                                                if($billing_pincode && !$delivery_pincode){
+                                                    $delivery_country = $billing_country;
+                                                    $delivery_pincode = $billing_pincode;
+                                                }else if(!$delivery_pincode && $pickup_pincode){
+                                                    $delivery_country = $base_country;
+                                                    $delivery_pincode = $pickup_pincode;
+                                                }
+                                                if(!$pickup_pincode){
+                                                    $pickup_pincode = $delivery_pincode;
+                                                }
                             
             $whatsapp_url .= 'Track Your Shipment: ' . $current_url . "\n" .
                             'Thank you for shopping with us! If you have any questions, feel free to reach out.' ;
@@ -323,75 +279,12 @@ if(empty($bt_sst_review_subheading_text)){
                                             if($delivery_pincode || $pickup_pincode){
                                             ?>
                                             <script>
-                                                document.addEventListener("DOMContentLoaded", function () {
-                                                // Function to get coordinates from PIN code using Nominatim API
-                                                async function getCoordinates(pinCode, base_country) {
-                                                    const url = `https://nominatim.openstreetmap.org/search?postalcode=${pinCode}&country=${base_country}&format=json&limit=1`;
-                                                    const response = await fetch(url);
-                                                    const data = await response.json();
-                                                    if (data.length > 0) {
-                                                        const { lat, lon } = data[0];
-                                                        return [parseFloat(lat), parseFloat(lon)];
-                                                    } else {
-                                                        //alert(`No coordinates found for PIN code ${pinCode}`);
-                                                        return null;
-                                                    }
-                                                }
-
-                                                // Main function to plot the map with PIN codes
-                                                async function plotMap() {
-                                                    // Retrieve PHP variables inside JavaScript
-                                                var dropoffPin = '<?php echo esc_js($delivery_pincode); ?>'; // Delivery PIN code
-                                                var estimated_date = `<?php echo esc_js($the_order->get_billing_city() . " " . $the_order->get_billing_state() . " " . $the_order->get_billing_postcode()); ?>`;
-                                                var delivery_country = '<?php echo esc_js($delivery_country); ?>';
-
-
-                                                    const dropoffLocation = await getCoordinates(dropoffPin, delivery_country);
-
-                                                    if (dropoffLocation) {
-                                                        // Initialize the map and center it on the drop-off location
-                                                        const map = L.map('bt_sst_leaflet_map_location', {
-                                                            center: dropoffLocation,
-                                                            zoom: 14, // Adjust zoom level as needed
-                                                            scrollWheelZoom: false, // Disable scroll wheel zoom
-                                                            touchZoom: true, // Enable pinch-to-zoom
-                                                            doubleClickZoom: true // Enable double-click zoom
-                                                        });
-
-                                                        // Use OpenStreetMap tiles
-                                                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                                            maxZoom: 14,
-                                                        }).addTo(map);
-
-                                                        // Add a marker for the drop-off location
-                                                        L.marker(dropoffLocation, {
-                                                            icon: L.divIcon({
-                                                                className: 'custom-icon', // Use custom class
-                                                                html: '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEDElEQVR4nO2b34scRRDH61ARjRp/IFE4sts1KxfFB0F8ETQRkqiJYBJ/gT+e/PEH+KxEFO92qvaQoBjii2+Khz6YQ4gxAROffBASBXNeQPGyVeNxMXqnxsQfGendUw8vMTe93TOzt/uBgmVhp6u+U91dUz0L0KdPnz59+gTlptemL8NYNxnSOrKMI+sEsp4wJL9Zs5+R9AiS7kbWEWS91/4Gupo0HbCBIMuYIT2FrGlG+xVJ3olI77HXgm7CUPIQknzuEPTZjfQQsm6DsoPxsRsM6T5vgS8WYm80OlWDMmJIH0CWH4MFP2+GZQ5JHoXSkKYDhuWF0IEvEoK0XvzakKYDhmRn3sH/a/J6oSJge8sqKPi/M0FeKiT4KG4+UnTw/4jQkMcKWO3lp6IDX5AFszWajnITwITc6lyNdG8+wbM+WHiw5xRBtoYvb8ljhec/Cw4F3RWwVdt37OiHpiFPVePm0CpOVlirNGRNleRpm8adXr/akLsDCiBjHTg3YWK543xjVFnvRNKvXMcxpG8HCX4onrnc8anOFiwfV1755sqljrV65NurkOSA4zQ4ef12ubRM6T+RJfiFIhjWSadpQLLRuwCm1cxwSMklpP25iDhZ55gFwyHm/3gRe7NTzUH6PvgGHRYmu9p3Om7U0GccBDgCvjGsxzPPxbg51Om4dovMLDzpDPjGsJ7O6oiPxmaroZpdgFPgG9Pu3uYuQG3H8SsyC8B6GnyDtnVdxBSo640Oa8D34Bts9/K7YxFk+RJ8Y1g+yO6IftTxuCT7HQQYB98g6bCDAGkUJ3e5jlmNda3LmIblxQBTINns4oytH2xZm3W8wdGpqw3pUSfR7WmSb1ZxsgJZf3ETQQ5kEcEGj6wHHcf6OcjDkAVZ3nVyqr01TdraHs6DnTKud35+/o9BKKokG90dmxeCdJ9d2e32ZusEa/az/c5twfvv9ZvrQx+EfNGpkwHtcPCDkojk/hIEeva7Hyf3QR6YXm6LW1ZzYkp1MMIyVxlJqpAnyLoNSc4UHbz1ocrJw7kGX6bDUesDFPxuwJuFpT7pW4W/I3DrrvQiJN2Tf/Cyv7Zj8mIoA0P2zID1sxwFOIz1EyuhTNRe1mtd+/iZjOTrCk1fB2WkRtMRknwXcM7P+OgyBcWw3hakRiA9GTWat0M3gPa1WJbfPab9H1FDtkA3YUgf91IokZwxLE9CN4Kkz3vIgOegm0HSVzsI/g3oesbSCwzJe9mDl/G129MLYTkwODp1CZJ+kiH4T20PEpYTa4ab19gDiyXs9UdtUQXLkVr92KAhnfofAST35/q8QU5uRtIfFt95ma1Q8xboBSJO1i184ar136GGbIBeImq9bC1/tjs6+gT0Iob0WWtF+9GnD/QufwFmrtOpY71Z6gAAAABJRU5ErkJggg==" style="width:35px;" />',
-                                                                iconSize: [32, 32],
-                                                            }),
-                                                        }).addTo(map).bindTooltip(estimated_date, {
-                                                            permanent: true,
-                                                            direction: "center",
-                                                            offset: [0, -40]
-                                                        }).openTooltip();
-
-                                                        // Adjust map view to fit the drop-off marker
-                                                        const bounds = L.latLngBounds([dropoffLocation]);
-                                                        map.fitBounds(bounds, { padding: [50, 50] });
-
-                                                        // Disable dragging
-                                                        map.dragging.disable();
-                                                    } else {
-                                                        jQuery('#style-choB9').css("height","100px");
-                                                        console.error("No coordinates found for the drop-off location.");
-                                                        // alert("No coordinates found for the drop-off location.");
-                                                    }
-                                                }
-
-                                                plotMap(); // Call the function to plot the map
-                                            });
-                                            </script>
+                                                        const dropoffPin = '<?php echo esc_js($delivery_pincode); ?>';
+                                                        const estimatedDate = '<?php echo esc_js($the_order->get_billing_city() . " " . $the_order->get_billing_state() . " " . $the_order->get_billing_postcode()); ?>';
+                                                        const deliveryCountry = '<?php echo esc_js($delivery_country); ?>';
+                                                        const pickupPin = '<?php echo esc_js($pickup_pincode); ?>';
+                                                        
+                                                </script>
                                             <div class="">
                                                 <div id="bt_sst_leaflet_map_location" class="bt_sst_leaflet_map_location_shipment" style="width:100%; border:unset;"></div>
                                             </div>
@@ -719,8 +612,30 @@ if(empty($bt_sst_review_subheading_text)){
     <?php endif ?>
     <?php
     $bt_sst_navigation_map = carbon_get_theme_option('bt_sst_navigation_map');
-    if($bt_sst_navigation_map == 'yes'): ?>
+    if($bt_sst_navigation_map == 'yes'): 
+        wp_enqueue_script('bt-sync-shipment-tracking-leaflet');
+        wp_enqueue_script('bt-sync-shipment-tracking-mapRender');
+        wp_enqueue_style('bt-sync-shipment-tracking-leaflet-css');
+    ?>
+        <script>
+    
+            async function plotMap2() {
+                // Retrieve PHP variables inside JavaScript
+                var pickupPin = '<?php echo esc_js($pickup_pincode); ?>'; // Pickup PIN code
+                var dropoffPin = '<?php echo esc_js($delivery_pincode); ?>'; // Delivery PIN code
+                var pickupMessage = `Order placed on <?php echo esc_js($ordering_date); ?>`;
+                var deliveryMessage = `<?php echo esc_js($estimated_delivery_date); ?>`;
+                var base_country = '<?php echo esc_js($base_country); ?>';
+                var delivery_country = '<?php echo esc_js($delivery_country); ?>';
         
+                window.plotMap(dropoffPin, pickupPin, deliveryMessage,pickupMessage, base_country, delivery_country);
+            
+            }
+            document.addEventListener("DOMContentLoaded", function(event) {
+                plotMap2(); // Call the function to plot the map
+            });
+        
+        </script>
     <?php endif ?>
 </div>
 <style>

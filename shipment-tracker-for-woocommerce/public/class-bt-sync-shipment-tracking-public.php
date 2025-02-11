@@ -123,6 +123,13 @@ class Bt_Sync_Shipment_Tracking_Public
 			$this->version,
 			true
 		);
+		wp_register_script(
+			'bt-sync-shipment-tracking-mapRender',
+			plugin_dir_url(__FILE__) . 'js/bt-sync-shipment-racking-mapRender.js',
+			array(),
+			$this->version,
+			true
+		);
 		wp_register_script('bt-sync-shipment-tracking-public-checkout-blocks', plugin_dir_url(__FILE__) . 'js/bt-sync-shipment-tracking-public-checkout-block.js',array( 'wp-data', 'wc-blocks-checkout' ), $this->version, true);
 		$post_code_auto_fill = carbon_get_theme_option( 'bt_sst_enable_auto_postcode_fill' );
 
@@ -2237,12 +2244,18 @@ class Bt_Sync_Shipment_Tracking_Public
 						$last_four_digit=false;
 					}
 					if ($last_four_digit && $the_order!=false) {
-						$bt_last_four_digit = sanitize_text_field( $_POST["bt_track_order_phone"]);
-						$phone = $the_order->get_billing_phone();
-						$phone = substr($phone, -4);
-						if ($phone != $bt_last_four_digit) {
+						if(!isset($_POST["bt_track_order_phone"]) || empty($_POST["bt_track_order_phone"])){
+							//reload tracking form to ask for phone number
 							$the_order = false;
-							$message = "Please enter the correct last 4 digit of phone number.";
+							$auto_post = true;
+						}else{
+							$bt_last_four_digit = sanitize_text_field( $_POST["bt_track_order_phone"]);
+							$phone = $the_order->get_billing_phone();
+							$phone = substr($phone, -4);
+							if ($phone != $bt_last_four_digit) {
+								$the_order = false;
+								$message = "Please enter the correct last 4 digit of phone number.";
+							}
 						}
 					}
 					
@@ -2267,9 +2280,9 @@ class Bt_Sync_Shipment_Tracking_Public
 			return $result;
 		}else{
 			//to be embedded in a web page
-			wp_enqueue_script('bt-sync-shipment-tracking-leaflet');
+			
 			wp_enqueue_style('bt-sync-shipment-tracking-customer-shortcode-css');
-			wp_enqueue_style('bt-sync-shipment-tracking-leaflet-css');
+			
 			$shipping_tracking_template = carbon_get_theme_option('bt_sst_tracking_page_template');
 			if($shipping_tracking_template=="trackingmaster" && $is_premium){
 				ob_start();

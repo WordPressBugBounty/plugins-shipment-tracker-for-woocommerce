@@ -780,7 +780,7 @@ class Bt_Sync_Shipment_Tracking {
                                         </span>
                                     </p>
                                         <div class="control is-expanded">
-                                            <input id="bt_otpfy_test_phone_otp" class="input is-medium" name="bt_otpfy_number" type="number" value="" placeholder="Enter mobile number">
+                                            <input id="bt_otpfy_test_phone_otp" class="input is-medium" name="bt_otpfy_number" type="text" value="" placeholder="Enter mobile number with country code">
                                         </div>
                                         <div class="field is-horizontal" style="width: 100%; max-width: 150px; text-align: center;">
 											<div class="field-body" style="width: 100%;">
@@ -803,7 +803,8 @@ class Bt_Sync_Shipment_Tracking {
 												</div>
 											</div>
                                    	 </div>
-                                    <p class="help is-info">We will send an sms of selected event to your mobile number.<br> Supported Countries: <b>All</b></p>
+                                    <p class="help is-info">Enter your mobile number with country code. Eg: +91 94622 42982 <br>We will send an sms of selected event to your mobile number.<br> 
+									Supported Countries: <b>All</b></p>
                      </div>
 				' ),
 				Field::make( 'html', 'bt_sst_custom_html_field_email_trial', __( 'Custom HTML Field' ) )
@@ -910,16 +911,26 @@ class Bt_Sync_Shipment_Tracking {
 				) )
 				->set_default_value( 'shipping_provider' ),
 
-			Field::make( 'select', 'bt_sst_tracking_page_template', __( 'Choose Tracking Page template:' ) )
+			Field::make( 'select', 'bt_sst_tracking_page_template', __( 'Choose Tracking Page Design:' ) )
 				->set_options( array(
-					'classic' => 'Classic Template',
-					'trackingmaster' => 'Tracking Master Template (Premium)',
+					'classic' => 'Classic',
+					'trackingmaster' => 'Tracking Master (Premium)',
 				) )
 				->set_default_value('classic')
 				->set_help_text('Preview:<div id="tracking_page_template_preview">
 					<input type="hidden" value="'.$parentDirectory.'" id="bt_sst_tracking_page_template_preview_img">
                             <a target="blank" id="tracking_page_template_preview_img_href" href=""><img width="100px" id="tracking-template-preview-img" src="" style="display: none;" alt="Tracking Template Preview"></a>
                          </div>'),
+			Field::make( 'select', 'bt_sst_selected_tracking_template', __( 'Choose Tracking Form Design:' ) )
+						 ->set_options( array(
+							 'classic_template' => 'Classic',
+							 'prime_template' => 'Tracking Master (Premium)',
+						 ) )
+						 ->set_default_value('classic_template')
+						 ->set_help_text('Preview:<div id="tracking_page_template_preview_2">
+							 <input type="hidden" value="'.$parentDirectory.'" id="bt_sst_tracking_page_template_preview_img_2">
+									 <a target="blank" id="tracking_page_template_preview_img_href_2" href=""><img width="100px" id="tracking-template-preview-img-2" src="" style="display: none;" alt="Tracking Template Preview"></a>
+								  </div>'),
 			Field::make( 'html', 'bt_sst_tracking_shortcode_html', __( 'Tracking Widget Shortcode' ) )
 				->set_html(
 					 '
