@@ -1,0 +1,59 @@
+.bt_sst_timer_page_timer {
+    display: flex;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 10px 0;
+}
+.bt_sst_timer_page_box {
+    margin: auto;
+    background: red;
+    color: white;
+    padding: 5px 5px;
+    border-radius: 5px;
+    text-align: center;
+    width: 42px;
+}
+.bt_sst_timer_page_progress-container {
+    width: 80%;
+    height: 10px;
+    background: #ddd;
+    border-radius: 5px;
+    margin: 10px auto;
+    position: relative;
+}
+.bt_sst_timer_page_progress-bar {
+    height: 100%;
+    background: blue;
+    border-radius: 5px;
+    width: 100%;
+    transition: width 1s linear;
+}
+.bt_sst_timer_page_stock {
+    font-size: 18px;
+    font-weight: bold;
+}
+.bt_sst_timer_page_stock span {
+    color: purple;
+    font-weight: bold;
+}
+.bt_sst_timer_heading h2{
+    color: purple;
+}
+.bt_sst_timer_hour_min_sec{
+    color: #c700008a;
+    font-size: 15px;
+}
+.bt_sst_timer_colon {
+    font-size: 50px;
+    font-weight: bold;
+    align-self: center;
+    color: red;
+    position: relative;
+    top: -20px;
+}
+
+.bt_sst_timer_container{
+    width: fit-content;
+    padding: 10px;
+}

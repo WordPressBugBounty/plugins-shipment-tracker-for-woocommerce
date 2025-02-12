@@ -2558,6 +2558,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_shortcode( 'bt_shipment_courier_name', $plugin_public,  'bt_shipment_courier_name_shortcode_callback' );
 		$this->loader->add_shortcode( 'bt_shipment_edd', $plugin_public,  'bt_shipment_edd_shortcode_callback' );
 		$this->loader->add_shortcode( 'bt_shipment_awb', $plugin_public,  'bt_shipment_awb_shortcode_callback' );
+		$this->loader->add_shortcode( 'bt_shipment_timer', $plugin_public,  'bt_shipment_timer_shortcode_callback' );
 
 		$this->loader->add_filter( 'woocommerce_email_format_string', $plugin_public,  'woocommerce_email_format_string_shipment_placeholders_callback', 10, 2  );
 

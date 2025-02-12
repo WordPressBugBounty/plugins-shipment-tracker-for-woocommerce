@@ -38,7 +38,7 @@
 
     .tracking-input {
         padding: 15px;
-        width: 250px;
+        width: 50%;
         border-radius:20px 0 0 20px;
         font-size: 1rem;
         text-align: center;

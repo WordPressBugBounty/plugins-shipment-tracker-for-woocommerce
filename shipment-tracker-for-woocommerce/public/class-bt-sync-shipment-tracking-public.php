@@ -89,6 +89,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		wp_register_style('bt-sync-shipment-tracking-customer-shortcode-css', plugin_dir_url(__FILE__) . 'css/bt-sync-shipment-tracking-customer-shortcode.css', array(), $this->version, 'all');
 		wp_register_style('bt-sync-shipment-tracking-public-css', plugin_dir_url(__FILE__) . 'css/bt-sync-shipment-tracking-public.css', array(), $this->version, 'all');
 		wp_register_style('bt-sync-shipment-tracking-leaflet-css', plugin_dir_url(__FILE__) . 'css/bt-sync-shipment-tracking-leaflet.css', array(), $this->version, 'all');
+		wp_register_style('bt-shipment-tracking-timing-css', plugin_dir_url(__FILE__) . 'timer/css/bt_sst_shipment_tracker_timer.css', array(), $this->version, 'all');
 
 		if (is_checkout()) {
 			wp_enqueue_style('bt-sync-shipment-tracking-public-css');
@@ -116,6 +117,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		 * class.
 		 */
 		wp_register_script('bt-sync-shipment-tracking-public', plugin_dir_url(__FILE__) . 'js/bt-sync-shipment-tracking-public.js', array('jquery'), $this->version, true);
+		wp_register_script('bt-shipment-tracking-timing-js', plugin_dir_url(__FILE__) . 'timer/js/bt_sst_shipment_tracker.js', array('jquery'), $this->version, true);
 		wp_register_script(
 			'bt-sync-shipment-tracking-leaflet',
 			plugin_dir_url(__FILE__) . 'js/bt-sync-shipment-tracking-leaflet.js',
@@ -2441,6 +2443,34 @@ class Bt_Sync_Shipment_Tracking_Public
 		
 		return $result;
 		
+	}
+
+	// Shortcode function for shipment timer
+	public function bt_shipment_timer_shortcode_callback($atts, $content = null, $tag = '') 
+	{
+		wp_enqueue_style('bt-shipment-tracking-timing-css');
+		wp_enqueue_script('bt-shipment-tracking-timing-js');
+		// Set default values and extract attributes
+		$atts = shortcode_atts(
+			array(
+				'hours'   => 0,  // Default: 0 hours
+				'minutes' => 59, // Default: 59 minutes
+				'seconds' => 59  // Default: 59 seconds
+			), 
+			$atts, 
+			'bt_shipment_timer'
+		);
+
+		// Convert attributes to total seconds
+		$total_seconds = ($atts['hours'] * 3600) + ($atts['minutes'] * 60) + $atts['seconds'];
+
+		ob_start();
+		
+		// Include the external file and pass attributes
+		include plugin_dir_path(dirname(__FILE__)) . 'public/timer/bt_sst_shipment_tracker_timer.php';
+
+		// Capture output
+		return ob_get_clean();
 	}
 
 	public function woocommerce_email_format_string_shipment_placeholders_callback( $string, $email ) {
