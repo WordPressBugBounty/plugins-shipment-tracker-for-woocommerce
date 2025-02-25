@@ -50,7 +50,10 @@
                 } else if(stripos($shipment_status,'transit')!==false){
                     
                     //shipment is either delivered or out for delivery
-                    $shipped_string = "Shipped";
+                    $shipped_string = bt_format_shipment_status($shipment_status);
+                    if(empty($shipped_string)){
+                        $shipped_string = "Shipped";
+                    }
                     $shipped_message = "Your package is on its way & will reach you soon.";
                 } else{
                     $shipped_string = bt_format_shipment_status($shipment_status);

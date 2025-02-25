@@ -11,64 +11,8 @@
     );
     $bt_tracking_form_heading_text = apply_filters( 'bt_tracking_form_heading_text', 'Take control of your deliveries<br>from the comfort of your own.');
 ?>
-<style>
-    .tracking-container {
-        display: flex;
-        flex-direction: column;
-        /* justify-content: center; */
-        align-items: center;
-        /* height: 60vh; */
-        font-family: Arial, sans-serif;
-        text-align: center;
-        /* border: 1px solid; */
-    }
 
-    .tracking-text {
-        font-size: 2rem;
-        line-height: 1.5;
-        margin-bottom: 20px;
-    }
-
-    .tracking-form-2 {
-        /* display: flex; */
-        flex-direction: column;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .tracking-input {
-        padding: 15px;
-        width: 50%;
-        border-radius:20px 0 0 20px;
-        font-size: 1rem;
-        text-align: center;
-        border: none;
-        background: #3c3c3c2b;
-    }
-
-    .tracking-button {
-        padding: 15px 20px;
-        border-radius: 0px 20px 20px 0px;
-        cursor: pointer;
-        font-size: 1rem;
-        border: none;
-        background: #005e4b;
-        color: white;
-    }
-
-    .tracking-image {
-        margin-bottom: 20px;
-    }
-
-    .tracking-image div {
-        height: 250px;
-        width: 250px;
-        background-size: cover;
-        background-position: center;
-    }
-</style>
-
-<div class="tracking-container">
+<div class="bt-sst-tracking-container bt-sst-tracking-primary-form-2">
     <div class="">
                     <?php
                         if($message){

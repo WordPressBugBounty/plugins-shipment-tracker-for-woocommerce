@@ -87,6 +87,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		 * class.
 		 */
 		wp_register_style('bt-sync-shipment-tracking-customer-shortcode-css', plugin_dir_url(__FILE__) . 'css/bt-sync-shipment-tracking-customer-shortcode.css', array(), $this->version, 'all');
+		wp_register_style('bt-sync-shipment-tracking-primery-template-form-2', plugin_dir_url(__FILE__) . 'css/bt-sync-shipment-tracking-primery-template-form-2.css', array(), $this->version, 'all');
 		wp_register_style('bt-sync-shipment-tracking-public-css', plugin_dir_url(__FILE__) . 'css/bt-sync-shipment-tracking-public.css', array(), $this->version, 'all');
 		wp_register_style('bt-sync-shipment-tracking-leaflet-css', plugin_dir_url(__FILE__) . 'css/bt-sync-shipment-tracking-leaflet.css', array(), $this->version, 'all');
 		wp_register_style('bt-shipment-tracking-timing-css', plugin_dir_url(__FILE__) . 'timer/css/bt_sst_shipment_tracker_timer.css', array(), $this->version, 'all');
@@ -2284,6 +2285,7 @@ class Bt_Sync_Shipment_Tracking_Public
 			//to be embedded in a web page
 			
 			wp_enqueue_style('bt-sync-shipment-tracking-customer-shortcode-css');
+			wp_enqueue_style('bt-sync-shipment-tracking-primery-template-form-2');
 			
 			$shipping_tracking_template = carbon_get_theme_option('bt_sst_tracking_page_template');
 			if($shipping_tracking_template=="trackingmaster" && $is_premium){
