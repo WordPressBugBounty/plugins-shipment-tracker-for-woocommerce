@@ -251,7 +251,7 @@ class Theme_Options_Container extends Container {
 	 * @return Container                      $this
 	 */
 	public function set_page_parent( $parent ) {
-		if ( is_a( $parent, static::class ) ) {
+		if ( is_a( $parent, get_class() ) ) {
 			$this->settings['parent'] = $parent->get_page_file();
 			return $this;
 		}

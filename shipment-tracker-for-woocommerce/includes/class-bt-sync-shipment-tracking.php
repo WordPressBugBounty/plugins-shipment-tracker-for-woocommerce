@@ -454,7 +454,7 @@ class Bt_Sync_Shipment_Tracking {
 		
 		$this->loader->add_action( 'bt_shipment_status_changed', $plugin_admin, 'bt_quickengage_messaging_api', 10, 3  );	
 		$this->loader->add_action( 'woocommerce_order_status_processing', $plugin_admin, 'bt_quickengage_messaging_order', 10, 1 );	
-
+		$this->loader->add_action( 'woocommerce_order_status_failed', $plugin_admin, 'bt_quickengage_messaging_order', 10, 1 );	
 	
 	}
 
@@ -736,11 +736,13 @@ class Bt_Sync_Shipment_Tracking {
 			Field::make( 'set', 'bt_sst_shipment_when_to_send_messages', __( 'When Do You Want To Send Message?' ) )
 				->set_options( array(
 					'new_order' => 'New Order',
+					'failed_order' => 'Failed Order',
 					//'out_for_pickup' => 'Out For Pickup',
 					'in_transit' => 'In Transit',
 					'out_for_delivery' => 'Out For Delivery',
 					'delivered' => 'Delivered',
 					'review_after_delivery' => 'Review After Delivery (Sent 2 hrs after delivery) (Only SMS is supported)',
+
 				) ),
 			Field::make( 'text', 'bt_sst_sms_review_url', __( 'Enter Review URL' ) )
 				->set_attribute( 'type', 'url' )
@@ -772,6 +774,7 @@ class Bt_Sync_Shipment_Tracking {
                                         <span class="select  is-medium">
                                         <select id="myselect">
                                             <option value="new-order">New Order</option>
+											<option value="failed-order">Failed Order</option>
 											<option value="in-transit"> In Transit</option>
 											<option value="out-for-delivery">Out for Delivery</option>
 											<option value="delivered">Delivered</option>

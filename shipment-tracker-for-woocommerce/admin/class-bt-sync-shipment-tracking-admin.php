@@ -1483,7 +1483,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 			$order_data = json_decode($order_data);
 			
 			$body = array(
-				"order" => $order_data,
+				"order" => (array)$order_data,
 				"shipment_current" => (array)$shipment_obj,
 				"shipment_old" => (array)$shipment_obj_old,
 				"store_name"=>$blog_title,
@@ -1548,7 +1548,12 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		if (!empty($QMessage['order'])) {
 			if (empty($QMessage['shipment_current'])) {
 				// probably a new order
-				$event_name = "new_order";
+				if($QMessage['order']['status']=="failed"){
+					$event_name = "failed_order";
+				}else{
+					$event_name = "new_order";
+				}
+				
 			} else if (empty($QMessage['shipment_old']) || 
 					   (strtolower((string)$QMessage['shipment_current']['current_status']) != strtolower((string)$QMessage['shipment_old']['current_status']))) {
 				// shipment status update
