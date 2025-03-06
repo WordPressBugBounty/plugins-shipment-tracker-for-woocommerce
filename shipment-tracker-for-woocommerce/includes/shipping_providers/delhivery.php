@@ -412,7 +412,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
             'ss' => "Delivered",
             'd_pin' => $delivery_pincode,
             'o_pin' => $pickup_pincode,
-            'cgm' => $weight_in_kg
+            'cgm' => $weight_in_kg*1000//convert to gm
         );
     
         $args = array(
