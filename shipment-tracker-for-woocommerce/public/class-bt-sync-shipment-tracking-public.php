@@ -223,6 +223,13 @@ class Bt_Sync_Shipment_Tracking_Public
 			add_action($location_hook, array($this, "show_pincode_input_box"));
 		}
 
+		// $saved_data = json_decode(get_option('bt_sst_timer_settings', '{}'), true);
+		// if(is_array($saved_data)){
+		// 	if ($saved_data['bt_sst_timer_location'] && !empty($saved_data['bt_sst_timer_location'])) {
+		// 		add_action($saved_data['bt_sst_timer_location'], array($this, "show_timer_container"));
+		// 	}
+		// }
+
 		$bt_sst_shiprocket_processing_days_location = carbon_get_theme_option('bt_sst_shiprocket_processing_days_location');
 		if ($bt_sst_shiprocket_processing_days_location && $bt_sst_shiprocket_processing_days_location !="do_not_show") {
 			add_action($bt_sst_shiprocket_processing_days_location, array($this, "bt_sst_shiprocket_processing_days_location"));
@@ -283,6 +290,13 @@ class Bt_Sync_Shipment_Tracking_Public
 				include plugin_dir_path(dirname(__FILE__)) . 'public/partials/input_box_pincode_show_data.php';
 			}
 
+		}
+	}
+
+	public function show_timer_container(){
+		$is_premium = $this->licenser->should_activate_premium_features();
+		if($is_premium){
+			echo do_shortcode('[bt_shipment_timer hours="1" minutes="30" seconds="0"]');
 		}
 	}
 
@@ -2463,8 +2477,22 @@ class Bt_Sync_Shipment_Tracking_Public
 			'bt_shipment_timer'
 		);
 
+		$saved_data = json_decode(get_option('bt_sst_timer_settings', '{}'), true);
+
+		$saved_data = array_merge([
+			'bt_sst_quill_editer_html' => 'heading',
+			'bt_sst_quill_editer_html_subheading' => 'sub heading',
+			'bt_sst_timer_location' => '',
+			'bt_sst_timer_hours' => '01',
+			'bt_sst_timer_minutes' => '59',
+			'bt_sst_timer_seconds' => '59',
+			'set_timing_cookie' => 'no',
+			'free_shipping' => 'no',
+			'discount_percentage' => '',
+		], $saved_data);
+
 		// Convert attributes to total seconds
-		$total_seconds = ($atts['hours'] * 3600) + ($atts['minutes'] * 60) + $atts['seconds'];
+		$total_seconds = ($saved_data['bt_sst_timer_hours'] * 3600) + ($saved_data['bt_sst_timer_minutes'] * 60) + $saved_data['bt_sst_timer_seconds'];
 
 		ob_start();
 		
@@ -2531,7 +2559,7 @@ class Bt_Sync_Shipment_Tracking_Public
 	public function add_track_button_to_my_orders( $actions, $order ) {
 		$bt_sst_show_tracking_now_button_myaccount_order_list = carbon_get_theme_option( 'bt_sst_show_tracking_now_button_myaccount_order_list' );
 		$is_premium = $this->licenser->should_activate_premium_features();
-		if($bt_sst_show_tracking_now_button_myaccount_order_list==1 && $is_premium){
+		if($bt_sst_show_tracking_now_button_myaccount_order_list==1){
 			$myaccount_url = wc_get_page_permalink( 'myaccount' );
 			$tracking_url = $myaccount_url . '/bt-track-order?order='.$order->get_id();
 
@@ -2553,7 +2581,7 @@ class Bt_Sync_Shipment_Tracking_Public
 	public function woocommerce_account_track_order_endpoint(){
 		$bt_sst_show_tracking_now_button_myaccount_order_list = carbon_get_theme_option( 'bt_sst_show_tracking_now_button_myaccount_order_list' );
 		$is_premium = $this->licenser->should_activate_premium_features();
-		if($bt_sst_show_tracking_now_button_myaccount_order_list==1 && $is_premium){
+		if($bt_sst_show_tracking_now_button_myaccount_order_list==1){
 			echo do_shortcode('[bt_shipping_tracking_form_2]');
 		}
 	}

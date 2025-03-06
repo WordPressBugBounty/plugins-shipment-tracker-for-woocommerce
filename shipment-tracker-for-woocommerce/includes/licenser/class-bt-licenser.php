@@ -30,12 +30,14 @@ class Bt_Licenser {
 		if ( ! is_wp_error( $response ) ) {
 			$body     = wp_remote_retrieve_body( $response );
 			$resp = json_decode($body,true);
-			if($resp["status"]){
+			if(isset($resp["status"]) && $resp["status"]){
 				$r["status"] = true;
 				$r["message"] = $resp["data"];
-			}else{
-				
+			}else if(isset($resp["error"]["message"])){
 				$r["message"] = $resp["error"]["message"];
+				$r["status"] = false;
+			}else{
+				$r = null;//probably api error, do nothing.
 			}
 		}else{
 			$r = null;//probably api error, do nothing.

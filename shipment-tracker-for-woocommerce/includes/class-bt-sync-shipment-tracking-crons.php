@@ -28,7 +28,7 @@ class Bt_Sync_Shipment_Tracking_Crons {
     public function schedule_recurring_events(){
 
         if (! wp_next_scheduled( self::BT_MINUTELY_JOB ) ) {
-            // wp_schedule_event( time(), 'minutely', self::BT_MINUTELY_JOB );
+             wp_schedule_event( time(), 'minutely', self::BT_MINUTELY_JOB );
         }
 
         if (! wp_next_scheduled( self::BT_15MINS_JOB ) ) {
@@ -126,20 +126,42 @@ class Bt_Sync_Shipment_Tracking_Crons {
         return $order_ids;
     }
     
-	
+	private $validating_license=false;
     public function validate_license(){
+        if($this->validating_license){
+            return;
+        }   
+        $this->validating_license=true;
+
         $license = $this->licenser->get_license();
-        if($license!=null && isset($license['is_active']) && $license['is_active']==true){
+        if($license!=null && isset($license['user']) && $license['password']==true){
             //revalidate from api
             $user=$license['user'];
             $password=$license['password'];
             $received_data = $this->licenser->get_premium_user_data_by_user_password($user, $password);
 		
             if(isset($received_data['status']) && $received_data['status']==true) {
+                delete_option('bt_sst_premium_grace_start_time');
                 $this->licenser->save_license($user, $password, true);
             }else if(isset($received_data['status'])  && $received_data['status']==false){
                 //license is not active, save to db
-                $this->licenser->save_license($user, $password, false);
+                //let this fail for up to 3 days
+                //show warning to user for 3 days
+                //after 3 days, deactivate license
+                //keep showing error to user that license has been deactivated
+                //if user renews license, then activate it again
+
+                $bt_sst_premium_grace_start_time = get_option('bt_sst_premium_grace_start_time',false);
+                if($bt_sst_premium_grace_start_time===false){
+                    $bt_sst_premium_grace_start_time = time();
+                    update_option('bt_sst_premium_grace_start_time',$bt_sst_premium_grace_start_time);
+                }
+                $grace_period = 3*24*60*60;
+                $time_elapsed = time()-$bt_sst_premium_grace_start_time;
+                if($time_elapsed>$grace_period){
+                    delete_option('bt_sst_premium_grace_start_time');
+                    $this->licenser->save_license($user, $password, false);
+                }
             }
 		
         }else{
@@ -170,6 +192,9 @@ class Bt_Sync_Shipment_Tracking_Crons {
     }
 
     private function do_sync($cron_freq){
+        if($cron_freq=="1mins"){
+            $this->validate_license();
+        }
         $is_premium = $this->licenser->is_license_active();
         if(!$is_premium){
             return;

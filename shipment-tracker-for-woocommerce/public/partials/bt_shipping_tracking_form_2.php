@@ -634,7 +634,7 @@ if(empty($bt_sst_review_subheading_text)){
 
     <?php
     $bt_sst_navigation_map = carbon_get_theme_option('bt_sst_navigation_map');
-    if($bt_sst_navigation_map == 'yes' && $the_order && ($delivery_pincode || $pickup_pincode)): 
+    if($bt_sst_navigation_map == 'yes' && $the_order && (isset($delivery_pincode) || isset($pickup_pincode))): 
         wp_enqueue_script('bt-sync-shipment-tracking-leaflet');
         wp_enqueue_script('bt-sync-shipment-tracking-mapRender');
         wp_enqueue_style('bt-sync-shipment-tracking-leaflet-css');

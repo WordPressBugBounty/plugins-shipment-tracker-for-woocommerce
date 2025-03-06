@@ -2419,10 +2419,14 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	
 	function add_product_cat_processing_time_shipping_field( $term ) {
 
+		
 		//$enabled_shipping_providers = carbon_get_theme_option( 'bt_sst_enabled_shipping_providers' );
         //if(is_array($enabled_shipping_providers) && in_array('shiprocket',$enabled_shipping_providers)){
 			// Get existing value for editing
-			$value = get_term_meta( $term->term_id, '_bt_sst_product_category_processing_days_field', true );
+			$value = "";
+			if($term instanceof WP_Term){
+				$value = get_term_meta( $term->term_id, '_bt_sst_product_category_processing_days_field', true );
+			}
 
 			?>
 			<tr class="form-field">
