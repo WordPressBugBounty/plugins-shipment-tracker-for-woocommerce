@@ -223,12 +223,12 @@ class Bt_Sync_Shipment_Tracking_Public
 			add_action($location_hook, array($this, "show_pincode_input_box"));
 		}
 
-		// $saved_data = json_decode(get_option('bt_sst_timer_settings', '{}'), true);
-		// if(is_array($saved_data)){
-		// 	if ($saved_data['bt_sst_timer_location'] && !empty($saved_data['bt_sst_timer_location'])) {
-		// 		add_action($saved_data['bt_sst_timer_location'], array($this, "show_timer_container"));
-		// 	}
-		// }
+		$saved_data = json_decode(get_option('bt_sst_timer_settings', '{}'), true);
+		if(is_array($saved_data)){
+			if ($saved_data['bt_sst_timer_location'] && !empty($saved_data['bt_sst_timer_location'])) {
+				add_action($saved_data['bt_sst_timer_location'], array($this, "show_timer_container"));
+			}
+		}
 
 		$bt_sst_shiprocket_processing_days_location = carbon_get_theme_option('bt_sst_shiprocket_processing_days_location');
 		if ($bt_sst_shiprocket_processing_days_location && $bt_sst_shiprocket_processing_days_location !="do_not_show") {

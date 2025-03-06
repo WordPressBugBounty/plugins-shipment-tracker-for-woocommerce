@@ -459,7 +459,7 @@ class Block_Container extends Container {
 	 * Returns the block type name, e.g. "carbon-fields/testimonial"
 	 */
 	private function get_block_type_name() {
-		return str_ireplace( 'carbon-fields-container-', 'carbon-fields/', str_ireplace( '_', '-', $this->id ) );
+		return str_replace( 'carbon-fields-container-', 'carbon-fields/', str_replace( '_', '-', $this->id ) );
 	}
 
 	/**

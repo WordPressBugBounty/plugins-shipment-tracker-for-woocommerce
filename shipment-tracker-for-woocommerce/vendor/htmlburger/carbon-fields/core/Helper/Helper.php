@@ -392,7 +392,7 @@ class Helper {
 		$label = preg_replace( '~^crb_~', '', $label );
 
 		// split the name into words and make them capitalized
-		$label = mb_convert_case( str_ireplace( '_', ' ', $label ), MB_CASE_TITLE );
+		$label = mb_convert_case( str_replace( '_', ' ', $label ), MB_CASE_TITLE );
 
 		return $label;
 	}
@@ -404,7 +404,7 @@ class Helper {
 	 * @return string
 	 */
 	public static function normalize_type( $type ) {
-		$normalized_type = str_ireplace( ' ', '_', $type );
+		$normalized_type = str_replace( ' ', '_', $type );
 		$normalized_type = preg_replace( '/[_\s]+/', '_', $normalized_type );
 		$normalized_type = preg_replace( '/^_|_$/', '', $normalized_type );
 		$normalized_type = strtolower( $normalized_type );
@@ -421,9 +421,9 @@ class Helper {
 	 */
 	public static function type_to_class( $type, $namespace = '', $class_suffix = '' ) {
 		$classlike_type = static::normalize_type( $type );
-		$classlike_type = str_ireplace( '_', ' ', $classlike_type );
+		$classlike_type = str_replace( '_', ' ', $classlike_type );
 		$classlike_type = ucwords( $classlike_type );
-		$classlike_type = str_ireplace( ' ', '_', $classlike_type );
+		$classlike_type = str_replace( ' ', '_', $classlike_type );
 
 		$class = $classlike_type . $class_suffix;
 		if ( $namespace ) {

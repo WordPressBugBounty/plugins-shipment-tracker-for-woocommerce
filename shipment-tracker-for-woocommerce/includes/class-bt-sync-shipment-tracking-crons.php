@@ -28,7 +28,7 @@ class Bt_Sync_Shipment_Tracking_Crons {
     public function schedule_recurring_events(){
 
         if (! wp_next_scheduled( self::BT_MINUTELY_JOB ) ) {
-             wp_schedule_event( time(), 'minutely', self::BT_MINUTELY_JOB );
+           //  wp_schedule_event( time(), 'minutely', self::BT_MINUTELY_JOB );
         }
 
         if (! wp_next_scheduled( self::BT_15MINS_JOB ) ) {
@@ -192,7 +192,7 @@ class Bt_Sync_Shipment_Tracking_Crons {
     }
 
     private function do_sync($cron_freq){
-        if($cron_freq=="1mins"){
+        if($cron_freq=="24hours"){
             $this->validate_license();
         }
         $is_premium = $this->licenser->is_license_active();
