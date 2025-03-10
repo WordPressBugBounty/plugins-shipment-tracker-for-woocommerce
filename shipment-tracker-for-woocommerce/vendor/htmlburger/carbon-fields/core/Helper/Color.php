@@ -15,7 +15,7 @@ class Color {
 	 * @return array
 	 */
 	public static function hex_to_rgba( $hex ) {
-		$hex = str_ireplace( '#', '', $hex );
+		$hex = str_replace( '#', '', $hex );
 		$hex = strlen( $hex ) > 6 ? $hex : $hex . 'FF';
 
 		$int = hexdec( $hex );

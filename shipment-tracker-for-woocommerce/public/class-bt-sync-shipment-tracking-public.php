@@ -1905,7 +1905,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					// It wasn't there, so regenerate the data and save the transient
 					$bt_sst_cached_delivery_estimates_delhivery = array();
 				}
-				$bt_sst_cached_delivery_estimates_delhivery = array();
+				//$bt_sst_cached_delivery_estimates_delhivery = array();
 				if($delivery_country == "IN"){
 					$pickup_pincode = carbon_get_theme_option( "bt_sst_delhivery_pincodepickup" );
 

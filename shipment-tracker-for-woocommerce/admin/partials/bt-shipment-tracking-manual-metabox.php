@@ -39,9 +39,7 @@
 <p class="form-field ">
     <?php
     if (class_exists('WooCommerce')) {
-        require_once ABSPATH . 'wp-content/plugins/woocommerce/includes/admin/wc-meta-box-functions.php';
-    }
-    
+        require_once WC_ABSPATH  . 'wp-content/plugins/woocommerce/includes/admin/wc-meta-box-functions.php';
         woocommerce_wp_select([
             'class'             => 'select short',
             'style'             => 'width:100%;',
@@ -51,6 +49,7 @@
             'value'    => isset($bt_shipment_tracking['current_status'])?$bt_shipment_tracking['current_status']:"",
             'options' => apply_filters( 'bt_sst_shipping_statuses', BT_SHIPPING_STATUS )
         ]);
+    }
 // echo "<pre>"; print_r($bt_shipment_tracking); die;
 	?>
 </p>
