@@ -39,7 +39,7 @@
 <p class="form-field ">
     <?php
     if (class_exists('WooCommerce')) {
-        require_once WC_ABSPATH  . 'wp-content/plugins/woocommerce/includes/admin/wc-meta-box-functions.php';
+        require_once WC_ABSPATH  . 'includes/admin/wc-meta-box-functions.php';
         woocommerce_wp_select([
             'class'             => 'select short',
             'style'             => 'width:100%;',
