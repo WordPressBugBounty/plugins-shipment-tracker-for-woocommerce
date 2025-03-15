@@ -20,6 +20,105 @@
     }
 ?>
 
+    <style>
+        /* Button styling */
+        #bt_sst_add_curent_status_popup {
+          
+        }
+
+
+        /* Modal styles */
+        #bt_sst_current_status_container_modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .bt_sst_current_status_container_modal_content {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            position: relative;
+            text-align: center;
+            margin: auto;
+        }
+
+        /* Close button */
+        #bt_sst_current_status_container_close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        /* Input fields */
+        .bt_sst_current_status_container_input {
+            width: 50%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* Footer buttons */
+        .bt_sst_current_status_container_footer {
+            margin-top: 15px;
+        }
+
+        .bt_sst_current_status_container_footer button {
+            padding: 10px;
+            margin: 5px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .bt_sst_current_status_container_field{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .bt_sst_current_status_container_field label{
+            width: 30%;
+        }
+    </style>
+    <div id="bt_sst_current_status_container_modal">
+        <div class="bt_sst_current_status_container_modal_content">
+            <button type="button" id="bt_sst_current_status_container_close">&times;</button>
+            <h2>Set Current Location</h2>
+            
+
+            <div class="bt_sst_current_status_container_field">
+                <label for="bt_sst_current_status_container_address">Location : </label>
+                <input value="<?php echo isset($bt_shipment_tracking['current_address']) ? $bt_shipment_tracking['current_address'] : ''; ?>" id="bt_sst_current_status_container_address" class="bt_sst_current_status_container_input" type="text" placeholder="Enter warehouse or location name">
+            </div>
+
+            <div class="bt_sst_current_status_container_field">
+                <label for="bt_sst_current_status_container_country">Country : </label>
+                <input value="<?php echo isset($bt_shipment_tracking['current_country']) ? $bt_shipment_tracking['current_country'] : ''; ?>" id="bt_sst_current_status_container_country" class="bt_sst_current_status_container_input" type="text" placeholder="Enter country">
+            </div>
+
+            <div class="bt_sst_current_status_container_field">
+                <label for="bt_sst_current_status_container_pincode">Pincode : </label>
+                <input value="<?php echo isset($bt_shipment_tracking['current_pincode']) ? $bt_shipment_tracking['current_pincode'] : ''; ?>" id="bt_sst_current_status_container_pincode" class="bt_sst_current_status_container_input" type="text" placeholder="Enter pincode">
+            </div>
+            <div class="bt_sst_current_status_container_footer">
+                <button type="button" id="bt_sst_current_status_container_save" class="bt_sst_current_status_container_save">Ok</button>
+                <button type="button" id="bt_sst_current_status_container_cancel" class="bt_sst_current_status_container_cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+
+
 <input type="hidden" name="order_id" value="<?php echo esc_attr( $order_id ) ?>"/>
 <p class="form-field ">
     <label for="bt_manual_awb_number">AWB Number *</label><br>
@@ -37,12 +136,14 @@
     <button id="bt_sst_add_coriures" type="button" style="box-sizing: border-box;float: right;" class="button">+</button>  
 </p>
 <p class="form-field ">
+
+
     <?php
     if (class_exists('WooCommerce')) {
         require_once WC_ABSPATH  . 'includes/admin/wc-meta-box-functions.php';
         woocommerce_wp_select([
             'class'             => 'select short',
-            'style'             => 'width:100%;',
+            'style'             => 'width:80%;',
             'id'       => 'bt_manual_shipping_status',
             'label'    => __( 'Shipping Status *', 'woocommerce' ),
             'selected' => true,
@@ -52,6 +153,14 @@
     }
 // echo "<pre>"; print_r($bt_shipment_tracking); die;
 	?>
+</p>
+<p class="form-field ">
+    <button id="bt_sst_add_curent_status_popup" type="button" class="button">Set Current Location (for map)</button>  
+</p>
+<p class="form-field bt_sst_current_saved_data">
+    <span><?php echo $bt_shipment_tracking['current_address'] ?></span>
+    <span><?php echo " ".$bt_shipment_tracking['current_country']." "; ?></span>
+    <span><?php echo $bt_shipment_tracking['current_pincode'] ?></span>
 </p>
 <p class="form-field ">
     <label for="bt_manual_etd">Estimated Delivery Date</label><br>
@@ -97,6 +206,9 @@ include plugin_dir_path(__FILE__).'bt-shipment-tracker-get-and-save-couriers.php
                 'order_id': '<?php echo esc_js($order_id); ?>',
                 'courier_name': bt_manual_courier_name,
                 'awb_number':  jQuery('#bt_manual_awb_number').val(),
+                'current_address':  jQuery('#bt_sst_current_status_container_address').val(),
+                'current_country':  jQuery('#bt_sst_current_status_container_country').val(),
+                'current_pincode':  jQuery('#bt_sst_current_status_container_pincode').val(),
                 'shipping_status': jQuery('#bt_manual_shipping_status').val(),
                 'etd': jQuery('#bt_manual_etd').val(),
                 'tracking_link': jQuery('#bt_manual_tracking_link').val(),
@@ -118,6 +230,30 @@ include plugin_dir_path(__FILE__).'bt-shipment-tracker-get-and-save-couriers.php
         });
     });
     jQuery(document).ready(function($) {
+
+        $('#bt_sst_add_curent_status_popup').click(function () {
+            
+            $('#bt_sst_current_status_container_modal').css('display',"flex");
+        });
+
+        // Close popup
+        $('#bt_sst_current_status_container_close, #bt_sst_current_status_container_cancel').click(function () {
+            // jQuery('#bt_sst_current_status_container_address').val("");
+            // jQuery('#bt_sst_current_status_container_country').val("");
+            // jQuery('#bt_sst_current_status_container_pincode').val("");
+            jQuery(".bt_sst_current_saved_data").html("")
+
+            $('#bt_sst_current_status_container_modal').fadeOut();
+        });
+        $('#bt_sst_current_status_container_save').click(function () {
+            var adress_value = jQuery('#bt_sst_current_status_container_address').val();
+            var country_value = jQuery('#bt_sst_current_status_container_country').val();
+            var pincode_value = jQuery('#bt_sst_current_status_container_pincode').val();
+            jQuery(".bt_sst_current_saved_data").html("<span>"+adress_value+"</span><span> "+country_value+"</span><span> "+pincode_value+"</span>")
+            $('#bt_sst_current_status_container_modal').fadeOut();
+        });
+
+
         var copyAnchor = jQuery('.bt-sst-copy-link-anchor');
         var urlElement = jQuery('.bt_sst_website_order_tracking_url');
         // var tempInput = jQuery('.bt_sst_website_order_tracking_url:first').text();

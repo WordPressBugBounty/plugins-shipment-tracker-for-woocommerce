@@ -1,12 +1,14 @@
 <?php
 
-
 class Bt_Sync_Shipment_Tracking_Shipment_Model{
 
     public $shipping_provider;
     public $order_id;
     public $awb;
     public $current_status;
+    public $current_address;
+    public $current_country;
+    public $current_pincode;
     public $courier_name;
     public $etd;
     public $scans;
@@ -86,10 +88,17 @@ class Bt_Sync_Shipment_Tracking_Shipment_Model{
                     $manual_tracking_url = 'https://' . $this->tracking_url;
                 }
                // $manual_tracking_url = strtolower($manual_tracking_url); do not lower case, causes issue for some couriers.
-                $manual_tracking_url = str_ireplace('#awb#', $this->awb, $manual_tracking_url);
-                $manual_tracking_url = str_ireplace('#orderid#', $this->order_id, $manual_tracking_url);
-                $manual_tracking_url = str_ireplace('{awb}', $this->awb, $manual_tracking_url);
-                $manual_tracking_url = str_ireplace('{orderid}', $this->order_id, $manual_tracking_url);
+               $manual_tracking_url = isset($manual_tracking_url) ? $manual_tracking_url : '';
+               $awb = isset($this->awb) ? $this->awb : '';
+               $order_id = isset($this->order_id) ? $this->order_id : '';
+               
+               //Uses arrays to replace all placeholders in a single str_ireplace() call.
+               $search = array('#awb#', '#orderid#', '{awb}', '{orderid}');
+               $replace = array($awb, $order_id, $awb, $order_id);
+               
+               $manual_tracking_url = str_ireplace($search, $replace, $manual_tracking_url);
+
+               
                 return $manual_tracking_url;
             }
 

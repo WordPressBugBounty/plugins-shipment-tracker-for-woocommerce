@@ -73,8 +73,12 @@ if(empty($bt_sst_review_subheading_text)){
             $show_delivery_states = true;
             $current_step = 2; //orderplaced=1, shipped=2, outfordelivery=3, delivered=4
           
+            $currentPin = "";
+            $currentCountry = "";
+
             $delivery_status = "";
             if(!empty($tracking['tracking_data']['awb']) && $order_status!='cancelled' && $order_status!='on-hold' && $order_status!='pending' && $order_status!='refunded' && $order_status!='failed' && $order_status!='checkout-draft'){
+
                 $awb_number = $tracking['tracking_data']['awb'];
                 $estimated_delivery_date = $tracking['tracking_data']['etd'];
                 $shipment_status = $tracking['tracking_data']['current_status'];
@@ -634,6 +638,10 @@ if(empty($bt_sst_review_subheading_text)){
 
     <?php
     $bt_sst_navigation_map = carbon_get_theme_option('bt_sst_navigation_map');
+    if($pickup_pincode != $currentPin && $delivery_pincode != $currentPin){
+        $currentPin = isset($tracking['tracking_data']['current_pincode']) ? $tracking['tracking_data']['current_pincode'] : "";
+        $currentCountry = isset($tracking['tracking_data']['current_country']) ? $tracking['tracking_data']['current_country'] : "";
+    }
     if($bt_sst_navigation_map == 'yes' && $the_order && (isset($delivery_pincode) || isset($pickup_pincode))): 
         wp_enqueue_script('bt-sync-shipment-tracking-leaflet');
         wp_enqueue_script('bt-sync-shipment-tracking-mapRender');
@@ -649,8 +657,11 @@ if(empty($bt_sst_review_subheading_text)){
             var deliveryMessage = `<?php echo esc_js($estimated_delivery_date); ?>`;
             var base_country = '<?php echo esc_js($base_country); ?>';
             var delivery_country = '<?php echo esc_js($delivery_country); ?>';
+            var currentPin = '<?php echo esc_js($currentPin); ?>';
+            var current_country = '<?php echo esc_js($currentCountry); ?>';
+            var currentMessage = '<?php echo esc_js($currentCountry." (".$shipment_status.")"); ?>';
        
-            window.plotMap(dropoffPin, pickupPin, deliveryMessage,pickupMessage, base_country, delivery_country);
+            window.plotMap(dropoffPin, pickupPin, deliveryMessage,pickupMessage, base_country, delivery_country, currentPin, currentMessage, current_country);
         
         }
         document.addEventListener("DOMContentLoaded", function(event) {
