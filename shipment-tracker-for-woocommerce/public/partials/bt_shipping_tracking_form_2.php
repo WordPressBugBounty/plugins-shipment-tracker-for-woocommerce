@@ -1,8 +1,8 @@
-<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> -->
-<!-- <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" /> -->
-<!-- <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script> -->
-
 <?php
+$pickup_pincode = ''; 
+$currentPin = "";
+$delivery_pincode = "";
+
 $public_dir_url = plugin_dir_url(dirname(__FILE__));
 $last_four_digit = carbon_get_theme_option('bt_sst_valid_phone_no');
 if(is_user_logged_in() && isset($_GET["order"])){

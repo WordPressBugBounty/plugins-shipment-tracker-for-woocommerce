@@ -40,12 +40,14 @@
             align-items: center;
             z-index: 9999;
         }
+
         .bt_sst_current_status_container_modal_content {
+            width: 500px;
             background: white;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 15px;
             position: relative;
-            text-align: center;
+            /* text-align: center; */
             margin: auto;
         }
 
@@ -62,7 +64,7 @@
 
         /* Input fields */
         .bt_sst_current_status_container_input {
-            width: 50%;
+            /* width: 50%; */
             padding: 10px;
             margin: 10px 0;
             border: 1px solid #ccc;
@@ -70,47 +72,100 @@
         }
 
         /* Footer buttons */
-        .bt_sst_current_status_container_footer {
+        /* .bt_sst_current_status_container_footer {
             margin-top: 15px;
-        }
+        } */
 
-        .bt_sst_current_status_container_footer button {
+        /* .bt_sst_current_status_container_footer button {
             padding: 10px;
             margin: 5px;
             border: none;
             cursor: pointer;
             border-radius: 5px;
-        }
-        .bt_sst_current_status_container_field{
+        } */
+        /* .bt_sst_field{
             display: flex;
             justify-content: center;
             align-items: center;
-        }
-        .bt_sst_current_status_container_field label{
+        } */
+        /* .bt_sst_field label{
             width: 30%;
+        } */
+        .bt_sst_field {
+            margin-bottom: 15px;
+        }
+
+        .bt_sst_field label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .bt_sst_field input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .bt_sst_field select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .bt_sst_field button {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .bt_sst_field button:hover {
+            background-color: #0056b3;
         }
     </style>
     <div id="bt_sst_current_status_container_modal">
         <div class="bt_sst_current_status_container_modal_content">
             <button type="button" id="bt_sst_current_status_container_close">&times;</button>
-            <h2>Set Current Location</h2>
+            <h3>Set Current Location</h3>
+            <input id="bt_ss_map_input_current_address" type="hidden" value="<?php echo isset($bt_shipment_tracking['current_address']) ? $bt_shipment_tracking['current_address'] : ''; ?>">
+            <input id="bt_ss_map_input_current_country" type="hidden" value="<?php echo isset($bt_shipment_tracking['current_country']) ? $bt_shipment_tracking['current_country'] : ''; ?>">
+            <input id="bt_ss_map_input_current_pincode" type="hidden" value="<?php echo isset($bt_shipment_tracking['current_pincode']) ? $bt_shipment_tracking['current_pincode'] : ''; ?>">
             
+            <!-- <div class="bt_sst_field">
+                <label for="bt_sst_current_status_container_country">Country : </label>
+                <input value="<?php echo isset($bt_shipment_tracking['current_country']) ? $bt_shipment_tracking['current_country'] : ''; ?>" id="bt_sst_current_status_container_country" class="bt_sst_current_status_container_input" type="text" placeholder="Enter country">
+            </div> -->
+            <div class="bt_sst_field">
+                <label for="bt_sst_current_status_container_country">Country:</label>
+                <select id="bt_sst_current_status_container_country" class="bt_sst_current_status_container_input" name="bt_sst_current_status_container_country">
+                    <option value=""><?php _e('Select a Country', 'woocommerce'); ?></option>
+                    <?php
+                    $countries = WC()->countries->get_countries();
+                    $selected_country = isset($bt_shipment_tracking['current_country']) ? $bt_shipment_tracking['current_country'] : '';
 
-            <div class="bt_sst_current_status_container_field">
+                    foreach ($countries as $code => $name) {
+                        echo '<option value="' . esc_attr($code) . '" ' . selected($selected_country, $code, false) . '>' . esc_html($name) . '</option>';
+                    }
+                    ?>
+                </select>
+            </div>
+
+
+            <div class="bt_sst_field">
                 <label for="bt_sst_current_status_container_address">Location : </label>
                 <input value="<?php echo isset($bt_shipment_tracking['current_address']) ? $bt_shipment_tracking['current_address'] : ''; ?>" id="bt_sst_current_status_container_address" class="bt_sst_current_status_container_input" type="text" placeholder="Enter warehouse or location name">
             </div>
 
-            <div class="bt_sst_current_status_container_field">
-                <label for="bt_sst_current_status_container_country">Country : </label>
-                <input value="<?php echo isset($bt_shipment_tracking['current_country']) ? $bt_shipment_tracking['current_country'] : ''; ?>" id="bt_sst_current_status_container_country" class="bt_sst_current_status_container_input" type="text" placeholder="Enter country">
-            </div>
-
-            <div class="bt_sst_current_status_container_field">
-                <label for="bt_sst_current_status_container_pincode">Pincode : </label>
+            <div class="bt_sst_field">
+                <label for="bt_sst_current_status_container_pincode">Pincode* : </label>
                 <input value="<?php echo isset($bt_shipment_tracking['current_pincode']) ? $bt_shipment_tracking['current_pincode'] : ''; ?>" id="bt_sst_current_status_container_pincode" class="bt_sst_current_status_container_input" type="text" placeholder="Enter pincode">
             </div>
-            <div class="bt_sst_current_status_container_footer">
+            <div class="bt_sst_current_status_container_footer bt_sst_field">
                 <button type="button" id="bt_sst_current_status_container_save" class="bt_sst_current_status_container_save">Ok</button>
                 <button type="button" id="bt_sst_current_status_container_cancel" class="bt_sst_current_status_container_cancel">Cancel</button>
             </div>
@@ -196,6 +251,7 @@ include plugin_dir_path(__FILE__).'bt-shipment-tracker-get-and-save-couriers.php
              alert('AWB is required');
              return false;
         }
+
         jQuery('#bt_manual_save').addClass("disabled");
         jQuery('#bt_sync-box .spinner').addClass("is-active");
         jQuery.ajax({
@@ -206,9 +262,9 @@ include plugin_dir_path(__FILE__).'bt-shipment-tracker-get-and-save-couriers.php
                 'order_id': '<?php echo esc_js($order_id); ?>',
                 'courier_name': bt_manual_courier_name,
                 'awb_number':  jQuery('#bt_manual_awb_number').val(),
-                'current_address':  jQuery('#bt_sst_current_status_container_address').val(),
-                'current_country':  jQuery('#bt_sst_current_status_container_country').val(),
-                'current_pincode':  jQuery('#bt_sst_current_status_container_pincode').val(),
+                'current_address':  jQuery('#bt_ss_map_input_current_address').val(),
+                'current_country':  jQuery('#bt_ss_map_input_current_country').val(),
+                'current_pincode':  jQuery('#bt_ss_map_input_current_pincode').val(),
                 'shipping_status': jQuery('#bt_manual_shipping_status').val(),
                 'etd': jQuery('#bt_manual_etd').val(),
                 'tracking_link': jQuery('#bt_manual_tracking_link').val(),
@@ -249,6 +305,9 @@ include plugin_dir_path(__FILE__).'bt-shipment-tracker-get-and-save-couriers.php
             var adress_value = jQuery('#bt_sst_current_status_container_address').val();
             var country_value = jQuery('#bt_sst_current_status_container_country').val();
             var pincode_value = jQuery('#bt_sst_current_status_container_pincode').val();
+            jQuery('#bt_ss_map_input_current_address').val(adress_value),
+            jQuery('#bt_ss_map_input_current_country').val(country_value),
+            jQuery('#bt_ss_map_input_current_pincode').val(pincode_value),
             jQuery(".bt_sst_current_saved_data").html("<span>"+adress_value+"</span><span> "+country_value+"</span><span> "+pincode_value+"</span>")
             $('#bt_sst_current_status_container_modal').fadeOut();
         });

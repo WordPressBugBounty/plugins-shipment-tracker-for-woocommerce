@@ -1,4 +1,8 @@
 <?php
+$pickup_pincode = ''; 
+$currentPin = "";
+$delivery_pincode = "";
+
 $public_dir_url = plugin_dir_url(dirname(__FILE__));
 $last_four_digit = carbon_get_theme_option('bt_sst_valid_phone_no');
 if(is_user_logged_in() && isset($_GET["order"])){

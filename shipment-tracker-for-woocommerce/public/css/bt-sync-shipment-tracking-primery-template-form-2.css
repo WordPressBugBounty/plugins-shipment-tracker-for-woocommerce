@@ -31,6 +31,7 @@
     border: none;
     background: #3c3c3c2b;
     height: unset;
+    line-height: unset;
 }
 
 .bt-sst-tracking-container.bt-sst-tracking-primary-form-2 .tracking-button {
@@ -43,6 +44,7 @@
     color: white;
     line-height: unset;
     text-transform: unset;
+    height: unset;
 }
 
 .bt-sst-tracking-container.bt-sst-tracking-primary-form-2 .tracking-image {
