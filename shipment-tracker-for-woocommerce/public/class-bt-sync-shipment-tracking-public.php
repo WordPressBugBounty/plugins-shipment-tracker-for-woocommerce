@@ -1005,6 +1005,11 @@ class Bt_Sync_Shipment_Tracking_Public
 				if ($product_processing_days) {
 					$processing_days = $product_processing_days;
 				} else {
+					$product = wc_get_product($product_id);
+
+					if ($product->is_type('variation')) {
+						$product_id = $product->get_parent_id();
+					}
 					$product_categories = wp_get_post_terms($product_id, 'product_cat');
 					foreach ($product_categories as $category) {
 						$category_processing_days = get_term_meta($category->term_id, '_bt_sst_product_category_processing_days_field', true);

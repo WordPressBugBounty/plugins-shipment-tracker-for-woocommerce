@@ -194,18 +194,18 @@
 
 
     <?php
-    if (class_exists('WooCommerce')) {
-        require_once WC_ABSPATH  . 'includes/admin/wc-meta-box-functions.php';
-        woocommerce_wp_select([
-            'class'             => 'select short',
-            'style'             => 'width:80%;',
-            'id'       => 'bt_manual_shipping_status',
-            'label'    => __( 'Shipping Status *', 'woocommerce' ),
-            'selected' => true,
-            'value'    => isset($bt_shipment_tracking['current_status'])?$bt_shipment_tracking['current_status']:"",
-            'options' => apply_filters( 'bt_sst_shipping_statuses', BT_SHIPPING_STATUS )
-        ]);
-    }
+if ( class_exists('WooCommerce') && function_exists('woocommerce_wp_select') ) {
+    woocommerce_wp_select([
+        'class'    => 'select short',
+        'style'    => 'width:80%;',
+        'id'       => 'bt_manual_shipping_status',
+        'label'    => __( 'Shipping Status *', 'woocommerce' ),
+        'selected' => true,
+        'value'    => isset($bt_shipment_tracking['current_status']) ? $bt_shipment_tracking['current_status'] : "",
+        'options'  => apply_filters( 'bt_sst_shipping_statuses', BT_SHIPPING_STATUS )
+    ]);
+}
+
 // echo "<pre>"; print_r($bt_shipment_tracking); die;
 	?>
 </p>

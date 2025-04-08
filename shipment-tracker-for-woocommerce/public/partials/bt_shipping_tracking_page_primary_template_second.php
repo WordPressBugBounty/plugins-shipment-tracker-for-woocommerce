@@ -9,7 +9,7 @@
         'p'      => array(),
         'br'     => array(),
     );
-    $bt_tracking_form_heading_text = apply_filters( 'bt_tracking_form_heading_text', 'Take control of your deliveries<br>from the comfort of your own.');
+    $bt_tracking_form_heading_text = apply_filters( 'bt_tracking_form_heading_text', 'Take control of your deliveries<br>from the comfort of your home.');
 ?>
 
 <div class="bt-sst-tracking-container bt-sst-tracking-primary-form-2">
@@ -21,7 +21,7 @@
                     ?>
     </div>
     <div class="tracking-image">
-        <div style="background-image: url('<?php echo plugin_dir_url(dirname(__FILE__)) . 'images/pngegg.png'; ?>');"></div>
+        <div style="background-image: url('<?php echo plugin_dir_url(dirname(__FILE__)) . 'images/33333d88-8e5d-47d0-9666-b29ae3eac88b.png'; ?>');"></div>
     </div>
     
     <div class="tracking-text">

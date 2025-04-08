@@ -17,6 +17,10 @@ $bt_sst_review_subheading_text = carbon_get_theme_option('bt_sst__subheading_tex
 if(empty($bt_sst_review_subheading_text)){
     $bt_sst_review_subheading_text = "Rate your experience.";
 }
+$shipping_provider="";
+if($tracking && isset($tracking['tracking_data'])){
+    $shipping_provider = strtolower($tracking['tracking_data']['shipping_provider']);
+}                            
 ?>
 <div class="snipcss0-0-0-1 snipcss-GDYrP obscure-kzaezq7Gp">
     
@@ -414,9 +418,7 @@ if(empty($bt_sst_review_subheading_text)){
                                 <div class="fl-module-content fl-node-content">
                                     <h6 class="fl-heading"> -->
                                         <div>
-                                            <?php
-                                                $shipping_provider = strtolower($tracking['tracking_data']['shipping_provider']);
-                                            ?>
+                                            
                                             <?php if($shipping_provider=="delhivery" && isset($tracking['tracking_data']['scans']) && sizeof($tracking['tracking_data']['scans'])>0){ ?>
                                                 <div class="bt_sst_tracking_product_trackong">
                                                 <input type="checkbox" id="toggle" class="bt_sst_toggle-checkbox">
@@ -622,7 +624,7 @@ if(empty($bt_sst_review_subheading_text)){
     <?php
     $bt_sst_navigation_map = carbon_get_theme_option('bt_sst_navigation_map');
 
-    if($pickup_pincode != $currentPin && $delivery_pincode != $currentPin){
+    if($shipping_provider == 'manual' && $pickup_pincode != $currentPin && $delivery_pincode != $currentPin){
         $currentPin = isset($tracking['tracking_data']['current_pincode']) ? $tracking['tracking_data']['current_pincode'] : "";
         $currentCountry = isset($tracking['tracking_data']['current_country']) ? $tracking['tracking_data']['current_country'] : "";
     }

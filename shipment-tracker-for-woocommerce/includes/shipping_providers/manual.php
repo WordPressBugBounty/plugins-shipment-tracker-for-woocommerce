@@ -63,7 +63,14 @@ class Bt_Sync_Shipment_Tracking_Manual {
         }        
         $obj->scans = is_array($bt_shipment_tracking_old->scans) ? $bt_shipment_tracking_old->scans : [];
 
-        $obj->scans[] =   $obj;
+        $obj->scans[] =   array(
+            'date' => date('Y-m-d H:i:s'),
+            'status' => $obj->current_status,
+            'location' => $obj->current_address,
+            'country' => $obj->current_country,
+            'pincode' => $obj->current_pincode,
+            'etd' => $obj->etd,
+        );
         return $obj;
     }
 
