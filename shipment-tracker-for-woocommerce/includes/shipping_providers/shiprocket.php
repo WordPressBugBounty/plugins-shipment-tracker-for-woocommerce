@@ -210,18 +210,18 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
         if(empty($this->username) || empty($this->password)){
             return null;
         }
-
-        $body = array(
-            'email'    => $this->username,
-            'password'   => $this->password,
-        );
-        $body = json_encode($body);
         $args = array(
-            'body'        => $body,
-            'headers'     => array(
-                "Content-Type: application/json"
+            'headers' => array(
+                'Content-Type'  => 'application/json',
             ),
+            'body'    => json_encode(array(
+                'email'    => $this->username,
+                'password'   => $this->password,
+            )),
+            'method'  => 'POST',
+            'timeout' => 45,
         );
+        
 
         $response = wp_remote_post( "https://apiv2.shiprocket.in/v1/external/auth/login", $args );
 
@@ -244,16 +244,16 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             return null;
         }
 
-        $body = array(
-            'email'    => $this->username,
-            'password'   => $this->password,
-        );
-        $body = json_encode($body);
         $args = array(
-            'body'        => $body,
-            'headers'     => array(
-                "Content-Type: application/json"
-              ),
+            'headers' => array(
+                'Content-Type'  => 'application/json',
+            ),
+            'body'    => json_encode(array(
+                'email'    => $this->username,
+                'password'   => $this->password,
+            )),
+            'method'  => 'POST',
+            'timeout' => 45,
         );
 
         $response = wp_remote_post( "https://apiv2.shiprocket.in/v1/external/auth/login", $args );
