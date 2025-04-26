@@ -1498,11 +1498,12 @@ class Bt_Sync_Shipment_Tracking_Public
 							$d = $this->addDayswithdate($rb['etd'], $processing_days);
 							$delivery_date = " (Edd: " . $d . ")";
 						}
-		
+					
 						$WC_Shipping_Rate = new WC_Shipping_Rate();
 		
 						$WC_Shipping_Rate->set_id($id);
 						$WC_Shipping_Rate->set_label($lable . $delivery_date);
+						$WC_Shipping_Rate->add_meta_data("edd", $delivery_date);
 						$WC_Shipping_Rate->set_method_id($method_id);
 						$WC_Shipping_Rate->set_cost($cost);
 						$WC_Shipping_Rate->set_instance_id($id);
@@ -1513,6 +1514,7 @@ class Bt_Sync_Shipment_Tracking_Public
 						
 						$rates[$id] = $WC_Shipping_Rate;
 					}
+						
 				}else{
 					//international order
 					foreach ($filtered_arr as $r => $rb) {
@@ -1552,6 +1554,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		
 						$WC_Shipping_Rate->set_id($id);
 						$WC_Shipping_Rate->set_label($lable . $delivery_date);
+						$WC_Shipping_Rate->add_meta_data("edd", $delivery_date);
 						$WC_Shipping_Rate->set_method_id($method_id);
 						$WC_Shipping_Rate->set_cost($cost);
 						$WC_Shipping_Rate->set_instance_id($id);
@@ -1714,6 +1717,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		
 						$WC_Shipping_Rate->set_id($id);
 						$WC_Shipping_Rate->set_label($lable . $delivery_date);
+						$WC_Shipping_Rate->add_meta_data("edd", $delivery_date);
 						$WC_Shipping_Rate->set_method_id($method_id);
 						$WC_Shipping_Rate->set_cost($cost);
 						$WC_Shipping_Rate->set_instance_id($id);
@@ -1866,6 +1870,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		
 						$WC_Shipping_Rate->set_id($id);
 						$WC_Shipping_Rate->set_label($lable . $delivery_date);
+						$WC_Shipping_Rate->add_meta_data("edd", $delivery_date);
 						$WC_Shipping_Rate->set_method_id($method_id);
 						$WC_Shipping_Rate->set_cost($cost);
 						$WC_Shipping_Rate->set_instance_id($id);
@@ -2037,6 +2042,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		
 						$WC_Shipping_Rate->set_id($id);
 						$WC_Shipping_Rate->set_label($lable . $delivery_date);
+						$WC_Shipping_Rate->add_meta_data("edd", $delivery_date);
 						$WC_Shipping_Rate->set_method_id($method_id);
 						$WC_Shipping_Rate->set_cost($cost);
 						$WC_Shipping_Rate->set_instance_id($id);
@@ -2053,6 +2059,7 @@ class Bt_Sync_Shipment_Tracking_Public
 			}
  
 		}
+		$rates = apply_filters( 'bt_dynamic_courier_rates', $rates , $package, $bt_sst_courier_rate_provider);
 		return $rates;
 	}
 

@@ -494,7 +494,19 @@ Got a feature that you’d like to see in the plugin? Just get in touch and our 
 		return $content;
 	}
 				
-	add_filter('bt_sync_shimpent_track_pincode_checker_shipping_to_text', 'bt_sync_shimpent_track_pincode_checker_shipping_to_text');
+	add_filter('bt_shiprocket_order_object', 'bt_shiprocket_order_object',10,2);
+	function bt_shiprocket_order_object($order_id, $shiprocket_order) {
+		//modify shiprocket order object before pushing order to shiprocket
+		return $shiprocket_order;
+	}
+
+	add_filter('bt_dynamic_courier_rates', 'bt_dynamic_courier_rates',10,3);
+	function bt_dynamic_courier_rates( $rates , $package, $bt_sst_courier_rate_provider) {
+		//modify the dynamic courier rates populated by the plugin and return back the rates array
+		return $rates;
+	}
+
+    add_filter('bt_sync_shimpent_track_pincode_checker_shipping_to_text', 'bt_sync_shimpent_track_pincode_checker_shipping_to_text');
 	function bt_sync_shimpent_track_pincode_checker_shipping_to_text($content) {
 		$content = 'Select a delivery location to see product availability and delivery options';
 		return $content;

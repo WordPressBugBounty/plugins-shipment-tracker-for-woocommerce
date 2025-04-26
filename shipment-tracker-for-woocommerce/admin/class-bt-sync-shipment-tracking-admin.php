@@ -1382,6 +1382,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 			 $response = wp_remote_post( $url,$args ); //its a non-blocking call. so website's speed is not effected.
 			 $body     = wp_remote_retrieve_body( $response );
 			
+			//  echo "<pre>"; print_r($body); die;
 			$response1 = array(
 				"status" => true,
 				"data" => $body,
@@ -1546,13 +1547,17 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		$event_name = "";
 	
 		if (!empty($QMessage['order'])) {
-			if (empty($QMessage['shipment_current'])) {
+
+
+			if($QMessage['order']['status']=="failed"){
+				$event_name = "failed_order";
+			}
+			else if($QMessage['order']['status']=="cancelled"){
+				$event_name = "canceled_order";
+			}
+			else if (empty($QMessage['shipment_current'])) {
 				// probably a new order
-				if($QMessage['order']['status']=="failed"){
-					$event_name = "failed_order";
-				}else{
-					$event_name = "new_order";
-				}
+				$event_name = "new_order";
 				
 			} else if (empty($QMessage['shipment_old']) || 
 					   (strtolower((string)$QMessage['shipment_current']['current_status']) != strtolower((string)$QMessage['shipment_old']['current_status']))) {
@@ -1566,10 +1571,11 @@ class Bt_Sync_Shipment_Tracking_Admin {
 					$event_name = "out_for_delivery";
 				} else if ($current_status == "delivered") {
 					$event_name = "delivered";
+				} else if ($current_status == "canceled") {
+					$event_name = "canceled";
 				}
 			}
 		}
-	
 		return $event_name;
 	}
 	
@@ -1829,7 +1835,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	function handle_admin_init(){
-		$_GET = array_map('sanitize_text_field', $_GET);
+		
 		if(isset($_GET['bt_push_to_shiprocket']) && $_GET['bt_push_to_shiprocket']==1 && (isset($_GET['post']) || isset($_GET['id']))){
 			$order_id=isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
 			$this->push_order_to_shiprocket($order_id);
@@ -1866,7 +1872,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 
 	function get_st_form_with_data() {
-		$_GET = array_map('sanitize_text_field', $_GET);
+	
 		$nonce = $_GET['nonce'];
 		if ( ! wp_verify_nonce( $nonce, 'get_st_form_with_data' ) ) {
 			exit; // Get out of here, the nonce is rotten!
@@ -2890,3 +2896,22 @@ function bt_format_shipment_status($shipment_status){
 }
 
 
+function bt_sst_get_city_state_by_pincode($pincode, $country) {
+    $data = [];
+
+    if (empty($pincode) || empty($country)) {
+        return $data;
+    }
+
+    if (strtoupper($country) === 'IN') {
+        $obj = new Bt_Sync_Shipment_Tracking_Shiprocket();
+
+            $locality_data = $obj->get_locality($pincode);
+            if (is_array($locality_data) && isset($locality_data['state_code'])) {
+                $locality_data['state'] = $locality_data['state_code'];
+                $data = $locality_data;
+            }
+    }
+
+    return $data;
+}

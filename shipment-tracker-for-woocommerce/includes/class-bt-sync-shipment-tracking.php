@@ -737,6 +737,7 @@ class Bt_Sync_Shipment_Tracking {
 				->set_options( array(
 					'new_order' => 'New Order',
 					'failed_order' => 'Failed Order',
+					'canceled_order' => 'Canceled Order',
 					//'out_for_pickup' => 'Out For Pickup',
 					'in_transit' => 'In Transit',
 					'out_for_delivery' => 'Out For Delivery',
@@ -775,9 +776,11 @@ class Bt_Sync_Shipment_Tracking {
                                         <select id="myselect">
                                             <option value="new-order">New Order</option>
 											<option value="failed-order">Failed Order</option>
+											<option value="canceled-order">Canceled Order</option>
 											<option value="in-transit"> In Transit</option>
 											<option value="out-for-delivery">Out for Delivery</option>
 											<option value="delivered">Delivered</option>
+											<option value="abandoned-cart">Abandoned Cart</option>
 											<option value="review-after-delivery">Review after Delivery</option>
                                         </select>
                                         </span>
