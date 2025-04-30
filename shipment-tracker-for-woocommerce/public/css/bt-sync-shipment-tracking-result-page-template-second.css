@@ -384,14 +384,14 @@
         clear: both;
     } 
 
-    .uabb-timeline-wrapper .slick-slide  { 
+    .uabb-timeline-wrapper .bt-sst-slick-slide  { 
         display: none; 
         float: left; 
         height: 90px;; 
         min-height: 1px;
     } 
 
-    .uabb-timeline-wrapper .slick-initialized .slick-slide  { 
+    .uabb-timeline-wrapper .slick-initialized .bt-sst-slick-slide  { 
         display: block;
     } 
 
@@ -437,6 +437,7 @@
 
     .obscure-kzaezq7Gp { 
         max-width: 800px;
+        margin: auto;
       } 
       
     .fl-node-nyo8u0s1p4eh .uabb-timeline-connector .uabb-timeline-marker .bt_sst_selected  {
@@ -587,7 +588,7 @@
         width: 540px;  
         transform: translate3d(0px, 0px, 0px);  
     }  
-    #style-reSfY .slick-slide{
+    #style-reSfY .bt-sst-slick-slide{
         margin-top:auto;
     }
     #style-bBNl2.style-bBNl2 {  

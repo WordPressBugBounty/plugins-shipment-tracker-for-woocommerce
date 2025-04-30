@@ -344,7 +344,7 @@ if($tracking && isset($tracking['tracking_data'])){
                                         <div class="uabb-timeline-connector slick-initialized slick-slider">
                                             <div aria-live="polite" class="slick-list draggable">
                                                 <div class="slick-track style-reSfY" id="style-reSfY">
-                                                    <div class="uabb-timeline-item-0 slick-slide slick-current slick-active style-bBNl2" data-slick-index="0" aria-hidden="false" id="style-bBNl2">
+                                                    <div class="uabb-timeline-item-0 bt-sst-slick-slide slick-current slick-active style-bBNl2" data-slick-index="0" aria-hidden="false" id="style-bBNl2">
                                                         <div class="uabb-timeline-marker-wrapper">
                                                             <div class="uabb-timeline-card-date-wrapper">
                                                                 <div class="uabb-timeline-card-date"> Order Placed </div>
@@ -354,7 +354,7 @@ if($tracking && isset($tracking['tracking_data'])){
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="uabb-timeline-item-1 slick-slide slick-active style-KCZZz" data-slick-index="1" aria-hidden="false" id="style-KCZZz">
+                                                    <div class="uabb-timeline-item-1 bt-sst-slick-slide slick-active style-KCZZz" data-slick-index="1" aria-hidden="false" id="style-KCZZz">
                                                         <div class="uabb-timeline-marker-wrapper">
                                                             <div class="uabb-timeline-card-date-wrapper">
                                                                 <div class="uabb-timeline-card-date"><?php echo ucfirst(esc_html($shipped_string)) ?></div>
@@ -369,7 +369,7 @@ if($tracking && isset($tracking['tracking_data'])){
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="uabb-timeline-item-2 slick-slide slick-active style-l3WRx" data-slick-index="2" aria-hidden="false" id="style-l3WRx">
+                                                    <div class="uabb-timeline-item-2 bt-sst-slick-slide slick-active style-l3WRx" data-slick-index="2" aria-hidden="false" id="style-l3WRx">
                                                         <div class="uabb-timeline-marker-wrapper">
                                                             <div class="uabb-timeline-card-date-wrapper">
                                                                 <div class="uabb-timeline-card-date">Out for delivery</div>
@@ -379,7 +379,7 @@ if($tracking && isset($tracking['tracking_data'])){
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="uabb-timeline-item-3 slick-slide slick-active style-iMPqq" data-slick-index="3" aria-hidden="false" id="style-iMPqq">
+                                                    <div class="uabb-timeline-item-3 bt-sst-slick-slide slick-active style-iMPqq" data-slick-index="3" aria-hidden="false" id="style-iMPqq">
                                                         <div class="uabb-timeline-marker-wrapper">
                                                             <div class="uabb-timeline-card-date-wrapper">
                                                                 <div class="uabb-timeline-card-date">Delivered</div>
