@@ -444,7 +444,7 @@ class Bt_Sync_Shipment_Tracking_Nimbuspost_New {
         }
     }
 
-    public function get_rate_calcultor($pickup_pincode,$delivery_pincode,$payment_type,$order_amount,$weight,$length,$width,$height){
+    public function get_rate_calcultor($pickup_pincode,$delivery_pincode,$payment_type,$order_amount,$weight_in_kg,$length,$width,$height){
         $this->init_params();
         $auth_token = $this->get_token();
         //$auth_token ="akjkjb";
@@ -458,7 +458,7 @@ class Bt_Sync_Shipment_Tracking_Nimbuspost_New {
                 'destination'=>$delivery_pincode,
                 'payment_type'=>$payment_type,
                 'order_amount'=>$order_amount,
-                'weight'=>$weight,
+                'weight'=>$weight_in_kg *1000, //convert kg to gram
                 'length'=>$length,
                 'breadth'=>$width,
                 'height'=>$height

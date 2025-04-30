@@ -1718,7 +1718,13 @@ label.obscure-oka9kmxXj {
 
   .bt_sst_tracking_product_rating{
     display: flex;
-    justify-content: space-between;
+    justify-content: space-evenly;
+    flex-direction: row;
+  }
+  .bt_sst_tracking_product_rating_btns{
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
   }
   .bt_sst_tracking_product_rating strong{
     font-size: 14px;;
@@ -1732,6 +1738,9 @@ label.obscure-oka9kmxXj {
   .bt_sst_tracking_product_rating, .bt_sst_tracking_product_trackong{
     border-top: 1px solid #e2e2e2;
     padding: 10px 20px;
+  }
+  a.bt_sst_tracking_rating_url_btn{
+    line-height: 1em;;
   }
 
   .bt_sst_tracking_product_rating .bt_sst_tracking_rating_url_btn button {

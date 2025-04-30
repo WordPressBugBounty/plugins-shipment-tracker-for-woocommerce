@@ -90,6 +90,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		wp_register_style('bt-sync-shipment-tracking-primery-template-form-2', plugin_dir_url(__FILE__) . 'css/bt-sync-shipment-tracking-primery-template-form-2.css', array(), $this->version, 'all');
 		wp_register_style('bt-sync-shipment-tracking-public-css', plugin_dir_url(__FILE__) . 'css/bt-sync-shipment-tracking-public.css', array(), $this->version, 'all');
 		wp_register_style('bt-sync-shipment-tracking-leaflet-css', plugin_dir_url(__FILE__) . 'css/bt-sync-shipment-tracking-leaflet.css', array(), $this->version, 'all');
+		wp_register_style('bt-sync-shipment-tracking-result-page-template-second-css', plugin_dir_url(__FILE__) . 'css/bt-sync-shipment-tracking-result-page-template-second.css', array(), $this->version, 'all');
 		wp_register_style('bt-shipment-tracking-timing-css', plugin_dir_url(__FILE__) . 'timer/css/bt_sst_shipment_tracker_timer.css', array(), $this->version, 'all');
 
 		if (is_checkout()) {
@@ -748,7 +749,7 @@ class Bt_Sync_Shipment_Tracking_Public
 							$push_resp = $bt_sst_cached_delivery_estimates_nimbuspost[$cached_pincode_key];
 							$response["message"] = "Data fetched from cache.";
 						}else{
-							$push_resp = $this->nimbuspost_new->get_rate_calcultor($pickup_pin, $delivery_pincode, 'PREPAID',1,'500','10','10','10');
+							$push_resp = $this->nimbuspost_new->get_rate_calcultor($pickup_pin, $delivery_pincode, 'PREPAID',1,0.5,'10','10','10');
 						
 							if ($push_resp != null && !empty($push_resp ) && $push_resp['status']=="true" && isset( $push_resp['data'])) {
 								$push_resp = $push_resp['data'];
@@ -1773,7 +1774,7 @@ class Bt_Sync_Shipment_Tracking_Public
 						if(isset($bt_sst_cached_delivery_estimates_nimbuspost_new[$cached_pincode_key])){
 							$push_resp = $bt_sst_cached_delivery_estimates_nimbuspost_new[$cached_pincode_key];
 						}else{
-							$push_resp = $this->nimbuspost_new->get_rate_calcultor($pickup_pincode, $delivery_pincode,$pm,$declared_value, $cod, $weight_in_kg,'1', $length_in_cms, $breadth_in_cms, $height_in_cms, );						
+							$push_resp = $this->nimbuspost_new->get_rate_calcultor($pickup_pincode, $delivery_pincode,$pm,$declared_value, $weight_in_kg, $length_in_cms, $breadth_in_cms, $height_in_cms, );						
 							if ($push_resp != null && !empty($push_resp ) && $push_resp['status']=="true" && isset( $push_resp['data'])) {
 								$push_resp = $push_resp['data'];
 								$bt_sst_cached_delivery_estimates_nimbuspost_new[$cached_pincode_key] =  $push_resp;

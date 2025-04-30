@@ -1702,7 +1702,7 @@ class Bt_Sync_Shipment_Tracking {
 		$container = $container->add_tab( __( 'Product Page' ), array(
 			Field::make( 'html', 'product_message', __( 'Custom HTML Field' ) )
 			->set_html( '
-					This is a premium feature. <em>Administrators can test all premium features on product, checkout, and tracking pages while logged in.</em> 
+					<div class="notification is-warning">This is a premium feature. <em>Administrators can test all premium features on product, checkout, and tracking pages while logged in.</em> </div>
 			' ),
 			Field::make( 'checkbox', 'bt_sst_shiprocket_pincode_checker', __( 'Enable "Estimated Delivery Date Checker" widget.') )
 				->set_classes( 'title is-6' )
@@ -2081,7 +2081,7 @@ class Bt_Sync_Shipment_Tracking {
 		$container = $container->add_tab( __( 'Checkout Page' ), array(
 			Field::make( 'html', 'checkout_message', __( 'Custom HTML Field' ) )
 			->set_html( '
-					This is a premium feature. <em>Administrators can test all premium features on product, checkout, and tracking pages while logged in.</em> 
+					<div class="notification is-warning">This is a premium feature. <em>Administrators can test all premium features on product, checkout, and tracking pages while logged in.</em> </div>
 			' ),
 			Field::make( 'checkbox', 'bt_sst_auto_fill_city_state', __( 'Automatically fetch city & state from pincode.') )
 				->set_option_value( 'no' )

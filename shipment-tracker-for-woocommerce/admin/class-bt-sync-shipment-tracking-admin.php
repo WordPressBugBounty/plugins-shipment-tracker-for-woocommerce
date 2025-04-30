@@ -1757,6 +1757,20 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 		if($current_screen!=null && $current_screen->id=="woocommerce_page_crb_carbon_fields_container_shipment_tracking"){
 		
+			$is_premium = $this->licenser->is_license_active();
+			$premium_message = '
+				<div class="notification is-info">
+					🔓 Premium features are locked — activate your license to deliver a better customer experience! <a href="https://shipment-tracker-for-woocommerce.bitss.tech/" target="_blank">See What\'s Missing..</a>
+				</div>
+			';
+			if($is_premium){
+				$premium_message = '
+					<div class="notification is-success">
+						✅ Premium Activated! All premium features are now live on your website — thank you for upgrading and supporting Shipment Tracker! 
+					</div>
+				';
+			}
+
 			?>
 					<div class="notice notice-info is-dismissible bt-sst-review-notice">
 						<div class="bt-sst-review-step bt-sst-review-step-1">
@@ -1767,6 +1781,9 @@ class Bt_Sync_Shipment_Tracking_Admin {
 							| <a href="https://wordpress.org/support/plugin/shipment-tracker-for-woocommerce/" target="_blank">Get Help</a>
 							| <a href="#" class=' stw_wizard_button' id='open-modal'>Launch Setup Wizard</a>
 						</div>
+					</div>
+					<div class="notice " style="padding:0">
+						<?php echo wp_kses_post($premium_message); ?>
 					</div>
 					<div class="notice notice-warning is-dismissible bt-sst-review-notice">
 						<p>We're actively developing <em>Shipment Tracker for Woocommerce</em>. <b>Help us make it better</b> by <a id="bt-feedback" href="" target="_blank">sharing your feedback</a>. Liked this plugin? Spread the word, <a href="https://wordpress.org/support/plugin/shipment-tracker-for-woocommerce/reviews/#new-post" target="_blank">give ⭐⭐⭐⭐⭐ on wordress.</a> As a thank you, enjoy a ₹500 free gift voucher for premium plugins, SMS, OTPs, domain, hosting, and more on our website for sharing your feedback or review. </p>

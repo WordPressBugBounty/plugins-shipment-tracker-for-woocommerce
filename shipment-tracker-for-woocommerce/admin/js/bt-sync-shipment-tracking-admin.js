@@ -298,7 +298,7 @@
 			$('#bt-sst-premium-notice').css("display", "none");
 			hide_bt_sst_premium_notice();
 		});
-		var free_msg = "<div>Shipment Tracking - (Free Version) <a href='https://shipment-tracker-for-woocommerce.bitss.tech/' target='_blank'>Upgrade now</a></div></div>";
+		var free_msg = "<div>Shipment Tracking - (Free Version) ";
 		$(".woocommerce_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options>h2").html(free_msg);
 
 		var is_premium = bt_sync_shipment_track_data['is_premium_active'];

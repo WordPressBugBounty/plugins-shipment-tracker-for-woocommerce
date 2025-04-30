@@ -603,8 +603,7 @@ if(empty($bt_sst_review_subheading_text)){
     <?php if($auto_post) : ?>
       <script>
         document.addEventListener("DOMContentLoaded", function(event) {
-          var enable_ph = '<?php echo esc_js($last_four_digit) ?>'
-    
+          var enable_ph = '<?php echo esc_js($last_four_digit) ?>';
           if (enable_ph) {
             var ph = prompt("Enter last 4 digits of phone number");
             if (ph!="" && ph!=null){
@@ -648,8 +647,7 @@ if(empty($bt_sst_review_subheading_text)){
         wp_enqueue_style('bt-sync-shipment-tracking-leaflet-css');
     ?>
     <script>
-    
-        async function plotMap2() {
+    async function plotMap2() {
             // Retrieve PHP variables inside JavaScript
             var pickupPin = '<?php echo esc_js($pickup_pincode); ?>'; // Pickup PIN code
             var dropoffPin = '<?php echo esc_js($delivery_pincode); ?>'; // Delivery PIN code
@@ -660,14 +658,11 @@ if(empty($bt_sst_review_subheading_text)){
             var currentPin = '<?php echo esc_js($currentPin); ?>';
             var current_country = '<?php echo esc_js($currentCountry); ?>';
             var currentMessage = '<?php echo esc_js($currentCountry." (".$shipment_status.")"); ?>';
-       
             window.plotMap(dropoffPin, pickupPin, deliveryMessage,pickupMessage, base_country, delivery_country, currentPin, currentMessage, current_country);
-        
         }
         document.addEventListener("DOMContentLoaded", function(event) {
              plotMap2(); // Call the function to plot the map
         });
-       
     </script>
     <?php endif ?>
         

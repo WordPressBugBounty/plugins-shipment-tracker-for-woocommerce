@@ -24,7 +24,7 @@ class Bt_Licenser {
 		);
 		
 		$site_url = get_site_url();
-		$url = 'https://webviewguardapis.bitss.tech/api/alicenser/ValidateDomain?email='. $user .'&pass='. $password .'&domain='. $site_url;
+		$url = 'https://webviewguardapis.bitss.tech/api/alicenser/ValidateDomain?email='. urlencode($user) .'&pass='. urlencode($password) .'&domain='. $site_url;
 
 		$response = wp_remote_get($url, ['timeout' => 20]);
 		if ( ! is_wp_error( $response ) ) {

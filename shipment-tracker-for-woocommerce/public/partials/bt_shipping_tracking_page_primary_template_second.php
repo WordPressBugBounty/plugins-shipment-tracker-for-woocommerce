@@ -30,15 +30,9 @@
 
     <form class=" bt_tracking_form tracking-form-2 " action="" method="post">
         <input type="hidden" name="bt_tracking_form_nonce" value="<?php echo esc_attr(wp_create_nonce('bt_shipping_tracking_form_2')); ?>">
-        
         <input class="tracking-input" required type="text" value="<?php echo esc_attr($bt_track_order_id) ?>" id="bt_track_order_id"  name="bt_track_order_id" placeholder="Your order ID / AWB No">
-        
         <?php if ($last_four_digit) { ?>
             <input class="tracking-input" type="hidden" value="<?php echo esc_attr($bt_last_four_digit) ?>" id="bt_last_four_digit_no" name="bt_track_order_phone" placeholder="Last 4 digits of mobile number">
-        <?php } ?>
-
-        <button class="tracking-button" type="submit">
-            <span>Track Delivery</span>
-        </button>
+        <?php } ?><button class="tracking-button" type="submit"><span>Track Delivery</span></button>
     </form>
 </div>

@@ -16,9 +16,9 @@
 }
 
 .bt-sst-tracking-container.bt-sst-tracking-primary-form-2 .tracking-form-2 {
-    /* display: flex; */
-    flex-direction: column;
-    gap: 10px;
+    display: flex;
+    flex-direction: row;
+    gap: 5px;
     align-items: center;
 }
 
