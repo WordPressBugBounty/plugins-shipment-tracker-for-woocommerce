@@ -697,7 +697,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
         $so["breadth"] = $total_width_cm>0?$total_width_cm:0.5;
         $so["height"] = $total_height_cm>0?$total_height_cm:0.5;
         $so["weight"] = $total_weight_kg>0?$total_weight_kg:0.1;
-        $so = apply_filters( 'bt_shiprocket_order_object', $order_id, $so );
+        $so = apply_filters( 'bt_shiprocket_order_object', $so , $order_id );
         return $so;
     }
 
