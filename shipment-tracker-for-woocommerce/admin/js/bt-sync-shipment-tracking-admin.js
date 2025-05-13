@@ -341,6 +341,7 @@
 		$(document).on('click', '#api_tc_m_close_btn', function (e) {
 			$('#api_test_connection_modal').removeClass('is-active');
 			$('#get_sms_trial_test_connection_modal').removeClass('is-active');
+			$('#get_whatsapp_trial_test_connection_modal').removeClass('is-active');
 
 		});
 		$(document).on('click', '#api_tc_m_close_btn_delh', function (e) {
@@ -365,6 +366,9 @@
 		});
 		$(document).on('click', '#get_sms_trial_tc_m_close_btn', function (e) {
 			$('#get_sms_trial_test_connection_modal').removeClass('is-active');
+		});
+		$(document).on('click', '#get_whatsapp_trial_tc_m_close_btn', function (e) {
+			$('#get_whatsapp_trial_test_connection_modal').removeClass('is-active');
 		});
 
 		const $modal = $("#form-wizard-modal");
@@ -1198,11 +1202,28 @@ document.addEventListener('DOMContentLoaded', () => {
 		var nonce = bt_sync_shipment_track_data.get_sms_trial_nonce;
 		$.get(
 			bt_sync_shipment_track_data.ajax_url,
-			{ action: 'get_sms_trial', value: nonce, phonenumber: phoneNumber, selectvalue: selectValue },
+			{ action: 'get_sms_trial', value: nonce, phonenumber: phoneNumber, selectvalue: selectValue, via: 'sms' },
 			function (res) {
 				$('#get_sms_trial_tc-m-content').html(res.message);
 				$('#get_sms_trial_test_connection_modal').addClass('is-active');
 				$('#get_sms_trial').removeClass('is-loading');
+
+			}
+		);
+	});
+
+		$(document).on('click', '#get_whatsapp_trial', function (e) {
+		$('#get_whatsapp_trial').addClass('is-loading');
+		var selectValue = document.getElementById('myselect_whatsapp').value;
+		var phoneNumber = document.getElementById('bt_otpfy_test_whatsapp_mobile').value;
+		var nonce = bt_sync_shipment_track_data.get_sms_trial_nonce;
+		$.get(
+			bt_sync_shipment_track_data.ajax_url,
+			{ action: 'get_sms_trial', value: nonce, phonenumber: phoneNumber, selectvalue: selectValue, via: 'whatsapp' },
+			function (res) {
+				$('#get_whatsapp_trial_tc-m-content').html(res.message);
+				$('#get_whatsapp_trial_test_connection_modal').addClass('is-active');
+				$('#get_whatsapp_trial').removeClass('is-loading');
 
 			}
 		);

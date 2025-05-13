@@ -763,7 +763,7 @@ class Bt_Sync_Shipment_Tracking {
 				->set_options( array(
 					'sms' => 'SMS',
 					'email' => 'Email',
-					'whatsapp' => 'WhatsApp (Coming Soon)',
+					'whatsapp' => 'WhatsApp',
 					'push_notification' => 'Push Notification (Coming Soon)',
 				) ),
 				Field::make( 'html', 'bt_sst_custom_html_field_trial', __( 'Custom HTML Field' ) )
@@ -810,6 +810,46 @@ class Bt_Sync_Shipment_Tracking {
 											</div>
                                    	 </div>
                                     <p class="help is-info">Enter your mobile number with country code. Eg: +91 94622 42982 <br>We will send an sms of selected event to your mobile number.<br> 
+									Supported Countries: <b>All</b></p>
+                     </div>
+				' ),
+					Field::make( 'html', 'bt_sst_custom_html_field_trial_whatsapp', __( 'Custom HTML Field' ) )
+				->set_html( '
+					<h5 class="title is-6">Try WhatsApp:</h5>
+					<div class="column ">
+                                    <div class="field has-addons ">
+                                    <p class="control">
+                                        <span class="select  is-medium">
+                                        <select id="myselect_whatsapp">
+                                            <option value="new-order">New Order</option>
+                                        </select>
+                                        </span>
+                                    </p>
+                                        <div class="control is-expanded">
+                                            <input id="bt_otpfy_test_whatsapp_mobile" class="input is-medium" name="bt_otpfy_test_whatsapp_mobile" type="text" value="" placeholder="Enter mobile number with country code">
+                                        </div>
+                                        <div class="field is-horizontal" style="width: 100%; max-width: 150px; text-align: center;">
+											<div class="field-body" style="width: 100%;">
+												<div class="field" style="width: 100%;">
+													<div class="control">
+														<button type="button" class=" button is-medium" id="get_whatsapp_trial" style="width: 100%;" >
+															Send WhatsApp
+														</button>
+														<div id="get_whatsapp_trial_test_connection_modal" class="modal">
+															<div class="modal-background"></div>
+																<div class="modal-card">
+																	<header class="modal-card-head">
+																		<p id="get_whatsapp_trial_tc-m-content" class="modal-content"></p>
+																		<button type="button" id="api_tc_m_close_btn" class="delete" aria-label="close"></button>
+																		</header>
+																</div>
+															</div> 
+														</div>
+													</div>
+												</div>
+											</div>
+                                   	 </div>
+                                    <p class="help is-info">Enter your mobile number with country code. Eg: +91 94622 42982 <br>We will send an WhatsApp of selected event to your mobile number.<br> 
 									Supported Countries: <b>All</b></p>
                      </div>
 				' ),

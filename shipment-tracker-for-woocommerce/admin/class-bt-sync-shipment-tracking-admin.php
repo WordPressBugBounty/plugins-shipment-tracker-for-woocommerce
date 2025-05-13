@@ -1318,6 +1318,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		$nonce = sanitize_text_field($_GET["value"]);
 		$phoneNumber = sanitize_text_field($_GET["phonenumber"]);
 		$selectValue = sanitize_text_field($_GET["selectvalue"]);
+		$via = sanitize_text_field($_GET["via"]);
 	
 		
 		if ( ! wp_verify_nonce( $nonce,'get_sms_trial' ) ) {
@@ -1353,7 +1354,8 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		$body = array(
 			"phonenumber" => $phoneNumber,
 			"eventName" => $selectValue,
-			"reviewUrl" => $bt_sst_sms_review_url
+			"reviewUrl" => $bt_sst_sms_review_url,
+			"via" => $via,
 		);
 
 		$auth_token = get_option('register_for_sms_apy_key');
@@ -1492,9 +1494,13 @@ class Bt_Sync_Shipment_Tracking_Admin {
 				"review_url"=>$bt_sst_sms_review_url,
 			);
 			$event_name = $this->getEventId($body );
+
 			if(empty($event_name)) return;
-			if($this->should_send_msg($event_name)){
+			$send_via = $this->should_send_msg($event_name);
+			if(sizeof($send_via) > 0  ){
 				
+				$body['event_name'] = $event_name;
+				$body['via'] = implode(",", $send_via);
 				$auth_token = get_option('register_for_sms_apy_key');
 
 				$args = array(
@@ -1512,10 +1518,10 @@ class Bt_Sync_Shipment_Tracking_Admin {
 				//$resp = json_decode($body,true);
 			
 				$order = wc_get_order( $order_id );
-				$order->add_order_note("'$event_name'" . ' SMS Sent. Request ID: ' .  $body  . "\n\n- Shipment tracker for woocommerce", false );
+				$order->add_order_note("'$event_name'" . ' Message Sent via '.implode(",", $send_via).'. Request ID: ' .  $body  . "\n\n- Shipment tracker for woocommerce", false );
 			}else{
 				$order = wc_get_order( $order_id );
-				$order->add_order_note("'$event_name'" . " SMS Inactive. \n\n- Shipment tracker for woocommerce", false );
+				$order->add_order_note("'$event_name'" . " Message Inactive. \n\n- Shipment tracker for woocommerce", false );
 			}
 		} catch (Exception $Exception) {
 			$order->add_order_note('An error '.$Exception->getMessage());
@@ -1525,19 +1531,25 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 	private function should_send_msg($event_name ){
 		
+		$send_via = [];
+
 		$bt_sst_shipment_when_to_send_messages = carbon_get_theme_option( 'bt_sst_shipment_when_to_send_messages' );
 
 		if (!in_array($event_name, $bt_sst_shipment_when_to_send_messages, true)) {
-			return false;
+			return $send_via;
 		}
 
 		$bt_sst_shipment_from_what_send_messages = carbon_get_theme_option( 'bt_sst_shipment_from_what_send_messages' );
 
-		if (!in_array('sms', $bt_sst_shipment_from_what_send_messages, true)) {
-			return false;
+		if (in_array('sms', $bt_sst_shipment_from_what_send_messages, true)) {
+			$send_via[] = 'sms';
+		}
+
+		if (in_array('whatsapp', $bt_sst_shipment_from_what_send_messages, true)) {
+			$send_via[] = 'whatsapp';
 		}
 		
-		return true;
+		return $send_via;
 	}
 
 

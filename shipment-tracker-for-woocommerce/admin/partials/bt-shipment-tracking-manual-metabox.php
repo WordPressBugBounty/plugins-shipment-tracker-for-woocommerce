@@ -242,7 +242,7 @@ include plugin_dir_path(__FILE__).'bt-shipment-tracker-get-and-save-couriers.php
 ?>
 <script>
     jQuery('#bt_manual_save').click(function () {
-        var bt_manual_courier_name = jQuery('.bt_manual_awb_number_coriure').val();
+        var bt_manual_courier_name = jQuery('select.bt_manual_awb_number_coriure').val();
         if(bt_manual_courier_name.trim() == '' ) {
              alert('Courier name is required');
              return false;
@@ -370,8 +370,8 @@ include plugin_dir_path(__FILE__).'bt-shipment-tracker-get-and-save-couriers.php
                     });
 
                     // Clear the dropdown before adding new options
-                    jQuery('.bt_manual_awb_number_coriure').empty();
-                    jQuery('.bt_manual_awb_number_coriure').append('<option value="">Select Courier Company</option>');
+                    jQuery('select.bt_manual_awb_number_coriure').empty();
+                    jQuery('select.bt_manual_awb_number_coriure').append('<option value="">Select Courier Company</option>');
                     // Loop through grouped data and append <optgroup> elements
                     for (var region in groupedData) {
                         var $optgroup = jQuery('<optgroup>', { label: region });
@@ -390,10 +390,10 @@ include plugin_dir_path(__FILE__).'bt-shipment-tracker-get-and-save-couriers.php
                                 </option>`
                             );
                         });
-                        jQuery('.bt_manual_awb_number_coriure').append($optgroup);
+                        jQuery('select.bt_manual_awb_number_coriure').append($optgroup);
                     }
                     // Initialize Select2 with placeholder
-                    jQuery('.bt_manual_awb_number_coriure').select2({
+                    jQuery('select.bt_manual_awb_number_coriure').select2({
                         placeholder: "Select Courier Company",
                         allowClear: true
                     });
@@ -404,7 +404,7 @@ include plugin_dir_path(__FILE__).'bt-shipment-tracker-get-and-save-couriers.php
             });
         // });
 
-        jQuery(document).on('change', '.bt_manual_awb_number_coriure', function () {
+        jQuery(document).on('change', 'select.bt_manual_awb_number_coriure', function () {
             const selectedOption = $(this).find('option:selected');
             const trackingUrl = selectedOption.data('tracking-url');
             jQuery('#bt_manual_tracking_link').val(trackingUrl);

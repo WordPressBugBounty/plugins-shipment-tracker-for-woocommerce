@@ -788,6 +788,8 @@ The tracking page adheres to strict privacy standards to ensure the security of 
 
 
 == Changelog ==
+= 1.4.24.10 - 2025.05.13 =
+1. WhatsApp Notifications
 = 1.4.23.1 - 2024.11.22 =
 1. Security Update
 = 1.4.18 - 2024.09.15 =
