@@ -21,7 +21,7 @@
 						<div class="modal-background"></div>
 						<div class="modal-card">
 							<header class="modal-card-head">
-								<p class="modal-card-title">Buy SMS Credits</p>
+								<p class="modal-card-title">Buy Messaging Credits</p>
 								<button type="button" class="delete" aria-label="close"></button>
 							</header>
 							<form id="bt_buy_sms_form" class="form" action="https://quickengage.bitss.in/home/paymentredirect" method="post">
@@ -31,7 +31,7 @@
 											<input type="hidden" name="redirect_url" value="<?php echo esc_url($payment_redirect_url); ?>" />                                
 											<input type="hidden" name="apikey"  value="<?php echo esc_html($api); ?>" />     
 											<p class="is-size-6" for="quantity">No. of Credits:</p>
-											<input id="bt_sms_input_credits_buy" value="" class="input is-medium mb-2" required type="number" name="quantity" maxlength="7" min="3000" max="200000" placeholder="Enter quantity"/><br>
+											<input id="bt_sms_input_credits_buy" value="" class="input is-medium mb-2" required type="number" name="quantity" maxlength="7" min="2000" max="200000" placeholder="Enter quantity"/><br>
 											<p class="is-size-6" >Price per Credit:</p>
 											<p id="bt_sms_price_per_credit" class="is-size-5 pb-2" >-</p>
 											<p class="is-size-6" >Amount:</p>
@@ -46,7 +46,7 @@
 												<thead>
 													<tr>
 														
-														<th colspan="2">SMS Price List</th>
+														<th colspan="2">Price List</th>
 													</tr>
 												</thead>
 												<tbody id="credits_pricing_table">
@@ -54,10 +54,13 @@
 												</tbody>
 												<tfoot>
 													<tr>
-														<td colspan="2">1 SMS to India = 1 Credit</td>
+														<td colspan="2">1 SMS (India) = 1 Credit</td>
 													</tr>
 													<tr>
-														<td colspan="2">If you wish to send sms outside India, please create a <a target="_blank" href="https://billing.bitss.tech/index.php?fuse=support&controller=ticket&view=submitticket">support ticket</a></td>
+														<td colspan="2">1 WhatsApp = 2 Credit</td>
+													</tr>
+													<tr>
+														<td colspan="2">1 SMS (Other Couintries) = as per pricing for destinatoin country.</td>
 													</tr>
 													<tr>
 														<td colspan="2">Valid for 2 years from last purchase</td>

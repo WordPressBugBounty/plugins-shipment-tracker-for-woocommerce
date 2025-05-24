@@ -1260,9 +1260,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	$(document).on('submit', '#bt_buy_sms_form', function (e) {
 		var qty = $('#bt_sms_input_credits_buy').val();
-		if (qty < 3000) {
+		if (qty < 2000) {
 			e.preventDefault();
-			alert("Minimum purchase of 3000 credit is required.");
+			alert("Minimum purchase of 2000 credits are required.");
 		}
 
 	});
@@ -1274,7 +1274,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		var nonce = bt_sync_shipment_track_data.buy_credit_balance_nonce;
 		$.get(
 			bt_sync_shipment_track_data.ajax_url,
-			{ action: 'buy_credit_balance', nonce: nonce },
+			{ action: 'buy_credit_balance',    nonce: nonce },
 			function (res) {
 				pricing = res.data;
 				$('#credits_pricing_table').html("");

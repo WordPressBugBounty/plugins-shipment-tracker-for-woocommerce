@@ -272,12 +272,14 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         $total_width = 0;
         $total_height = 0;
         $total_length = 0;
-
+        $total_qty = 0;
+        $total_products = 0;
+        $product_description = "";
         foreach ($order->get_items() as $item_id => $a) {
             if (is_a($a, 'WC_Order_Item_Product')) {
                 $product = $a->get_product();
-                $postData['shipments'][0]['quantity'] = $a->get_quantity();
-
+               
+                $total_qty += $a->get_quantity();
                 if(!empty($product->get_weight()) && $product->get_weight()>0){
                     $total_weight = $total_weight + ($product->get_weight() * $a->get_quantity());
                 }
@@ -291,10 +293,17 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
                         $total_length =$product->get_length();
                     }
                 }
-
-
+                if(empty($product_description )){
+                    $product_description = $product->get_name();
+                }
+                $total_products++;
             }
         }
+        if($total_products>1){
+            $product_description =  $product_description . " & " . $total_products-1 . " other item(s).";
+        }
+        $postData['shipments'][0]['quantity'] =   $total_qty;
+        $postData['shipments'][0]['products_desc'] =   $product_description;
         $weight_unit = get_option('woocommerce_weight_unit');
         $dimension_unit = get_option('woocommerce_dimension_unit');
 

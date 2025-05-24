@@ -71,27 +71,40 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
 
             //previous shipment tracking:
             $old_courier_name = $shipment_obj_old->courier_name;
-            $old_current_status = $shipment_obj_old->current_status;
+            $old_status = $shipment_obj_old->current_status;
             $old_awb = $shipment_obj_old->awb;
             $old_tracking_url = $shipment_obj_old->tracking_url;
 
             // do stuff
-            if($this->should_send_msg('email')){
+            if($this->should_send_msg('email', $old_status , $current_status)){
                 $this->trigger($order_id);
             }
         
         }
     }
 
-    private function should_send_msg($event_name ){
+    private function should_send_msg($event_name, $old_status , $current_status ){
 		
 		$bt_sst_shipment_from_what_send_messages = carbon_get_theme_option( 'bt_sst_shipment_from_what_send_messages' );
 
-		if (in_array($event_name, $bt_sst_shipment_from_what_send_messages, true)) {
-			return true;
+		if (!in_array($event_name, $bt_sst_shipment_from_what_send_messages, true)) {
+			return false;
 		}
+
+        if(empty( $current_status)){
+            return false;
+        }
+
+        if( $old_status == $current_status){
+            return false;
+        }
+
+        $selected_events = $this->get_option( 'email_events', array( 'in_transit', 'out_for_delivery', 'delivered' ) );
+        if ( ! in_array( strtolower( $current_status ), $selected_events, true ) ) {
+            return false;
+        }
 		
-		return false;
+		return true;
 	}
 
    
@@ -125,7 +138,7 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
         if ( ! $this->is_enabled() || ! $this->get_recipient() )
             return;
         
-        $this->object->add_order_note( "Send Email to customerr: ". $this->get_recipient() . "\n\n- Shipment tracker for woocommerce", false );
+        $this->object->add_order_note( "Email sent to customer: ". $this->get_recipient() . "\n\n- Shipment tracker for woocommerce", false );
 					
         // woohoo, send the email!
         $this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
@@ -160,6 +173,8 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
 
     // Add email settings (optional)
     public function init_form_fields() {
+
+        $arr = apply_filters( 'bt_sst_shipping_statuses', BT_SHIPPING_STATUS );
 
         $this->form_fields = array(
             'enabled'    => array(
@@ -200,7 +215,15 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
                     'html'      => 'HTML', 'woocommerce',
                     'multipart' => 'Multipart', 'woocommerce',
                 )
-            )
+                ),
+                'email_events' => array(
+                    'title'       => __( 'Email Events', 'woocommerce' ),
+                    'type'        => 'multiselect',
+                    'description' => __( 'Select the shipment events for which this email should be sent.', 'woocommerce' ),
+                    'options'     => $arr,
+                    'default'     => array( 'in_transit', 'out_for_delivery', 'delivered' ), // Default selected events
+                    'desc_tip'    => true,
+                ),
         );
     }
 

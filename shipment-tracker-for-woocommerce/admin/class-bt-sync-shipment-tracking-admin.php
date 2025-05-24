@@ -1388,7 +1388,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 			$response1 = array(
 				"status" => true,
 				"data" => $body,
-				"message" => "SMS Sent. Check your phone."
+				"message" => "Message Sent. Check your phone."
 			);
 
 		wp_send_json($response1);

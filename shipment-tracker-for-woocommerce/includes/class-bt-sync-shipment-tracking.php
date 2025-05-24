@@ -653,7 +653,7 @@ class Bt_Sync_Shipment_Tracking {
 								<div class="control">
 									<label class="checkbox" style="width: 100%; color: white;font-size:12px;">
 										<input type="checkbox" id="checkbox1">
-										I agree to the terms & conditions and authorize "Bitss Techniques" to send SMS on my behalf.
+										I agree to the terms & conditions and authorize "Bitss Techniques" to send SMS/WhatsApp on my behalf.
 									</label>
 								</div>
 							</div>
@@ -676,7 +676,7 @@ class Bt_Sync_Shipment_Tracking {
 							<div class="field" style="width: 100%;">
 								<div class="control">
 									<button type="button" class=" button is-medium" id="register_get_api_key" style="width: 100%;" >
-										Click Here to Register for SMS
+										Click Here to Register for SMS/WhatsApp
 									</button>
 									<div id="register_get_api_key_test_connection_modal" class="modal">
 										<div class="modal-background"></div>
@@ -696,7 +696,7 @@ class Bt_Sync_Shipment_Tracking {
 			';
 		}
 		$woocommerce_email_settings_url = admin_url('admin.php?page=wc-settings&tab=email&section=bt_sst_wc_shipment_email');
-		$container = $container->add_tab( __( 'SMS & Email' ), array(
+		$container = $container->add_tab( __( 'Messaging' ), array(
 
 			Field::make( 'html', 'bt_sst_custom_html_field', __( 'Custom HTML Field' ) )
 				->set_html( '
@@ -718,17 +718,18 @@ class Bt_Sync_Shipment_Tracking {
 							<div class="tile is-parent">
 								<article class="tile is-child notification px-1 is-success">
 									<p id="bt_sms_sent" class="title has-text-centered">NA</p>
-									<p class="subtitle has-text-centered px-0">SMS Sent <br> (Last 7 Days)</p>
+									<p class="subtitle has-text-centered px-0">Message Sent <br> (Last 7 Days)</p>
 								</article>
 							</div>
 							<div class="tile is-parent">
 								<article class="tile is-child notification px-1 is-primary">
 									<p id="bt_sms_last_sent_time" class="title has-text-centered">NA</p>
-									<p class="subtitle has-text-centered px-0">(Last SMS Sent)</p>
+									<p class="subtitle has-text-centered px-0">(Last Message Sent)</p>
 								</article>
 							</div>
 						</div>
 						'.$register_for_sms_form.'
+						*Credits are used to send Order/Shipment Notification via SMS/WhatsApp to customers.
 					</div>
 					
 				' ),
@@ -742,7 +743,7 @@ class Bt_Sync_Shipment_Tracking {
 					'in_transit' => 'In Transit',
 					'out_for_delivery' => 'Out For Delivery',
 					'delivered' => 'Delivered',
-					'review_after_delivery' => 'Review After Delivery (Sent 2 hrs after delivery) (Only SMS is supported)',
+					'review_after_delivery' => 'Review After Delivery (Sent 2 hrs after delivery)',
 
 				) ),
 			Field::make( 'text', 'bt_sst_sms_review_url', __( 'Enter Review URL' ) )
@@ -822,6 +823,10 @@ class Bt_Sync_Shipment_Tracking {
                                         <span class="select  is-medium">
                                         <select id="myselect_whatsapp">
                                             <option value="new-order">New Order</option>
+											<option value="in-transit"> In Transit</option>
+											<option value="out-for-delivery">Out for Delivery</option>
+											<option value="delivered">Delivered</option>
+											<option value="review-after-delivery">Review after Delivery</option>
                                         </select>
                                         </span>
                                     </p>
@@ -897,8 +902,8 @@ class Bt_Sync_Shipment_Tracking {
 				->set_html( '
 						<div class="box">
 							<h3 class="title is-5">Note:</h3>
-							<h4 class="title is-6">SMS are chargeable and requires registration. You can buy sms credits from within this plugin.</h4>
-							<h4 class="title is-6">Sms are sent using pre-approved, co-branded DLT templates. For sending fully branded sms using your sender id, <a target="_blank" href="https://billing.bitss.tech/index.php?fuse=support&controller=ticket&view=submitticket">pls raise a support ticket</a>.</h4>
+							<h4 class="title is-6">SMS/WhatsApp are chargeable and requires registration. You can buy messaging credits from within this plugin.</h4>
+							<h4 class="title is-6">Sms/WhatsApp messages are sent using pre-approved, co-branded DLT/Meta templates. For sending fully branded sms using your sender id, <a target="_blank" href="https://billing.bitss.tech/index.php?fuse=support&controller=ticket&view=submitticket">pls raise a support ticket</a>.</h4>
 							<h4 class="title is-6">Need a Full Featured SMS Panel for advanced SMS Messaging? <a target="_blank" href="https://smsapi.bitss.tech">Signup here for fast, reliable & cost effective sms service.</a></h4>
 							<h4 class="title is-6">Emails are free and are sent using your own server. Email template can be customized from <a target="_blank"  href="/wp-admin/admin.php?page=wc-settings&tab=email&section=bt_sst_wc_shipment_email">woocommerce email settings</a>.</h4>
 						</div>
