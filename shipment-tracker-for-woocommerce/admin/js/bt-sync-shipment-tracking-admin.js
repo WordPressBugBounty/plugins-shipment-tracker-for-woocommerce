@@ -16,7 +16,8 @@
 			var previewImage = jQuery('#template-preview-img');
 			var imageFilenames = {
 				'classic': 'admin/images/classic-template.jpg', // Escaped backslashes
-				'realistic': 'admin/images/realistic-template.jpg' // Escaped backslashes
+				'realistic': 'admin/images/realistic-template.jpg', // Escaped backslashes
+				'prime_x': 'admin/images/prime-x-template.jpg' // Escaped backslashes
 			};
 			var selectedValue = $('select[name="carbon_fields_compact_input[_bt_sst_pincode_box_template]"]').val();
 			if (imageFilenames[selectedValue]) {
@@ -1163,20 +1164,21 @@ document.addEventListener('DOMContentLoaded', () => {
 		e.preventDefault();
 		var checkbox1 = document.getElementById('checkbox1');
 		var checkbox2 = document.getElementById('checkbox2');
-		if (!checkbox1.checked || !checkbox2.checked) {
-			alert('Please check both checkboxes to proceed.');
+		var mobile_no = document.getElementById('register_mobile_number').value;
+		if (!checkbox1.checked || !checkbox2.checked || mobile_no === '') {
+			alert('Please check both checkboxes to proceed and enter your mobile number.');
 		}
 		else {
 			$(this).addClass('is-loading');
-			register_get_api_key();
+			register_get_api_key(mobile_no);
 		}
 	});
 
-	function register_get_api_key() {
+	function register_get_api_key(mobile_no) {
 		var nonce = bt_sync_shipment_track_data.register_for_sms_nonce;
 		$.get(
 			bt_sync_shipment_track_data.ajax_url,
-			{ action: 'register_for_sms', value: nonce },
+			{ action: 'register_for_sms', value: nonce, mobile_no: mobile_no },
 			function (res) {
 
 				$('#register_get_api_key').removeClass('is-loading');

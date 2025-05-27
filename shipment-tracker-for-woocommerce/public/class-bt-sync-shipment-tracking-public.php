@@ -278,15 +278,19 @@ class Bt_Sync_Shipment_Tracking_Public
 			if ($pincode_checker != 1) {
 				return;
 			}
-			wp_enqueue_style('bt-sync-shipment-tracking-public-css');
 			wp_enqueue_script('bt-sync-shipment-tracking-public');
 
 			$check_templet = carbon_get_theme_option('bt_sst_pincode_box_template');
+			// $check_templet = "prime_x";
 
 			if($check_templet == "realistic"){
+				wp_enqueue_style('bt-sync-shipment-tracking-public-css');
 				include plugin_dir_path(dirname(__FILE__)) . 'public/partials/bt_sst_pincode_sow_realistic.php';
 			}else if($check_templet == "classic"){
+				wp_enqueue_style('bt-sync-shipment-tracking-public-css');
 				include plugin_dir_path(dirname(__FILE__)) . 'public/partials/input_box_pincode_show_data.php';
+			}else if($check_templet == "prime_x"){
+				include plugin_dir_path(dirname(__FILE__)) . 'public/partials/input_box_pincode_show_prime_x.php';
 			}else{
 				include plugin_dir_path(dirname(__FILE__)) . 'public/partials/input_box_pincode_show_data.php';
 			}

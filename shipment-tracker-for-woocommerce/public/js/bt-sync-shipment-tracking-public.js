@@ -87,14 +87,20 @@
     );
     show_pincode_data_product_page(pin, nounce,country,product_id,variation_id);
   }
-
+ $("#data_of_pin").hide();
   function show_pincode_data_product_page(pin, nounce,country,product_id,variation_id) {
+    $("#data_of_pin").hide();
+    $("#delivery-form").hide();
+    $("#loading-spinner").show();
     $.post(
       bt_sync_shipment_tracking_data.ajax_url,
       { action: "get_pincode_data_product_page", value: { p: pin, n: nounce,c:country, product_id:product_id,variation_id:variation_id} },
       function (abc) {
         $("#data_of_pin").show();
         if (abc.status) {
+          $("#data_of_pin").show();
+              $("#delivery-form").show();
+    $("#loading-spinner").hide();
           var resp = abc.data;
           $("#data_of_pin").html(resp);
           if (abc.check_error.data) {

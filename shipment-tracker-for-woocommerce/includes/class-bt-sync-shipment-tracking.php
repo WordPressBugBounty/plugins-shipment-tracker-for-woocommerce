@@ -675,7 +675,8 @@ class Bt_Sync_Shipment_Tracking {
 						<div class="field-body" style="width: 100%;">
 							<div class="field" style="width: 100%;">
 								<div class="control">
-									<button type="button" class=" button is-medium" id="register_get_api_key" style="width: 100%;" >
+									<input type="text" id="register_mobile_number" class="p-2" style="font-size: 16px;" placeholder="Enter mobile number">
+									<button type="button" class=" button is-medium" id="register_get_api_key" style="" >
 										Click Here to Register for SMS/WhatsApp
 									</button>
 									<div id="register_get_api_key_test_connection_modal" class="modal">
@@ -1759,6 +1760,7 @@ class Bt_Sync_Shipment_Tracking {
 				->set_options( array(
 					'classic' => 'Classic',
 					'realistic' => 'Realistic',
+					'prime_x' => 'Prime_x',
 				) )
 				->set_default_value('classic')
 				->set_conditional_logic( array(

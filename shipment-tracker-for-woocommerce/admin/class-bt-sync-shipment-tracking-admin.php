@@ -1205,6 +1205,7 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 	public function register_for_sms() {
 		$nonce = sanitize_text_field($_GET["value"]);
+		$mobile_no = sanitize_text_field($_GET["mobile_no"]);
 	
 		
 		if ( ! wp_verify_nonce( $nonce, 'register_for_sms' ) ) {
@@ -1224,8 +1225,8 @@ class Bt_Sync_Shipment_Tracking_Admin {
 		$current_url = get_site_url();
 		$current_user = get_bloginfo( 'name' );
 		$shop_country = WC()->countries->get_base_country();
- 
-		$api_call = $this->signup_api($admin_email,$current_url,$shop_country,$current_user,"NA",true,true);
+
+		$api_call = $this->signup_api($admin_email,$current_url,$shop_country,$current_user,$mobile_no,true,true);
 		
 
 		if ($api_call['response_code']==200 && isset($api_call['data']['apiKey'])  && !empty($api_call['data']['apiKey'])) {
