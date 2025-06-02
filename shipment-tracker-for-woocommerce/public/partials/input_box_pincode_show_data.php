@@ -4,10 +4,7 @@
     $shop_country = WC()->countries->get_base_country();
     $post_code_auto_fill = carbon_get_theme_option( 'bt_sst_enable_auto_postcode_fill' );
     if (defined('DOING_AJAX') && DOING_AJAX) {
-        
-        wp_register_script('bt-sync-shipment-tracking-public', '/wp-content/plugins/shipment-tracker-for-woocommerce/public/js/bt-sync-shipment-tracking-public.js', array('jquery'),'v3.4.1', true);
-        wp_register_style('bt-sync-shipment-tracking-public-css', '/wp-content/plugins/shipment-tracker-for-woocommerce/public/css/bt-sync-shipment-tracking-public.css', array(),'v3.4.1', 'all');
-
+    
         $script_data = array(
             "ajax_url" => admin_url('admin-ajax.php'),
             "bt_sst_autofill_post_code"=>$post_code_auto_fill,

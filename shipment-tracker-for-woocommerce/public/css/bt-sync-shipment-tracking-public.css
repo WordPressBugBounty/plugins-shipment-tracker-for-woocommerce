@@ -130,3 +130,75 @@
   border-radius: 0px;
   box-sizing: border-box;
 }
+ .bt_sst_shipping_timeline_order_tracking {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        background-color: #fff;
+        max-width: 600px;
+        /* margin: 20px auto; */
+        font-family: Arial, sans-serif;
+        gap: 10px;
+        font-size: 15px;
+    }
+
+    .bt_sst_shipping_timeline_order_tracking .step {
+        text-align: center;
+        flex: 1;
+    }
+
+    .bt_sst_shipping_timeline_order_tracking .icon {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 5px;
+    }
+
+    .bt_sst_shipping_timeline_order_tracking .label {
+        font-weight: bold;
+        color: #333;
+    }
+
+    .bt_sst_shipping_timeline_order_tracking .date {
+        font-size: 14px;
+        color: #777;
+        margin-top: 4px;
+    }
+
+    .bt_sst_shipping_timeline_order_tracking .arrow {
+        font-size: 24px;
+        color: #555;
+        margin: 0 5px;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 480px) {
+        .bt_sst_shipping_timeline_order_tracking {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .bt_sst_shipping_timeline_order_tracking .step {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .bt_sst_shipping_timeline_order_tracking .icon {
+            margin: 0;
+        }
+
+        .bt_sst_shipping_timeline_order_tracking .arrow {
+            display: none;
+        }
+
+        .bt_sst_shipping_timeline_order_tracking .label,
+        .bt_sst_shipping_timeline_order_tracking .date {
+            margin: 0;
+        }
+    }

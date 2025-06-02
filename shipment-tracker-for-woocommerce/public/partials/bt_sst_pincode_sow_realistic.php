@@ -3,23 +3,7 @@
     $plugin_public_url = plugin_dir_url(dirname(__FILE__));
     $shop_country = WC()->countries->get_base_country();
     $post_code_auto_fill = carbon_get_theme_option( 'bt_sst_enable_auto_postcode_fill' );
-    if (defined('DOING_AJAX') && DOING_AJAX) {
-        
-        wp_register_script('bt-sync-shipment-tracking-public', '/wp-content/plugins/shipment-tracker-for-woocommerce/public/js/bt-sync-shipment-tracking-public.js', array('jquery'),'v3.4.1', true);
-        wp_register_style('bt-sync-shipment-tracking-public-css', '/wp-content/plugins/shipment-tracker-for-woocommerce/public/css/bt-sync-shipment-tracking-public.css', array(),'', 'all');
-
-        $script_data = array(
-            "ajax_url" => admin_url('admin-ajax.php'),
-            "bt_sst_autofill_post_code" => $post_code_auto_fill,
-            "plugin_public_url" => dirname(plugin_dir_url(__FILE__)),
-            "pincode_checkout_page_nonce" => wp_create_nonce('get_data_by_pincode_checkout_page')
-        );
-        wp_localize_script('bt-sync-shipment-tracking-public', 'bt_sync_shipment_tracking_data', $script_data);
-
-        wp_print_styles('bt-sync-shipment-tracking-public-css');
-        wp_print_scripts('bt-sync-shipment-tracking-public');
-    }
-
+  
 ?>
 
 <!-- <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"> This shylesheet create issues in theme's font settings so it has been disabled. -->
@@ -251,22 +235,37 @@
   padding: 0 !important;
   margin: 0 !important;
 }
-
-#pin_input_box {
-  padding: 1px !important;
-  padding-left: 7px !important;
-  border: none !important;
+.bt_sync_shimpent_track_pincode_checker_label_text, #data_of_pin{
+  color: rgb(44, 44, 44);
+  text-shadow: 0 1px 2px rgba(198, 198, 198, 0.5);
 }
-
+#pin_input_box {
+  padding: 1px;
+  padding-left: 7px;
+  border: none;
+  background: #fff0;
+  box-shadow: none;
+  color: rgb(44, 44, 44);
+  text-shadow: 0 1px 2px rgba(198, 198, 198, 0.5);
+  padding-bottom: 5px;
+  margin: 0;
+}
+#pin_input_box:hover {
+  background: #fff0;
+  box-shadow: none;
+}
 #pin_input_btn {
-  padding: 0 !important;
-  background: white !important;
-  color: #046bd2 !important;
+  padding: 0;
+  background: transparent;
+  color: rgb(44, 44, 44);
+  text-shadow: 0 1px 2px rgba(198, 198, 198, 0.5);
+  border: none;
+  margin: 0;
 }
 
 .bt_sst_pincode_box {
   display: flex;
-  border-bottom: 1px solid #046bd2 !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
   margin: 7px 0;
   align-items: center;
   width: max-content;

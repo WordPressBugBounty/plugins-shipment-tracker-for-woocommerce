@@ -730,12 +730,13 @@ class Bt_Sync_Shipment_Tracking {
 							</div>
 						</div>
 						'.$register_for_sms_form.'
-						*Credits are used to send Order/Shipment Notification via SMS/WhatsApp to customers.
+						*Credits are used to send Order/Shipment Notification via SMS/WhatsApp to customers.<br>
+						To see message sent history and credit usage logs, please login into: <a href="https://quickengage.bitss.in/Auth/Loginwithotp?email='. esc_html( rawurlencode(get_bloginfo('admin_email')) ).'" target="_blank">Quick Engage Messaging</a>
 					</div>
 					
 				' ),
 			
-			Field::make( 'set', 'bt_sst_shipment_when_to_send_messages', __( 'When Do You Want To Send Message?' ) )
+			Field::make( 'set', 'bt_sst_shipment_when_to_send_messages', __( 'When do you want to send SMS/WhatsApp message?' ) )
 				->set_options( array(
 					'new_order' => 'New Order',
 					'failed_order' => 'Failed Order',
@@ -761,13 +762,18 @@ class Bt_Sync_Shipment_Tracking {
 				,
 				
 		
-			Field::make( 'set', 'bt_sst_shipment_from_what_send_messages', __( 'Send Message Via' ) )
+			Field::make( 'set', 'bt_sst_shipment_from_what_send_messages', __( 'Send message via' ) )
 				->set_options( array(
 					'sms' => 'SMS',
 					'email' => 'Email',
 					'whatsapp' => 'WhatsApp',
 					'push_notification' => 'Push Notification (Coming Soon)',
-				) ),
+				) )
+				->set_help_text('
+					Configure Email in <a href="'.$woocommerce_email_settings_url.'" target="_blank">WooCommerce Email Settings</a>.
+				
+				')
+				,
 				Field::make( 'html', 'bt_sst_custom_html_field_trial', __( 'Custom HTML Field' ) )
 				->set_html( '
 					<h5 class="title is-6">Try SMS:</h5>

@@ -1,0 +1,352 @@
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x {
+    width: 100%;
+    max-width: 500px;
+    /* margin: 20px auto; */
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    background: white;
+    margin: 10px 0;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x #bt_sync_shimpent_track_pincode_checker {
+    width: 97% !important;
+    border: none !important;
+    background-color: none !important;
+    max-width: unset !important;
+    min-width: unset !important;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-checker-header {
+    align-items: center;
+    justify-content: space-between;
+    display: flex;
+    background: #f7f7f7;
+    color: #000000;
+    padding: 18px 20px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* The Modal (background) */
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .primr_x_modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 999; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .primr_x_modal-content {
+    background-color: #fefefe;
+    margin: 13% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 350px;
+    position: relative;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .primr_x_modal-content ul {
+    max-height: 40vh;
+    overflow: scroll;
+}
+
+/* The Close Button */
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .primr_x_modal-close {
+    color: #000;
+    position: absolute;
+    font-size: 28px;
+    font-weight: bold;
+    top: -20px;
+    right: -10px;
+    cursor: pointer;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .primr_x_modal-close:hover,
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .primr_x_modal-close:focus {
+    color: black;
+    text-decoration: none;
+}
+
+/* Search Input */
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x #primr_x_countrySearchInput {
+    background-image: url('<?php echo esc_url($plugin_public_url); ?>images/searchicon.png');
+    background-position: 10px 12px;
+    background-repeat: no-repeat;
+    width: 100%;
+    font-size: 16px;
+    padding: 12px 20px 12px 40px;
+    border: 1px solid #ddd;
+    margin-bottom: 12px;
+    background-color: white;
+}
+
+/* Country List */
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x #primr_x_countryList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x #primr_x_countryList li a {
+    border: 1px solid #ddd;
+    margin-top: -1px;
+    background-color: #f6f6f6;
+    padding: 12px;
+    text-decoration: none;
+    font-size: 18px;
+    color: black;
+    display: block;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x #primr_x_countryList li a:hover:not(.header) {
+    background-color: #eee;
+}
+
+
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-checker-widget {
+    width: 100%;
+    max-width: 500px;
+    margin: 20px auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    background: white;
+}
+
+/* .bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-checker-header {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    padding: 18px 20px;
+    font-size: 18px;
+    font-weight: 600;
+} */
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-checker-body {
+    padding: 20px;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-estimate {
+    align-items: center;
+    padding: 15px;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    border-left: 4px solid #111827;
+    display: none;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-icon {
+    font-size: 24px;
+    margin-right: 15px;
+    color: #4f46e5;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-info {
+    flex: 1;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-location {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #111827;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-timeframe {
+    font-size: 14px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-cutoff {
+    font-size: 13px;
+    color: #4f46e5;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-form {
+    width: 100%
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .form-group {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .input-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    /* Fix flexbox overflow */
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    width: 20px;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .form-input {
+    width: 100% !important;
+    padding: 10px 12px 10px 40px !important;
+    border: 1px solid #d1d5db;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    transition: border-color 0.3s !important;
+    margin: 0;
+    height: unset;
+    box-sizing: border-box;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .form-input:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-form .form-group .search-btn {
+    background: #404040;
+    ;
+    color: white;
+    border: none;
+    padding: 0 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 15px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 80px;
+    justify-content: center;
+    margin: 0;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-form .form-group .search-btn img {
+    width: 20px;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .search-btn:hover {
+    opacity: 0.9;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .search-btn i {
+    font-size: 14px;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .loading-spinner {
+    display: none;
+    text-align: center;
+    padding: 15px;
+    width: 100%;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .spinner {
+    border: 3px solid rgba(79, 70, 229, 0.1);
+    border-radius: 50%;
+    border-top: 3px solid #4f46e5;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .error-message {
+    color: #dc2626;
+    font-size: 13px;
+    margin-top: 5px;
+    display: none;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .change-location {
+    color: #4f46e5;
+    font-size: 13px;
+    text-decoration: underline;
+    cursor: pointer;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .change-location:hover {
+    color: #4338ca;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-checker-header-img {
+    margin-right: 10px;
+    width: 20px;
+}
+
+
+@media (max-width: 600px) {
+    .bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-checker-widget {
+        margin: 10px;
+        border-radius: 8px;
+    }
+
+    .bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-checker-header {
+        padding: 15px;
+    }
+
+    .bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-checker-header-img {
+        margin-right: 10px;
+        width: 20px;
+    }
+
+    .bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-checker-body {
+        padding: 15px;
+    }
+
+    .bt_sync_shimpent_track_pincode_checker_wrap.print_x .form-group {
+        flex-direction: row;
+        /* Keep row layout on mobile */
+    }
+
+    .bt_sync_shimpent_track_pincode_checker_wrap.print_x .search-btn {
+        padding: 0 15px;
+        min-width: 60px;
+    }
+
+    .bt_sync_shimpent_track_pincode_checker_wrap.print_x .search-btn span {
+        display: none;
+        /* Hide "CHECK" text on mobile */
+    }
+
+    .bt_sync_shimpent_track_pincode_checker_wrap.print_x .search-btn i {
+        margin-right: 0;
+    }
+
+    .bt_sync_shimpent_track_pincode_checker_wrap.print_x,
+    .bt_sync_shimpent_track_pincode_checker_wrap.print_x .delivery-checker-header {
+        font-size: 11px;
+    }
+
+}

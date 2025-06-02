@@ -594,11 +594,11 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             $get_shipping_email = $order->get_billing_email();
             $get_shipping_country = $order->get_billing_country();
         }
+       
         $so = array(
             "order_id"=> $order->get_id(),
             "order_date"=> $order->get_date_created()->date("Y-m-d H:i:s"),
             "pickup_location"=> $vendor_pickup_location,
-            "channel_id"=> carbon_get_theme_option( 'bt_sst_shiprocket_channelid' ),
             "comment"=> $order->get_customer_note(),
             "billing_customer_name"=> $order->get_billing_first_name(),
             "billing_last_name"=> $order->get_billing_last_name(),
@@ -633,6 +633,11 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
             "height"=> 1,
             "weight"=> 0.1
         );
+        $bt_sst_shiprocket_channelid = carbon_get_theme_option( 'bt_sst_shiprocket_channelid' );
+        $bt_sst_shiprocket_channelid = filter_var($bt_sst_shiprocket_channelid, FILTER_VALIDATE_INT);
+        if($bt_sst_shiprocket_channelid !== false ){
+            $so["channel_id"] = $bt_sst_shiprocket_channelid;
+        }
         $total_weight = 0;
         $total_width = 0;
         $total_length = 0;
