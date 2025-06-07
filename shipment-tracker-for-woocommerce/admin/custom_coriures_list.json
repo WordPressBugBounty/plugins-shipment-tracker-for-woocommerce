@@ -269,8 +269,8 @@
       "serial_no": 39,
       "company_name": "Shree Tirupati Courier",
       "region_coverage": "India",
-      "company_url": "https://www.tirupaticouriers.com/tracking.php",
-      "tracking_url": "https://www.tirupaticouriers.com/tracking_result.php?awb={AWB}"
+      "company_url": "http://www.shreetirupaticourier.net",
+      "tracking_url": "http://www.shreetirupaticourier.net/Frm_DocTrack.aspx?docno={AWB}"
     },
     {
       "serial_no": 40,

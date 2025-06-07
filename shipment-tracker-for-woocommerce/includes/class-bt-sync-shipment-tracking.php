@@ -154,7 +154,7 @@ class Bt_Sync_Shipment_Tracking {
 			return $meta_value;
 		} else {
 			// Handle the case where the order is not found
-			error_log("Order not found: " . $order_id);
+			//error_log("Order not found: " . $order_id);
 			return null;
 		}
 	}
@@ -171,7 +171,7 @@ class Bt_Sync_Shipment_Tracking {
 			$order->save();
 		} else {
 			// Handle the case where the order is not found
-			error_log("Order not found: " . $order_id);
+			//error_log("Order not found: " . $order_id);
 		}
 	}
 
@@ -350,7 +350,6 @@ class Bt_Sync_Shipment_Tracking {
 
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'plugin_admin_menu' );
 		$this->loader->add_action( 'woocommerce_order_actions_end', $plugin_admin, 'woocommerce_order_actions_end' );
-		$this->loader->add_action( 'woocommerce_order_action_update_bt_sst_shipping_provider', $plugin_admin, 'woocommerce_order_action_update_bt_sst_shipping_provider' );
 		$this->loader->add_action( 'woocommerce_admin_order_data_after_shipping_address', $plugin_admin, 'show_order_shipping_admin' );
         $this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'add_meta_boxes' );
 		$this->loader->add_action( 'woocommerce_process_shop_order_meta', $plugin_admin, 'woocommerce_process_shop_order_meta' );

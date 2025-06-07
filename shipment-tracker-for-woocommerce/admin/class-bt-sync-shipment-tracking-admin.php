@@ -205,8 +205,14 @@ class Bt_Sync_Shipment_Tracking_Admin {
 	}
 
 	public function woocommerce_process_shop_order_meta($order_id){
-		$new_provider=wc_clean( sanitize_text_field($_POST[ '_bt_shipping_provider' ] )) ;
-		Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_provider', $new_provider);
+		$new_provider = "";
+		if(isset($_POST[ 'wc_order_action_bt_sst_shipping_provider' ])){
+			$new_provider=wc_clean( sanitize_text_field($_POST[ 'wc_order_action_bt_sst_shipping_provider' ] )) ;
+		}
+		if(!empty($new_provider)){
+			Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_provider', $new_provider);
+		}
+		
 	}
 
 	public function woocommerce_order_status_processing($order_id){
@@ -809,11 +815,6 @@ class Bt_Sync_Shipment_Tracking_Admin {
 
 	public function woocommerce_order_actions_end(){
 		// include plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-woocommerce-order-actions-end.php';
-	}
-
-	public function woocommerce_order_action_update_bt_sst_shipping_provider($order){
-		$new_provider=wc_clean( sanitize_text_field($_POST[ 'wc_order_action_bt_sst_shipping_provider' ] )) ;
-		Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta( $order->get_id(), '_bt_shipping_provider', $new_provider );
 	}
 
 

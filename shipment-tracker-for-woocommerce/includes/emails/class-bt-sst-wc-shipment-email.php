@@ -9,7 +9,7 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
 
     public function __construct(  ) {
         // set ID, this simply needs to be a unique name
-        $this->id = 'Bt_Sst_WC_Shipment_Email';
+        $this->id = 'bt_sst_wc_shipment_email';
 
         // Is a customer email
 		$this->customer_email = true;
@@ -32,7 +32,7 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
 
         // Trigger on new paid orders
         //add_action( 'woocommerce_order_status_pending_to_processing_notification', array( $this, 'trigger' ) );
-
+        add_filter( 'woocommerce_email_subject_' . $this->id , array($this,'custom_subject'), 1, 2 );
         add_action( 'bt_shipment_status_changed',  array( $this, 'bt_shipment_status_changed_callback' ) ,10,3);
        // add_action( 'woocommerce_email_after_order_table', array( $this, 'custom_content_to_processing_customer_email' ), 10, 4 );
 
@@ -45,6 +45,25 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
         // if none was entered, just use the WP admin email as a fallback
         // if ( ! $this->recipient )
         //     $this->recipient = get_option( 'admin_email' );
+    }
+
+    function custom_subject( $subject, $order ) {
+        try{
+            $tracking_current = bt_get_shipping_tracking($order->get_id());
+            if($tracking_current && isset($tracking_current["tracking_data"])){
+                $current_status = $tracking_current["tracking_data"]["current_status"];
+                if($current_status == "delivered"){
+                    $subject = '📦 Your Package has been Delivered.';
+                }else if($current_status == "out-for-delivery"){
+                    $subject = '📦 Your Package is Out for Delivery!';
+                }else if($current_status == "in-transit"){
+                    $subject = '📦 Your Package is in Transit!';
+                }
+            }
+            
+        }catch(Exception $e){
+        }
+        return $subject;
     }
 
     function custom_content_to_processing_customer_email( $order, $sent_to_admin, $plain_text, $email ) {
