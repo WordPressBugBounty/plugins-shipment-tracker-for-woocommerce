@@ -37,7 +37,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         }
     }
 
-    public function get_rate_calcultor_and_date($md, $ss, $d_pin, $o_pin, $cgm){
+    public function get_rate_calcultor_and_date($md, $ss, $d_pin, $o_pin, $cgm,$payment_mode){
         $this->init_params();
         if(!empty($this->public_key)){
             $body = array(
@@ -45,7 +45,8 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
                 'ss'=>$ss,
                 'd_pin'=>$d_pin,
                 'o_pin'=>$o_pin,
-                'cgm'=>$cgm
+                'cgm'=>$cgm,
+                'pt'=>$payment_mode
                 
             );
           
@@ -347,10 +348,10 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         if (!empty($auth_key)) {
     
             // Call for Express
-            $body_express = $this->getDataForExpressAndSurface('E', $delivery_pincode, $pickup_pincode, $weight_in_kg, $auth_key);
+            $body_express = $this->getDataForExpressAndSurface('E', $delivery_pincode, $pickup_pincode, $weight_in_kg, $auth_key,  $pm);
     
             // Call for Surface
-            $body_surface = $this->getDataForExpressAndSurface('S', $delivery_pincode, $pickup_pincode, $weight_in_kg, $auth_key);
+            $body_surface = $this->getDataForExpressAndSurface('S', $delivery_pincode, $pickup_pincode, $weight_in_kg, $auth_key,  $pm);
            
             if(isset($body_express['error']) || isset($body_surface['error'])){
                 return null;
@@ -415,13 +416,14 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         return  $resp ;
     }
 
-    function getDataForExpressAndSurface($mode, $delivery_pincode, $pickup_pincode, $weight_in_kg, $auth_key) {
+    function getDataForExpressAndSurface($mode, $delivery_pincode, $pickup_pincode, $weight_in_kg, $auth_key, $payment_mode) {
         $body = array(
             'md' => $mode,
             'ss' => "Delivered",
             'd_pin' => $delivery_pincode,
             'o_pin' => $pickup_pincode,
-            'cgm' => $weight_in_kg*1000//convert to gm
+            'cgm' => $weight_in_kg*1000, //convert to gm
+            'pt' => $payment_mode
         );
     
         $args = array(

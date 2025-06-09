@@ -12,9 +12,10 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
     function init_params() {
         $public_key=carbon_get_theme_option( 'bt_sst_shipmozo_apipublickey' );
 		$private_key=carbon_get_theme_option( 'bt_sst_shipmozo_apiprivatekey' );
-
-        $this->public_key=trim($public_key);
-        $this->private_key=trim($private_key);
+        if(!empty($public_key) && !empty($private_key)){
+            $this->public_key=trim($public_key);
+            $this->private_key=trim($private_key);
+        }
     }
 
     public function test_shipmozo(){

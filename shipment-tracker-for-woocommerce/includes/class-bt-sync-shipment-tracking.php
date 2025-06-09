@@ -1751,10 +1751,7 @@ class Bt_Sync_Shipment_Tracking {
 		$woocommerce_settings_url = admin_url('admin.php?page=wc-settings');
 		
 		$container = $container->add_tab( __( 'Product Page' ), array(
-			Field::make( 'html', 'product_message', __( 'Custom HTML Field' ) )
-			->set_html( '
-					<div class="notification is-warning">This is a premium feature. <em>Administrators can test all premium features on product, checkout, and tracking pages while logged in.</em> </div>
-			' ),
+			Field::make( 'html', 'product_message', __( 'Custom HTML Field' ) ),
 			Field::make( 'checkbox', 'bt_sst_shiprocket_pincode_checker', __( 'Enable "Estimated Delivery Date Checker" widget.') )
 				->set_classes( 'title is-6' )
 				->set_help_text('Allows user to check estimated delivery date, shipping charges etc based on delivery pincode.
@@ -1764,8 +1761,8 @@ class Bt_Sync_Shipment_Tracking {
 			Field::make( 'select', 'bt_sst_pincode_box_template', __( 'Choose widget template:' ) )
 				->set_options( array(
 					'classic' => 'Classic',
-					'realistic' => 'Realistic',
-					'prime_x' => 'Prime_x',
+					'realistic' => 'Realistic (Premium)',
+					'prime_x' => 'Prime_x (Premium)',
 				) )
 				->set_default_value('classic')
 				->set_conditional_logic( array(
@@ -1777,7 +1774,7 @@ class Bt_Sync_Shipment_Tracking {
 					<input type="hidden" value="'.$parentDirectory.'" id="bt_sst_template_preview_img">
                             <img id="template-preview-img" src="" style="display: none;" alt="Template Preview">
                          </div>'),
-			Field::make('checkbox', 'bt_sst_enable_auto_postcode_fill', __('Automatically get visitor\'s postcode from ip address'))
+			Field::make('checkbox', 'bt_sst_enable_auto_postcode_fill', __('Automatically get visitor\'s postcode from ip address (Premium)'))
 				->set_classes( 'title is-6' )
 				->set_option_value('no')
 				->set_help_text('Plugin will try to identify visitor\'s postcode using their ip address. Service used: freeipapi.com 
@@ -1813,7 +1810,7 @@ class Bt_Sync_Shipment_Tracking {
 
 				) )
 				->set_default_value( 'woocommerce_after_add_to_cart_form' ),
-			Field::make( 'time', 'bt_sst_cutoff_time', __( 'Cut Off Time(Default time will be 6:00 PM)' ) )
+			Field::make( 'time', 'bt_sst_cutoff_time', __( 'Cut Off Time(Default time will be 6:00 PM) (Premium)' ) )
 			->set_default_value(  '18:00:00' )
 			->set_conditional_logic( array(
 				array(
@@ -1980,7 +1977,7 @@ class Bt_Sync_Shipment_Tracking {
 				->set_duplicate_groups_allowed( false )
 				->set_min( 1 )
 				->set_max( 2),
-			Field::make( 'text', 'bt_sst_shiprocket_processing_days', __( 'Global Processing Days' ) )
+			Field::make( 'text', 'bt_sst_shiprocket_processing_days', __( 'Global Processing Days (Premium)' ) )
 				->set_help_text( 'Required. Processing days to improve the accuracy of estimated delivery date. This will be added to the EDD of couriers.
 				<br>You can set this at "Product Category" or "Product" or "Variations" level as well. 
 				<br>Precedence: Global < Product Category < Product < Variation
@@ -2034,12 +2031,13 @@ class Bt_Sync_Shipment_Tracking {
 					)
 				) ),
 			Field::make( 'text', 'bt_sst_message_text_template', __( 'Message Text Template' ) )
-				->set_help_text( 'Available variables: #city#, #pincode#, #min_date#, #max_date#, #min_date_charges#, #max_date_charges#, #cutoff_time#. Html is allowed.
+				->set_help_text( 'Available variables: #city#, #pincode#, #min_date#, #max_date#, #min_date_charges#, #max_date_charges#, #cutoff_time#, #shipping_timeline#. Html is allowed.
 				<br>
 				Sample Templates:<br>
 				1. Estimated delivery by &lt;b&gt;#min_date#&lt;/b&gt; &lt;br&gt; Delivering to #city# &lt;br&gt; #cutoff_time#<br>
 				2. Get it by &lt;b&gt;#min_date#&lt;/b&gt; at #city#. &lt;br&gt;#cutoff_time#<br>
     			3. 🚚 Delivery by &lt;b&gt;#min_date#&lt;/b&gt; to #city# - #pincode# &lt;br&gt; #cutoff_time#.
+				4. #shipping_timeline#
 				<br><br>
 				Apply a preset:<br>
 				<select id="bt_sst_pin_and_date_preview" name="bt_sst_pin_and_date_preview" style="margin: 10px 0px;">
@@ -2047,6 +2045,7 @@ class Bt_Sync_Shipment_Tracking {
 					<option value="Estimated delivery by &lt;b&gt;#min_date#&lt;/b&gt; &lt;br&gt; Delivering to #city# &lt;br&gt; #cutoff_time#">Message Text Template - 1</option>
 					<option value="Get it by &lt;b&gt;#min_date#&lt;/b&gt; at #city#. &lt;br&gt;#cutoff_time#">Message Text Template - 2</option>
 					<option value="🚚 Delivery by &lt;b&gt;#min_date#&lt;/b&gt; to #city# - #pincode# &lt;br&gt; #cutoff_time#">Message Text Template -3 </option>
+					<option value="🚚 Delivery by &lt;b&gt;#min_date#&lt;/b&gt; to #city# - #pincode# &lt;br&gt; #cutoff_time# <br> #shipping_timeline#">Shipping Timeline </option>
 				</select>
 				<p>Message Text Template Preview:</p>
 				<div id="bt_sst_pin_and_date_show_preiview" style="display: none;border: 1px solid #8c8f94; padding: 7px; border-radius: 5px; margin: 5px 0;">

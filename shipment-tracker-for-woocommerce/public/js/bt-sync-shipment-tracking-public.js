@@ -92,34 +92,49 @@
     $("#data_of_pin").hide();
     $("#delivery-form").hide();
     $("#loading-spinner").show();
-    $.post(
-      bt_sync_shipment_tracking_data.ajax_url,
-      { action: "get_pincode_data_product_page", value: { p: pin, n: nounce,c:country, product_id:product_id,variation_id:variation_id} },
-      function (abc) {
+    $.ajax({
+      type: "POST",
+      url: bt_sync_shipment_tracking_data.ajax_url,
+      data: { 
+      action: "get_pincode_data_product_page", 
+      value: { 
+        p: pin, 
+        n: nounce,
+        c: country, 
+        product_id: product_id,
+        variation_id: variation_id
+      } 
+      },
+      dataType: "json",
+      success: function (abc) {
         $("#data_of_pin").show();
         if (abc.status) {
           $("#data_of_pin").show();
-              $("#delivery-form").show();
-    $("#loading-spinner").hide();
+          $("#delivery-form").show();
+          $("#loading-spinner").hide();
           var resp = abc.data;
           $("#data_of_pin").html(resp);
-          if (abc.check_error.data) {
-              $('#bt_sync_shimpent_track_pincode_checker').css('display', 'none');
-              $("#bt_sst_pincode_box_change_button").show();
-            }else{
-              $('#bt_sst_pincode_box_change_button').css('display', 'none');
+          if (abc.check_error && abc.check_error.data) {
+          $('#bt_sync_shimpent_track_pincode_checker').css('display', 'none');
+          $("#bt_sst_pincode_box_change_button").show();
+          } else {
+          $('#bt_sst_pincode_box_change_button').css('display', 'none');
           }
         } else {
           var message = abc.message;
           $("#data_of_pin").html(message);
-
         }
         if (abc.error) {
           $("#pin_input_box").attr("style", "background-image: inherit");
         }
         $("#pin_input_box").attr("style", "background-image: inherit");
+      },
+      error: function (xhr, status, error) {
+        $("#loading-spinner").hide();
+        $("#data_of_pin").show().html("An error occurred. Please try again or contact support.");
+        $("#pin_input_box").attr("style", "background-image: inherit");
       }
-    );
+    });
   }
 
   function handle_keyup(handle) {

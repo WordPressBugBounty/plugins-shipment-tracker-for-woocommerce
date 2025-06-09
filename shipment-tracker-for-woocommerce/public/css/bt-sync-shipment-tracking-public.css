@@ -87,6 +87,14 @@
   min-width: 150px;
 }
 
+.bt_sync_shimpent_track_pincode_checker_wrap.realistic #pin_input_box {
+  border: none;;
+}
+
+.bt_sync_shimpent_track_pincode_checker_wrap.realistic #pin_input_box:focus{
+  outline-width: 0px;
+}
+
 #bt_sync_shimpent_track_pincode_checker div:nth-child(1) {
   flex-basis: 100%;/*  make first take full width  */
 }
@@ -139,11 +147,13 @@
         border-radius: 8px;
         padding: 20px;
         background-color: #fff;
-        max-width: 600px;
+        max-width: 400px;
         /* margin: 20px auto; */
         font-family: Arial, sans-serif;
         gap: 10px;
         font-size: 15px;
+        width: fit-content;
+        min-width: 320px;
     }
 
     .bt_sst_shipping_timeline_order_tracking .step {

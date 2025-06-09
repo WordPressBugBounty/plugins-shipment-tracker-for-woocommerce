@@ -1,7 +1,7 @@
 
 .bt_sync_shimpent_track_pincode_checker_wrap.print_x {
-    width: 100%;
-    max-width: 500px;
+    width: fit-content;
+    max-width: 450px;
     /* margin: 20px auto; */
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -25,8 +25,8 @@
     background: #f7f7f7;
     color: #000000;
     padding: 18px 20px;
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 400;
 }
 
 /* The Modal (background) */

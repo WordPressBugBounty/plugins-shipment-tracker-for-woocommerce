@@ -139,7 +139,8 @@ class Bt_Sync_Shipment_Tracking_Public
 		);
 		wp_register_script('bt-sync-shipment-tracking-public-checkout-blocks', plugin_dir_url(__FILE__) . 'js/bt-sync-shipment-tracking-public-checkout-block.js', array('wp-data', 'wc-blocks-checkout'), $this->version, true);
 		$post_code_auto_fill = carbon_get_theme_option('bt_sst_enable_auto_postcode_fill');
-
+		$is_premium = $this->licenser->should_activate_premium_features();
+		$post_code_auto_fill = ($post_code_auto_fill && $is_premium) ? true : false;
 		$script_data = array(
 			"ajax_url" => admin_url('admin-ajax.php'),
 			"bt_sst_autofill_post_code" => $post_code_auto_fill,
@@ -148,7 +149,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		);
 		wp_localize_script('bt-sync-shipment-tracking-public', 'bt_sync_shipment_tracking_data', $script_data);
 
-		$is_premium = $this->licenser->should_activate_premium_features();
+		
 
 		if (is_checkout() && $is_premium) {
 			$fill = carbon_get_theme_option(
@@ -276,8 +277,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		$product = wc_get_product($product_id);
 		if ($product && !$product->is_virtual()) {
 			$is_premium = $this->licenser->should_activate_premium_features();
-			if (!$is_premium)
-				return;
+			
 			$pincode_checker = carbon_get_theme_option('bt_sst_shiprocket_pincode_checker');
 			if ($pincode_checker != 1) {
 				return;
@@ -285,6 +285,8 @@ class Bt_Sync_Shipment_Tracking_Public
 			wp_enqueue_script('bt-sync-shipment-tracking-public');
 
 			$check_templet = carbon_get_theme_option('bt_sst_pincode_box_template');
+			if (!$is_premium)
+				$check_templet = "classic"; //if not premium, then use classic template.
 			// $check_templet = "prime_x";
 			$post_code_auto_fill = carbon_get_theme_option('bt_sst_enable_auto_postcode_fill');
 			wp_enqueue_style('bt-sync-shipment-tracking-public-css');
@@ -319,13 +321,13 @@ class Bt_Sync_Shipment_Tracking_Public
 		}
 	}
 
+	//[bt_estimated_delivery_widget] shortcode handler
 	function bt_estimated_delivery_widget()
 	{
 
 
 		$is_premium = $this->licenser->should_activate_premium_features();
-		if (!$is_premium)
-			return "";
+	
 		$pincode_checker = carbon_get_theme_option('bt_sst_shiprocket_pincode_checker');
 		if ($pincode_checker != 1) {
 			return "";
@@ -334,12 +336,18 @@ class Bt_Sync_Shipment_Tracking_Public
 		wp_enqueue_style('bt-sync-shipment-tracking-public-css');
 		wp_enqueue_script('bt-sync-shipment-tracking-public');
 		$check_templet = carbon_get_theme_option('bt_sst_pincode_box_template');
+		if (!$is_premium)
+			$check_templet = "classic"; //if not premium, then use classic template.
 
 		ob_start();
 		if ($check_templet == "realistic") {
 			include plugin_dir_path(dirname(__FILE__)) . 'public/partials/bt_sst_pincode_sow_realistic.php';
 		} else if ($check_templet == "classic") {
 			include plugin_dir_path(dirname(__FILE__)) . 'public/partials/input_box_pincode_show_data.php';
+		}else if ($check_templet == "prime_x") {
+			wp_enqueue_style('input_box_pincode_show_prime_x');
+			wp_enqueue_script('bt_sst_input_box_pincode_show_prime_x');
+			include plugin_dir_path(dirname(__FILE__)) . 'public/partials/input_box_pincode_show_prime_x.php';
 		} else {
 			include plugin_dir_path(dirname(__FILE__)) . 'public/partials/input_box_pincode_show_data.php';
 		}
@@ -375,7 +383,21 @@ class Bt_Sync_Shipment_Tracking_Public
 
 		);
 		$is_premium = $this->licenser->should_activate_premium_features();
-		if ($is_premium) {
+		$city = "";
+		$min_hours = 100000;
+		$min_days = 0;
+		$max_days = 0;
+		$min_days_charges = 0;
+		$max_days_charges = 0;
+		$min_date = '';
+		$min_date_charges = -1;
+		$min_courier_name = '';
+		$max_hours = 0;
+		$max_date = '';
+		$max_date_charges = -1;
+		$max_courier_name = '';
+		$should_activate = true;// 
+		if ($should_activate) {
 
 			$pickup_data_provider = carbon_get_theme_option(
 				"bt_sst_pincode_data_provider"
@@ -388,16 +410,7 @@ class Bt_Sync_Shipment_Tracking_Public
 			if (isset($_POST['value']['variation_id'])) {
 				$variation_id = trim($_POST['value']['variation_id']);
 			}
-			$city = "";
-			$min_hours = 100000;
-			$min_date = '';
-			$min_date_charges = -1;
-			$min_courier_name = '';
-
-			$max_hours = 0;
-			$max_date = '';
-			$max_date_charges = -1;
-			$max_courier_name = '';
+		
 			$bt_sst_message_text_template = carbon_get_theme_option('bt_sst_message_text_template');
 			$push_resp = [];
 			if ($pickup_data_provider == 'generic') {
@@ -605,6 +618,9 @@ class Bt_Sync_Shipment_Tracking_Public
 						//if not found, get processing days set at global level.
 						$processing_days = carbon_get_theme_option("bt_sst_shiprocket_processing_days");
 					}
+					if(!$is_premium){
+						$processing_days = 0; //if not premium, then no processing days.
+					}
 
 
 					if ($processing_days && $processing_days > 0) {
@@ -732,6 +748,9 @@ class Bt_Sync_Shipment_Tracking_Public
 						//if not found, get processing days set at global level.
 						$processing_days = carbon_get_theme_option("bt_sst_shiprocket_processing_days");
 					}
+					if(!$is_premium){
+						$processing_days = 0; //if not premium, then no processing days.
+					}
 
 					if ($processing_days && $processing_days > 0) {
 						$min_date = $this->addDayswithdate($min_date, $processing_days);
@@ -844,7 +863,9 @@ class Bt_Sync_Shipment_Tracking_Public
 						$processing_days = carbon_get_theme_option("bt_sst_shiprocket_processing_days");
 					}
 					//$processing_days = 9;
-
+					if(!$is_premium){
+						$processing_days = 0; //if not premium, then no processing days.
+					}
 
 					if ($processing_days && $processing_days > 0) {
 						$min_date = $this->addDayswithdate($min_date, $processing_days);
@@ -871,10 +892,10 @@ class Bt_Sync_Shipment_Tracking_Public
 						$cached_pincode_key = $pickup_pin . "_" . $delivery_pincode . "_1";
 						if (isset($bt_sst_cached_delivery_estimates_delhivery[$cached_pincode_key])) {
 							$push_resp = $bt_sst_cached_delivery_estimates_delhivery[$cached_pincode_key][0];
-							$express_tat = $$bt_sst_cached_delivery_estimates_delhivery[$cached_pincode_key][1];
+							$express_tat = $bt_sst_cached_delivery_estimates_delhivery[$cached_pincode_key][1];
 							$response["message"] = "Data fetched from cache.";
 						} else {
-							$push_resp = $this->delhivery->get_rate_calcultor_and_date('E', 'Delivered', $pickup_pin, $delivery_pincode, '500');
+							$push_resp = $this->delhivery->get_rate_calcultor_and_date('E', 'Delivered', $pickup_pin, $delivery_pincode, '500','PREPAID');
 
 							if ($push_resp != null && !empty($push_resp) && sizeof($push_resp) > 0) {
 
@@ -934,6 +955,10 @@ class Bt_Sync_Shipment_Tracking_Public
 					if (!$processing_days) {
 						$processing_days = carbon_get_theme_option("bt_sst_shiprocket_processing_days");
 					}
+
+					if(!$is_premium){
+						$processing_days = 0; //if not premium, then no processing days.
+					}
 					if ($processing_days && $processing_days > 0) {
 						$min_date = $this->addDayswithdate($min_date, $processing_days);
 						$max_date = $this->addDayswithdate($max_date, $processing_days);
@@ -958,59 +983,67 @@ class Bt_Sync_Shipment_Tracking_Public
 				$bt_sst_message_text_template = 'Estimated delivery by <b>#min_date#</b> <br> Delivering to #city#';
 			}
 
-			$cutoff_time_str = carbon_get_theme_option('bt_sst_cutoff_time');
 			$message = "";
+			//cut off time processing for premium users
+			if($is_premium){
+				$cutoff_time_str = carbon_get_theme_option('bt_sst_cutoff_time');
+				
 
-			if (!$cutoff_time_str) {
-				$cutoff_time_str = '18:00:00';
-			}
-			$timezone_string = get_option('timezone_string');
-			if (!$timezone_string) {
-				$timezone_string = 'Asia/Kolkata';
-			}
+				if (!$cutoff_time_str) {
+					$cutoff_time_str = '18:00:00';
+				}
+				$timezone_string = get_option('timezone_string');
+				if (!$timezone_string) {
+					$timezone_string = 'Asia/Kolkata';
+				}
 
-			try {
-				$wp_timezone = new DateTimeZone($timezone_string);
-			} catch (Exception $e) {
-				// Handle the exception if the timezone is still invalid
-				$wp_timezone = new DateTimeZone('UTC'); // Fallback to UTC
-			}
+				try {
+					$wp_timezone = new DateTimeZone($timezone_string);
+				} catch (Exception $e) {
+					// Handle the exception if the timezone is still invalid
+					$wp_timezone = new DateTimeZone('UTC'); // Fallback to UTC
+				}
 
-			// Get the current time in the WordPress timezone
-			$current_time = new DateTime('now', $wp_timezone);
+				// Get the current time in the WordPress timezone
+				$current_time = new DateTime('now', $wp_timezone);
 
-			// Create the cutoff time in the WordPress timezone
-			$cutoff_time = new DateTime($cutoff_time_str, $wp_timezone);
+				// Create the cutoff time in the WordPress timezone
+				$cutoff_time = new DateTime($cutoff_time_str, $wp_timezone);
 
-			// Calculate the time difference
-			$time_diff = $cutoff_time->getTimestamp() - $current_time->getTimestamp();
-
-			if ($time_diff > 0) {
-				$hours = floor($time_diff / 3600);
-				$minutes = floor(($time_diff % 3600) / 60);
-				$message = "If ordered within <strong>" . $hours . " hrs " . $minutes . " mins</strong>";
-			} else {
-				// If the current time is past the cutoff, move the cutoff time to the next day
-				$cutoff_time->modify('+1 day');
+				// Calculate the time difference
 				$time_diff = $cutoff_time->getTimestamp() - $current_time->getTimestamp();
-				$hours = floor($time_diff / 3600);
-				$minutes = floor(($time_diff % 3600) / 60);
-				$message = "If ordered within <strong>" . $hours . " hrs " . $minutes . " mins</strong>";
-			}
 
+				if ($time_diff > 0) {
+					$hours = floor($time_diff / 3600);
+					$minutes = floor(($time_diff % 3600) / 60);
+					$message = "If ordered within <strong>" . $hours . " hrs " . $minutes . " mins</strong>";
+				} else {
+					// If the current time is past the cutoff, move the cutoff time to the next day
+					$cutoff_time->modify('+1 day');
+					$time_diff = $cutoff_time->getTimestamp() - $current_time->getTimestamp();
+					$hours = floor($time_diff / 3600);
+					$minutes = floor(($time_diff % 3600) / 60);
+					$message = "If ordered within <strong>" . $hours . " hrs " . $minutes . " mins</strong>";
+				}
+			}
 			$cut_of_time = $message;
 			$edit_postcode = '<div id="bt_sst_pincode_box_change_button" style=""><a href="#">Change</a></div>';
-			$processing_time = carbon_get_theme_option('bt_sst_shiprocket_processing_days');
-			if ($processing_time) {
-				$processing_time = "<div class='bt_sst_processing_time'>Processing time: " . esc_html($processing_time) . " days</div>";
-			}
 
+			//processing time calculation for premium users
+			$processing_time = "";
 			$ordered_date = new DateTime(); // create DateTime object
-			$processing_time_min = carbon_get_theme_option('bt_sst_shiprocket_processing_days');
-
 			// Clone the DateTime object to calculate the shipped date
 			$shipped_date = clone $ordered_date;
-			$shipped_date->modify("+{$processing_time_min} days");
+			if($is_premium){
+				$processing_time = carbon_get_theme_option('bt_sst_shiprocket_processing_days');
+				if ($processing_time) {
+					$processing_time = "<div class='bt_sst_processing_time'>Processing time: " . esc_html($processing_time) . " days</div>";
+				}
+				$processing_time_min = carbon_get_theme_option('bt_sst_shiprocket_processing_days',0);
+				if(!empty($processing_time_min) && $processing_time_min > 0) {
+					$shipped_date->modify("+{$processing_time_min} days");
+				}
+			}
 
 			// Format both dates
 			$ordered_date_formatted = $ordered_date->format('M d');
@@ -1108,7 +1141,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		}
 		$mess_text = str_ireplace("#edit#", $edit_postcode, $mess_text);
 		$mess_text = str_ireplace("#processing_time#", $processing_time, $mess_text);
-		$mess_text = str_ireplace("#shippingTimeline#", $shippingTimeline, $mess_text);
+		$mess_text = str_ireplace("#shipping_timeline#", $shippingTimeline, $mess_text);
 
 
 		return $mess_text;

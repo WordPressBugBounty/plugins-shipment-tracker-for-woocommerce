@@ -181,6 +181,7 @@
 
 		jQuery(document).on('change', 'input[name="carbon_fields_compact_input[_bt_sst_message_text_template]"]', function () {
 			var selectedValue = $(this).val();
+			let timeline_img_url = bt_sync_shipment_track_data.plugin_public_url + 'images/shipping timeline.png';
 			const replacements = {
 				'#min_date#': 'Oct 08, 2024',
 				'#max_date#': 'Oct 08, 2024',
@@ -189,7 +190,8 @@
 				'#min_date_charges#': '50',
 				'#max_date_charges#': '80',
 				'#cutoff_time#': 'If ordered within 10 hrs 52 mins',
-				'#edit#': '<a href="#">Change</a>'
+				'#edit#': '<a href="#">Change</a>',
+				'#shipping_timeline#': '<img style="width: 350px;" src="'+timeline_img_url+'"/>'
 			};
 			for (const [key, value] of Object.entries(replacements)) {
 				const regex = new RegExp(key, 'g');
