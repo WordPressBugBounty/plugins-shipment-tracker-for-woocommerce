@@ -356,6 +356,21 @@ class Bt_Sync_Shipment_Tracking_Public
 
 	}
 
+	function getDaysDifferenceFromToday($date)
+	{
+		try {
+			// Attempt to create DateTime object from the input
+			$givenDate = new DateTime($date);
+			$currentDate = new DateTime();
+
+			$interval = $currentDate->diff($givenDate);
+			return (int)$interval->format('%r%a'); // returns signed number of days
+		} catch (Exception $e) {
+			// Handle invalid date format
+			return null; // or you could return a specific error message or code
+		}
+	}
+
 	function addDayswithdate($date, $days)
 	{
 		$date = date('M d, Y', strtotime($date . ' ' . $days . ' days'));
@@ -1055,7 +1070,37 @@ class Bt_Sync_Shipment_Tracking_Public
 			include plugin_dir_path(dirname(__FILE__)) . 'public/partials/bt_sst_shipping_tracking_timeline.php';
 			$shippingTimeline = ob_get_clean();
 
+			$edd_variables = array(
+				'bt_sst_message_text_template' => $bt_sst_message_text_template,
+				'min_date' => $min_date,
+				'max_date' => $max_date,
+				'delivery_pincode' => $delivery_pincode,
+				'city' => $city,
+				'min_date_charges' => $min_date_charges,
+				'max_date_charges' => $max_date_charges,
+				'cut_off_time' => $cut_of_time,
+				'processing_time' => $processing_time,
+				'shipping_timeline_html' => $shippingTimeline
+			);
+
+			$edd_variables = apply_filters('bt_edd_variables', $edd_variables,$product_id ); 
+
+			$bt_sst_message_text_template = $edd_variables['bt_sst_message_text_template'];
+			$min_date = $edd_variables['min_date'];
+			$max_date = $edd_variables['max_date'];
+			$delivery_pincode = $edd_variables['delivery_pincode'];
+			$city = $edd_variables['city'];
+			$min_date_charges = $edd_variables['min_date_charges'];
+			$max_date_charges = $edd_variables['max_date_charges'];
+			$cut_of_time = $edd_variables['cut_off_time'];
+			$processing_time = $edd_variables['processing_time'];
+			$shippingTimeline = $edd_variables['shipping_timeline_html'];
+
+
+
 			$message_text_template = $this->update_message_text_template($bt_sst_message_text_template, $min_date, $max_date, $delivery_pincode, $city, $min_date_charges, $max_date_charges, $cut_of_time, $edit_postcode, $processing_time, $shippingTimeline);
+
+			$message_text_template = apply_filters('bt_edd_message_text', $message_text_template, $edd_variables , $product_id); 
 
 			$response = array(
 				"status" => true,
@@ -1414,7 +1459,8 @@ class Bt_Sync_Shipment_Tracking_Public
 				//$WC_Shipping_Rate->add_meta_data('bt_sst_courier_company_id', '');
 				$WC_Shipping_Rate->add_meta_data('bt_sst_courier_company_name', $courier_name);
 				$WC_Shipping_Rate->add_meta_data('bt_sst_shipment_provider', 'generic');
-
+				$bt_sst_shipping_duration_days = 1;
+				$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
 				$rates[$id] = $WC_Shipping_Rate;
 			}
 
@@ -1519,6 +1565,9 @@ class Bt_Sync_Shipment_Tracking_Public
 						}
 						$WC_Shipping_Rate->set_cost($cost);
 						$WC_Shipping_Rate->set_instance_id($id);
+						$bt_sst_shipping_duration_days = 4; // set default of 4 days
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
+						
 						// $WC_Shipping_Rate->set_taxes($texes);
 
 						$rates[$id] = $WC_Shipping_Rate;
@@ -1558,6 +1607,7 @@ class Bt_Sync_Shipment_Tracking_Public
 						$texes = [];
 						$delivery_date = '';
 						$show_delivery_date = carbon_get_theme_option("bt_sst_show_delivery_date");
+						$bt_sst_shipping_duration_days = null;
 						if ($show_delivery_date == 1) {
 							$processing_days = $this->bt_get_processing_days();//first try to get at product or category level.
 							if (!$processing_days) {
@@ -1569,6 +1619,7 @@ class Bt_Sync_Shipment_Tracking_Public
 								$processing_days = 0;
 							}
 							$d = $this->addDayswithdate($rb['etd'], $processing_days);
+							$bt_sst_shipping_duration_days = $this->getDaysDifferenceFromToday($rb['etd']);
 							$delivery_date = " (Edd: " . $d . ")";
 						}
 
@@ -1584,7 +1635,7 @@ class Bt_Sync_Shipment_Tracking_Public
 						$WC_Shipping_Rate->add_meta_data('bt_sst_sr_courier_company_id', $rb['courier_company_id']);
 						$WC_Shipping_Rate->add_meta_data('bt_sst_sr_courier_company_name', $rb['courier_name']);
 						$WC_Shipping_Rate->add_meta_data('bt_sst_shipment_provider', 'shiprocket');
-
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
 						$rates[$id] = $WC_Shipping_Rate;
 					}
 
@@ -1609,6 +1660,7 @@ class Bt_Sync_Shipment_Tracking_Public
 						$texes = [];
 						$delivery_date = '';
 						$show_delivery_date = carbon_get_theme_option("bt_sst_show_delivery_date");
+						$bt_sst_shipping_duration_days = null;
 						if ($show_delivery_date == 1) {
 							$processing_days = carbon_get_theme_option("bt_sst_shipment_processing_days");
 							if (!$processing_days || $processing_days < 0) {
@@ -1617,7 +1669,7 @@ class Bt_Sync_Shipment_Tracking_Public
 							$etd = $rb['etd'];
 							$min_date = explode("-", $etd)[0];
 							$max_date = explode("-", $etd)[1];
-
+							$bt_sst_shipping_duration_days = $this->getDaysDifferenceFromToday($min_date);
 							$min_date = $this->addDayswithdate($min_date, $processing_days);
 							$max_date = $this->addDayswithdate($max_date, $processing_days);
 							$delivery_date = " (" . $min_date . " - " . $max_date . ")";
@@ -1635,7 +1687,7 @@ class Bt_Sync_Shipment_Tracking_Public
 						$WC_Shipping_Rate->add_meta_data('bt_sst_sr_courier_company_id', $rb['courier_company_id']);
 						$WC_Shipping_Rate->add_meta_data('bt_sst_sr_courier_company_name', $rb['courier_name']);
 						$WC_Shipping_Rate->add_meta_data('bt_sst_shipment_provider', 'shiprocket');
-
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
 						$rates[$id] = $WC_Shipping_Rate;
 					}
 				}
@@ -1727,6 +1779,8 @@ class Bt_Sync_Shipment_Tracking_Public
 						}
 						$WC_Shipping_Rate->set_cost($cost);
 						$WC_Shipping_Rate->set_instance_id($id);
+						$bt_sst_shipping_duration_days = 4; // set default of 4 days
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
 						// $WC_Shipping_Rate->set_taxes($texes);
 
 						$rates[$id] = $WC_Shipping_Rate;
@@ -1762,6 +1816,7 @@ class Bt_Sync_Shipment_Tracking_Public
 						$texes = [];
 						$delivery_date = '';
 						$show_delivery_date = carbon_get_theme_option("bt_sst_show_delivery_date");
+						$bt_sst_shipping_duration_days = null; // set default of 4 days
 						if ($show_delivery_date == 1) {
 							$processing_days = $this->bt_get_processing_days();//first try to get at product or category level.
 							if (!$processing_days) {
@@ -1776,6 +1831,7 @@ class Bt_Sync_Shipment_Tracking_Public
 							$currentDate = new DateTime();
 							preg_match('/\d+/', $input, $matches);
 							$days = intval($matches[0]);
+							$bt_sst_shipping_duration_days = $days;
 							$interval = new DateInterval("P{$days}D");
 							$currentDate->add($interval);
 							$expectedDate = $currentDate->format('c');
@@ -1795,6 +1851,8 @@ class Bt_Sync_Shipment_Tracking_Public
 						$WC_Shipping_Rate->set_cost($cost);
 						$WC_Shipping_Rate->set_instance_id($id);
 						$WC_Shipping_Rate->set_taxes($texes);
+						
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
 						$WC_Shipping_Rate->add_meta_data('bt_sst_courier_company_id', $rb['id']);
 						$WC_Shipping_Rate->add_meta_data('bt_sst_courier_company_name', $rb['name']);
 						$WC_Shipping_Rate->add_meta_data('bt_sst_shipment_provider', 'shipmozo');
@@ -1892,7 +1950,8 @@ class Bt_Sync_Shipment_Tracking_Public
 						$WC_Shipping_Rate->set_cost($cost);
 						$WC_Shipping_Rate->set_instance_id($id);
 						// $WC_Shipping_Rate->set_taxes($texes);
-
+						$bt_sst_shipping_duration_days = 4; // set default of 4 days
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
 						$rates[$id] = $WC_Shipping_Rate;
 					}
 				} else {
@@ -1948,6 +2007,8 @@ class Bt_Sync_Shipment_Tracking_Public
 						$WC_Shipping_Rate->set_cost($cost);
 						$WC_Shipping_Rate->set_instance_id($id);
 						$WC_Shipping_Rate->set_taxes($texes);
+						$bt_sst_shipping_duration_days = 4; // set default of 4 days
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
 						$WC_Shipping_Rate->add_meta_data('bt_sst_courier_company_id', $rb['id']);
 						$WC_Shipping_Rate->add_meta_data('bt_sst_courier_company_name', $rb['name']);
 						$WC_Shipping_Rate->add_meta_data('bt_sst_shipment_provider', 'nimbuspost_new');
@@ -2046,6 +2107,8 @@ class Bt_Sync_Shipment_Tracking_Public
 
 						$WC_Shipping_Rate->set_cost($cost);
 						$WC_Shipping_Rate->set_instance_id($id);
+						$bt_sst_shipping_duration_days = 4; // set default of 4 days
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
 						// $WC_Shipping_Rate->set_taxes($texes);
 
 						$rates[$id] = $WC_Shipping_Rate;
@@ -2076,8 +2139,10 @@ class Bt_Sync_Shipment_Tracking_Public
 						// }
 
 						$lable = "Delhivery " . ucfirst($rb['mode']);
+						$bt_sst_shipping_duration_days = null;
 						if (isset($rb['tat']) && $rb['tat'] != null) {
 							$lable .= " / " . $rb['tat'] . ($rb['tat'] > 1 ? " days " : " day");
+							$bt_sst_shipping_duration_days = $rb['tat'];
 						}
 						$id = 'flat_rate:delhivery:' . $rb['mode'];
 						$method_id = 'flat_rate';
@@ -2123,7 +2188,7 @@ class Bt_Sync_Shipment_Tracking_Public
 						// $WC_Shipping_Rate->add_meta_data('bt_sst_courier_company_id', $rb['id']);
 						$WC_Shipping_Rate->add_meta_data('bt_sst_courier_company_name', $lable);
 						$WC_Shipping_Rate->add_meta_data('bt_sst_shipment_provider', 'delhivery');
-
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
 						$rates[$id] = $WC_Shipping_Rate;
 					}
 

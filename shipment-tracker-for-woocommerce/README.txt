@@ -42,7 +42,7 @@ With automated tracking updates & self-service options, customers can check thei
 
 Eliminate the need for multiple plugins with our Swiss army knife for shipment tracking. Manage everything in one place.
 
-### Inbuilt SMS and Email Functionality
+### Inbuilt SMS, WhatsApp and Email Functionality
 
 Send tracking updates directly to your customers via SMS and email.
 
@@ -72,12 +72,12 @@ Personalize the tracking page to match your preferences & your brand's look and 
     >-   **International Shipping Support**.
     
 
--   **SMS & Email Notifications:**
+-   **SMS, WhatsApp & Email Notifications:**
     
 
      >-   **Easily integrates with WooCommerce's default email** system to provide real-time tracking updates.
     
-    >-   **Send tracking updates** via SMS, Email, or WhatsApp (coming soon).
+    >-   **Send tracking updates** via SMS, Email, or WhatsApp.
     
     >-   Global SMS service availability.
     
@@ -413,7 +413,9 @@ Support for More Shipping Aggregators Coming Soon… [Contact us to get yours in
     
 9.  Custom development assistance.
 
-10.  Priority phone and ticket based support.
+10. Priority phone and ticket based support.
+
+11. Branded SMS & WhatsApp messaging.
 
 ## Compatibility
 

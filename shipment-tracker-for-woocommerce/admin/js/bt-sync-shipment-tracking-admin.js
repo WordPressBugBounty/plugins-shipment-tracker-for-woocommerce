@@ -1167,8 +1167,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		var checkbox1 = document.getElementById('checkbox1');
 		var checkbox2 = document.getElementById('checkbox2');
 		var mobile_no = document.getElementById('register_mobile_number').value;
-		if (!checkbox1.checked || !checkbox2.checked || mobile_no === '') {
-			alert('Please check both checkboxes to proceed and enter your mobile number.');
+		if (mobile_no === '') {
+			alert('Please enter your mobile number to proceed.');
 		}
 		else {
 			$(this).addClass('is-loading');
@@ -1264,9 +1264,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	$(document).on('submit', '#bt_buy_sms_form', function (e) {
 		var qty = $('#bt_sms_input_credits_buy').val();
-		if (qty < 2000) {
+		if (qty < 1000) {
 			e.preventDefault();
-			alert("Minimum purchase of 2000 credits are required.");
+			alert("Minimum purchase of 1000 credits are required.");
 		}
 
 	});

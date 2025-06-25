@@ -644,54 +644,49 @@ class Bt_Sync_Shipment_Tracking {
 		$register_for_sms_form="";
 		if(empty($api)){
 			$register_for_sms_form = '
-			 <div class="is-overlay" style="background: #202020d4;">
-				<div class="container" style="display: flex; flex-direction: column; align-items: center;justify-content: center;height:100%;">
-					<div class="field is-horizontal" style="width: 100%; max-width: 600px;">
-						<div class="field-body" style="width: 100%;">
-							<div class="field" style="width: 100%;">
-								<div class="control">
-									<label class="checkbox" style="width: 100%; color: white;font-size:12px;">
-										<input type="checkbox" id="checkbox1">
-										I agree to the terms & conditions and authorize "Bitss Techniques" to send SMS/WhatsApp on my behalf.
-									</label>
-								</div>
+			<div class="is-overlay" style="background:rgba(0, 0, 0, 0.80);">
+			<div class="panel is-info" style="background-color:white;max-width: 600px; margin: -10px auto;">
+				<p class="panel-heading">
+					Register for SMS/WhatsApp Messaging
+				</p>
+				<div class="panel-block" style="flex-direction: column; align-items: stretch;">
+					<div class="panel-block" style="flex-direction: column; align-items: stretch;">
+						<div class="notification is-info is-light mb-3" style="font-size: 15px;">
+							<strong>Why Register?</strong>
+							<ul style="margin-left: 1.2em; list-style: disc; font-size: 14px;">
+								<li>Enable SMS & WhatsApp order updates for your customers</li>
+								<li>Reduce support queries & improve satisfaction</li>
+								<li>Quick, free registration</li>
+							</ul>
+						</div>
+						<div class="field is-grouped" style="width:100%;">
+							<p class="control is-expanded">
+							<input style="display:none" checked="checked" type="checkbox" id="checkbox1">
+							<input style="display:none" checked="checked" type="checkbox" id="checkbox2">
+
+								<input type="text" id="register_mobile_number" class="input is-medium" placeholder="Mobile number with country code" style="height: 44px;">
+							</p>
+							<p class="control">
+								<button type="button" class="button is-info is-medium" id="register_get_api_key" style="height: 44px;">
+									Register
+								</button>
+							</p>
+						</div>
+						<div id="register_get_api_key_test_connection_modal" class="modal">
+							<div class="modal-background"></div>
+							<div class="modal-card">
+								<header class="modal-card-head">
+									<p id="register_get_api_key_tc-m-content" class="modal-content"></p>
+								</header>
 							</div>
+						</div>
+						<div class="panel-block" style="font-size:12px; margin-top: 8px;">
+							By registering, you authorize Bitss Techniques to send SMS/WhatsApp on your behalf. Misuse will lead to termination.
 						</div>
 					</div>
-					<div class="field is-horizontal" style="width: 100%; max-width: 600px;">
-						<div class="field-body" style="width: 100%;">
-							<div class="field" style="width: 100%;">
-								<div class="control">
-									<label class="checkbox" style="width: 100%; color: white;font-size:12px;">
-										<input type="checkbox" id="checkbox2">
-										I understand that misuse of the service will lead to immediate termination of account.
-									</label>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="field is-horizontal" style="width: 100%; max-width: 600px; text-align: center;">
-						<div class="field-body" style="width: 100%;">
-							<div class="field" style="width: 100%;">
-								<div class="control">
-									<input type="text" id="register_mobile_number" class="p-2" style="font-size: 16px;" placeholder="Enter mobile number">
-									<button type="button" class=" button is-medium" id="register_get_api_key" style="" >
-										Click Here to Register for SMS/WhatsApp
-									</button>
-									<div id="register_get_api_key_test_connection_modal" class="modal">
-										<div class="modal-background"></div>
-											<div class="modal-card">
-												<header class="modal-card-head">
-													<p id="register_get_api_key_tc-m-content" class="modal-content"></p>
-												
-													</header>
-											</div>
-									</div> 
-								</div>
-							</div>
-						</div>
 					</div>
 				</div>
+			</div>
 			</div>
 			';
 		}
@@ -800,7 +795,7 @@ class Bt_Sync_Shipment_Tracking {
 												<div class="field" style="width: 100%;">
 													<div class="control">
 														<button type="button" class=" button is-medium" id="get_sms_trial" style="width: 100%;" >
-															Send SMS
+															Send
 														</button>
 														<div id="get_sms_trial_test_connection_modal" class="modal">
 															<div class="modal-background"></div>
@@ -816,8 +811,11 @@ class Bt_Sync_Shipment_Tracking {
 												</div>
 											</div>
                                    	 </div>
-                                    <p class="help is-info">Enter your mobile number with country code. Eg: +91 94622 42982 <br>We will send an sms of selected event to your mobile number.<br> 
-									Supported Countries: <b>All</b></p>
+                                    <p class="help is-info">Enter your mobile number with country code. Eg: +91 94622 42982 <br>
+									Upgrade to Premium to send SMS Messages using your own brand name. <br>
+									Supported Countries: <b>All</b><br>
+									
+									</p>
                      </div>
 				' ),
 					Field::make( 'html', 'bt_sst_custom_html_field_trial_whatsapp', __( 'Custom HTML Field' ) )
@@ -844,7 +842,7 @@ class Bt_Sync_Shipment_Tracking {
 												<div class="field" style="width: 100%;">
 													<div class="control">
 														<button type="button" class=" button is-medium" id="get_whatsapp_trial" style="width: 100%;" >
-															Send WhatsApp
+															Send
 														</button>
 														<div id="get_whatsapp_trial_test_connection_modal" class="modal">
 															<div class="modal-background"></div>
@@ -860,7 +858,8 @@ class Bt_Sync_Shipment_Tracking {
 												</div>
 											</div>
                                    	 </div>
-                                    <p class="help is-info">Enter your mobile number with country code. Eg: +91 94622 42982 <br>We will send an WhatsApp of selected event to your mobile number.<br> 
+                                    <p class="help is-info">Enter your mobile number with country code. Eg: +91 94622 42982 <br>
+									Upgrade to Premium to Send WhatsApp messages using your own brand name. <br>
 									Supported Countries: <b>All</b></p>
                      </div>
 				' ),
@@ -909,7 +908,7 @@ class Bt_Sync_Shipment_Tracking {
 						<div class="box">
 							<h3 class="title is-5">Note:</h3>
 							<h4 class="title is-6">SMS/WhatsApp are chargeable and requires registration. You can buy messaging credits from within this plugin.</h4>
-							<h4 class="title is-6">Sms/WhatsApp messages are sent using pre-approved, co-branded DLT/Meta templates. For sending fully branded sms using your sender id, <a target="_blank" href="https://billing.bitss.tech/index.php?fuse=support&controller=ticket&view=submitticket">pls raise a support ticket</a>.</h4>
+							<h4 class="title is-6">SMS/WhatsApp messages are sent using pre-approved, co-branded DLT/Meta templates. For sending fully branded sms using your brand name, upgrade to Premium & then <a target="_blank" href="https://billing.bitss.tech/index.php?fuse=support&controller=ticket&view=submitticket">pls raise a support ticket</a>.</h4>
 							<h4 class="title is-6">Need a Full Featured SMS Panel for advanced SMS Messaging? <a target="_blank" href="https://smsapi.bitss.tech">Signup here for fast, reliable & cost effective sms service.</a></h4>
 							<h4 class="title is-6">Emails are free and are sent using your own server. Email template can be customized from <a target="_blank"  href="/wp-admin/admin.php?page=wc-settings&tab=email&section=bt_sst_wc_shipment_email">woocommerce email settings</a>.</h4>
 						</div>
