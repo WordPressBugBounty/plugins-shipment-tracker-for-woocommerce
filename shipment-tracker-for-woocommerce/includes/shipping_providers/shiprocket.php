@@ -659,14 +659,15 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
                 }else{
                     $sku_count_map[$product_sku] = 1;
                 }
-            
+                $tax_total = $a->get_total_tax(); // safer method
+
                 $so["order_items"][] =array(
                     "name"=> $a->get_name(),
                     "sku"=>  $product_sku,
                     "units"=> $a->get_quantity(),
                     "selling_price"=>  $order->get_item_subtotal( $a, true, true ),
                     "discount"=> "",
-                    "tax"=> "",
+                    "tax"=> (float) $tax_total,
                     "hsn"=> ""
                 ); 
                 if(!empty($product->get_weight()) && $product->get_weight()>0){

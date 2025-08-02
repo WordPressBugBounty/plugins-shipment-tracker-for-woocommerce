@@ -370,17 +370,14 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
 	}
 
     private function extractPhoneNumber( $billing_phone) {
-        // Remove all characters except digits from the input string
         $digitsOnly = preg_replace('/\D/', '', $billing_phone);
         
-        // If the resulting string has more than 10 digits, take the last 10 digits
         if (strlen($digitsOnly) > 10) {
             $phoneNumber = substr($digitsOnly, -10);
         } else {
-            // If the resulting string has less than 10 digits, pad with zeros to make it 10 digits
             $phoneNumber = str_pad($digitsOnly, 10, '0', STR_PAD_LEFT);
         }
-        
+
         return $phoneNumber;
     }
 
@@ -388,7 +385,10 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
         if(false == $order = wc_get_order( $order_id )){
             return false;
         }
-        $phoneNumber = $this->extractPhoneNumber($order->get_billing_phone());
+        $billingPhone = $order->get_billing_phone();
+        $shippingPhone = $order->get_shipping_phone();
+        $phoneToUse = !empty($shippingPhone) ? $shippingPhone : $billingPhone;
+        $phoneNumber = $this->extractPhoneNumber($phoneToUse);
         $warehouseid = carbon_get_theme_option('bt_sst_shipmozo_warehouseid');
         $destination_postcode = $order->get_shipping_postcode();
         $get_shipping_first_name = $order->get_shipping_first_name();
@@ -511,6 +511,7 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
         $so["width"] = $total_width_cm>0?$total_width_cm:5;
         $so["height"] = $total_height_cm>0?$total_height_cm:5;
         $so["weight"] = $total_weight_kg>0?$total_weight_kg:100;
+        $so = apply_filters( 'bt_shipmozo_order_object', $so, $order_id);
         return $so;
         
 

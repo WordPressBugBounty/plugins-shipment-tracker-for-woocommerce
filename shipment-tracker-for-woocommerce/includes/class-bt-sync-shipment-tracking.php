@@ -72,6 +72,7 @@ class Bt_Sync_Shipment_Tracking {
     private $manual;
     private $ship24;
 	private $licenser;
+	private $fship;
 
 	/**
 	 * Define the core functionality of the plugin.
@@ -220,6 +221,7 @@ class Bt_Sync_Shipment_Tracking {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/shiprocket.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/shipmozo.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/delhivery.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/fship.php';
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/shyplite.php';
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/nimbuspost.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/nimbuspost_new.php';
@@ -246,6 +248,7 @@ class Bt_Sync_Shipment_Tracking {
         $this->manual = new Bt_Sync_Shipment_Tracking_Manual();
         $this->ship24 = new Bt_Sync_Shipment_Tracking_Ship24();
 		$this->licenser = new Bt_Licenser();
+		$this->fship = new Bt_Sync_Shipment_Tracking_Fship();
         ( new Bt_Sync_Shipment_Tracking_Review() )->hooks();
 	}
 
@@ -257,7 +260,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_cron_events() {
 
-		$this->crons = new Bt_Sync_Shipment_Tracking_Crons($this->shiprocket,$this->shyplite,$this->nimbuspost_new,$this->shipmozo, $this->licenser, $this->delhivery, $this->ship24);
+		$this->crons = new Bt_Sync_Shipment_Tracking_Crons($this->shiprocket,$this->shyplite,$this->nimbuspost_new,$this->shipmozo, $this->licenser, $this->delhivery, $this->ship24, $this->fship);
 
 		$this->loader->add_action( Bt_Sync_Shipment_Tracking_Crons::BT_MINUTELY_JOB, $this->crons, 'minutely_job');
 		$this->loader->add_action( Bt_Sync_Shipment_Tracking_Crons::BT_15MINS_JOB, $this->crons, 'bt_every_15_minutes_job');
@@ -333,7 +336,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Bt_Sync_Shipment_Tracking_Admin( $this->get_plugin_name(), $this->get_version(),$this->shiprocket,$this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->shipmozo, $this->nimbuspost_new, $this->delhivery, $this->ship24 );
+		$plugin_admin = new Bt_Sync_Shipment_Tracking_Admin( $this->get_plugin_name(), $this->get_version(),$this->shiprocket,$this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->shipmozo, $this->nimbuspost_new, $this->delhivery, $this->ship24, $this->fship);
 		$this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_admin, 'custom_dokan_order_details', 10, 1 );
 		$this->loader->add_action('carbon_fields_save_post',$plugin_admin, 'update_woocommerce_data_on_carbon_fields_save', 10, 3);
 		$this->loader->add_action( 'woocommerce_order_status_changed',$plugin_admin, 'woocommerce_order_status_changed_of_shipment_tracker', 10, 3 );
@@ -361,6 +364,8 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'init', $plugin_admin, 'bt_sst_add_custom_order_statuses');
 		$this->loader->	add_filter('wc_order_statuses',$plugin_admin, 'add_custom_status_to_wc_order_statuses');
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'handle_admin_init');
+		$this->loader->add_action('admin_menu', $plugin_admin, 'bt_add_admin_menu',0);
+
 		//$this->loader->add_action( 'init', $plugin_admin, 'register_shipment_arrival_order_status');
 		//$this->loader->add_filter( 'wc_order_statuses', $plugin_admin, 'add_awaiting_shipment_to_order_statuses' );
 
@@ -370,7 +375,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'bt_push_order_to_delhivery', $plugin_admin, 'push_order_to_delhivery',10,3);
 		$this->loader->add_action( 'bt_push_order_to_nimbuspost', $plugin_admin, 'push_order_to_nimbuspost',10,3);
 
-		$ajax_functions = new Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions($this->crons, $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->delhivery, $this->ship24 );
+		$ajax_functions = new Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions($this->crons, $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->delhivery, $this->ship24, $this->fship);
 		$this->loader->add_action( 'wp_ajax_sync_now_shyplite', $ajax_functions, 'bt_sync_now_shyplite',10,2);
 
         $this->loader->add_action('wp_ajax_force_sync_tracking',$ajax_functions, 'force_sync_tracking');
@@ -391,6 +396,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'wp_ajax_check_user_data_for_premium_features', $plugin_admin, 'check_user_data_for_premium_features' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_test_connection', $plugin_admin, 'api_call_for_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_delhivery_test_connection', $plugin_admin, 'api_call_for_delhivery_test_connection' );
+		$this->loader->add_action( 'wp_ajax_api_call_for_fship_test_connection', $plugin_admin, 'api_call_for_fship_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_ship24_test_connection', $plugin_admin, 'api_call_for_ship24_test_connection' );
 		$this->loader->add_action( 'wp_ajax_get_sms_trial', $plugin_admin, 'get_sms_trial' );
 		$this->loader->add_action( 'wp_ajax_get_bt_sst_email_trial', $plugin_admin, 'get_bt_sst_email_trial' );
@@ -401,6 +407,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'wp_ajax_buy_credit_balance', $plugin_admin, 'buy_credit_balance' );
 		$this->loader->add_action( 'wp_ajax_credit_balance_details', $plugin_admin, 'credit_balance_details' );
 		$this->loader->add_action( 'wp_ajax_register_for_sms', $plugin_admin, 'register_for_sms' );
+		$this->loader->add_action( 'wp_ajax_update_check_skip_or_not', $plugin_admin, 'update_check_skip_or_not' );
 		$this->loader->add_action( 'wp_ajax_bt_sst_get_users_list', $plugin_admin, 'bt_sst_get_users_list' );
 		$this->loader->add_action( 'wp_ajax_bt_sst_set_users_list', $plugin_admin, 'bt_sst_set_users_list' );
 		$this->loader->add_action( 'wp_ajax_bt_sst_check_users_list', $plugin_admin, 'bt_sst_check_users_list' );
@@ -410,6 +417,8 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action('wp_ajax_bt_sst_save_new_order_status',$plugin_admin, 'bt_sst_save_new_order_status');
 		$this->loader->add_action('wp_ajax_bt_sst_update_status_mapping',$plugin_admin, 'bt_sst_update_status_mapping');
 		$this->loader->add_action('wp_ajax_bt_sst_remove_status_mapping',$plugin_admin, 'bt_sst_remove_status_mapping');
+		$this->loader->add_action('wp_ajax_bt_sst_update_tracking_settings',$plugin_admin, 'bt_sst_update_tracking_settings');
+		$this->loader->add_action('wp_ajax_bt_sst_get_tracking_settings_data',$plugin_admin, 'bt_sst_get_tracking_settings_data');
 
 		$this->loader->add_filter('bulk_actions-edit-shop_order', $plugin_admin,'status_orders_bulk_actions');
 		$this->loader->add_filter('bulk_actions-woocommerce_page_wc-orders', $plugin_admin,'status_orders_bulk_actions');
@@ -454,7 +463,11 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'bt_shipment_status_changed', $plugin_admin, 'bt_quickengage_messaging_api', 10, 3  );	
 		$this->loader->add_action( 'woocommerce_order_status_processing', $plugin_admin, 'bt_quickengage_messaging_order', 10, 1 );	
 		$this->loader->add_action( 'woocommerce_order_status_failed', $plugin_admin, 'bt_quickengage_messaging_order', 10, 1 );	
-	
+
+		$this->loader->add_action( 'wp_ajax_bt_shipment_data', $ajax_functions, 'bt_shipment_data_callback', 10, 1 );	
+		$this->loader->	add_action('wp_ajax_bt_remove_license',$plugin_admin, 'bt_remove_license_callback');
+
+
 	}
 
 	function crb_load() {
@@ -509,8 +522,14 @@ class Bt_Sync_Shipment_Tracking {
 		}
 		$weight_unit = get_option( 'woocommerce_weight_unit' );
 		$dimension_unit = get_option( 'woocommerce_dimension_unit' );	
+		$containerold = Container::make( 'theme_options', __( 'Shipment Tracker' ) )
+		->set_page_parent( "woocommerce" );
+
+
 		$container = Container::make( 'theme_options', __( 'Shipment Tracking' ) )
-		->set_page_parent( "woocommerce" )
+		->set_page_parent( 'bt-shipment-tracking' )
+		->set_page_menu_title( 'Settings' )
+		//->set_page_parent( "woocommerce" )
 		// ->add_tab( __( 'Overview' ), array(
 		// 	Field::make( 'html', 'crb_information_text' )
     	// 	->set_html( '<h2>Lorem ipsum</h2><p>Quisque mattis ligula.</p>' )
@@ -604,6 +623,43 @@ class Bt_Sync_Shipment_Tracking {
     			// 		<div class="button stw_wizard_button is-primary" id="open-modal">Setup Wizard</div>
 				// 	'
 				// ),
+						Field::make( 'text', 'bt_sst_shiprocket_processing_days', __( 'Global Processing Days (Premium)' ) )
+				->set_help_text( 'Required. Processing days to improve the accuracy of estimated delivery date. This will be added to the EDD of couriers.
+				<br>You can set this at "Product Category" or "Product" or "Variations" level as well. 
+				<br>Precedence: Global < Product Category < Product < Variation
+				' )
+				->set_default_value( '0' )
+				->set_attribute( 'placeholder', '0' ),
+				// ->set_conditional_logic( array(
+				// 	array(
+				// 		'field' => 'bt_sst_shiprocket_pincode_checker',
+				// 		'value' => true,
+				// 	),
+					
+				// ) ),	
+			Field::make( 'select', 'bt_sst_shiprocket_processing_days_location', __( 'Display Processing Days' ) )
+				->set_options( array(
+					'do_not_show' => 'Do not show',
+					'woocommerce_before_single_product_summary' => 'Before single product summary',
+					'woocommerce_single_product_summary' => 'Single product summary',
+					'woocommerce_before_add_to_cart_form' => 'Before add to cart form',
+					'woocommerce_before_add_to_cart_button' => 'Before add to cart button',
+					'woocommerce_before_add_to_cart_quantity' => 'Before add to cart quantity',
+					'woocommerce_after_add_to_cart_button' => 'After add to cart button',
+					'woocommerce_after_add_to_cart_form' => 'After add to cart form',
+					'woocommerce_product_meta_start' => 'Product meta start',
+					'woocommerce_product_meta_end' => 'Product meta end',
+					'woocommerce_after_single_product_summary' => 'After single product summary',
+
+				) ),
+				//->set_default_value( 'do_not_show' )
+				// ->set_conditional_logic( array(
+				// 	array(
+				// 		'field' => 'bt_sst_shiprocket_pincode_checker',
+				// 		'value' => true,
+				// 	),
+					
+				// ) ),
 		) );
 
 		$args = array(
@@ -1216,6 +1272,54 @@ class Bt_Sync_Shipment_Tracking {
 								'value' => true,
 							)
 					) ),
+						Field::make( 'text', 'bt_sst_shiprocket_pickup_pincode', __( 'Pickup Pincode' ) )
+					->set_default_value( $base_postcode )
+					->set_help_text( 'Required. Enter pincode of your warehouse/pickup point. Should be same as given in shipping aggregator.' ),
+					// ->set_conditional_logic( array(
+					// 	array(
+					// 		'field' => 'bt_sst_shiprocket_pincode_checker',
+					// 		'value' => true,
+					// 	),
+					// 	array(
+					// 		'field' => 'bt_sst_pincode_data_provider',
+					// 		'value' => 'shiprocket',
+					// 	)
+					// ) ),
+				Field::make( 'multiselect', 'bt_sst_courier_companies_product_page', __( 'Allowed courier companies are' ) )
+				// ->set_conditional_logic( array(
+				// 	array(
+				// 		'field' => 'bt_sst_shiprocket_pincode_checker',
+				// 		'value' => true,
+				// 	),
+				// 	array(
+				// 		'field' => 'bt_sst_pincode_data_provider',
+				// 		'value' => 'shiprocket',
+				// 	)
+				// ) )
+				->set_help_text('Only selected couriers will be available for shipping during checkout, other courier companies will be ignored.
+				<br> Make sure to set "Delivery date & rate provider" first, then do "Save Changes" before courier list can be populated.<br>
+				
+				')
+				->add_options( $arr_active_cc ),
+
+				Field::make( 'checkbox', 'bt_sst_product_page_enable_international_shiprocket', __( 'Fetch international estimates from shiprocket.') )
+				->set_option_value( 'no' )
+				->set_help_text( '
+				<p>Enable this option if International Shipping is enabled in your shiprocket account.</p>
+				<p>If this option is disabled, an error is displayed to customer seeking for international estimates.<p>
+				
+				' ),
+				// ->set_conditional_logic( array(
+				// 	array(
+				// 		'field' => 'bt_sst_shiprocket_pincode_checker',
+				// 		'value' => true,
+				// 	),
+				// 	array(
+				// 		'field' => 'bt_sst_pincode_data_provider',
+				// 		'value' => 'shiprocket',
+				// 	)
+				// ) ),
+
 					Field::make( 'checkbox', 'bt_sst_shiprocket_assign_courier_to_shipment', __( 'Automatically assign courier to booked shipment. (Premium Only)') )
 						->set_option_value( 'yes' )
 						->set_help_text( 'Plugin will attempt to assign courier if its already selected by customer during checkout. 
@@ -1341,6 +1445,7 @@ class Bt_Sync_Shipment_Tracking {
 						</div>
 						")
 					),
+				
 				) );
 		}
 		if(is_array($enabled_shipping_providers) && in_array('shyplite',$enabled_shipping_providers)){
@@ -1444,6 +1549,19 @@ class Bt_Sync_Shipment_Tracking {
 								) 
 						)
 						->set_help_text( 'Tracking information will be periodically synced from Nimbuspost at this interval. Use this option if auto sync is not working on your website even after setting up the webhook correctly.' ),
+						Field::make( 'text', 'bt_sst_nimbuspost_pickup_pincode', __( 'Pickup Pincode' ) )
+						->set_default_value( $base_postcode )
+						->set_help_text( 'Required. Enter pincode of your warehouse/pickup point. Should be same as given in shipping aggregator.' ),
+						// ->set_conditional_logic( array(
+						// 	array(
+						// 		'field' => 'bt_sst_shiprocket_pincode_checker',
+						// 		'value' => true,
+						// 	),
+						// 	array(
+						// 		'field' => 'bt_sst_pincode_data_provider',
+						// 		'value' => 'nimbuspost_new',
+						// 	)
+						// ) ),
 						Field::make( 'checkbox', 'bt_sst_nimbuspost_push_orders', __( 'Push orders to Nimbuspost') )
 						->set_classes( 'title is-6' )
 						->set_help_text( 'Plugin will push "processing" orders to nimbuspost. Use this if nimbuspost\'s Order Pull is not working correctly. 
@@ -1625,6 +1743,19 @@ class Bt_Sync_Shipment_Tracking {
 						Field::make( 'html', 'bt_sst_shipmozo_premium_overlay_1', __( 'Help HTML' ) )
 							->set_html(
 							sprintf($premium_overlay)),
+						Field::make( 'text', 'bt_sst_shipmozo_pickup_pincode', __( 'Pickup Pincode' ) )
+						->set_default_value( $base_postcode )
+						->set_help_text( 'Required. Enter pincode of your warehouse/pickup point. Should be same as given in shipping aggregator.' ),
+						// ->set_conditional_logic( array(
+						// 	array(
+						// 		'field' => 'bt_sst_shiprocket_pincode_checker',
+						// 		'value' => true,
+						// 	),
+						// 	array(
+						// 		'field' => 'bt_sst_pincode_data_provider',
+						// 		'value' => 'shipmozo',
+						// 	)
+						// ) ),
 			) );
 		}
 
@@ -1693,6 +1824,33 @@ class Bt_Sync_Shipment_Tracking {
 						),
 					
 
+			) );
+		}
+		if(is_array($enabled_shipping_providers) && in_array('fship',$enabled_shipping_providers)){
+			
+			$container = $container->add_tab( __( 'Fship' ), array(
+					Field::make( 'text', 'bt_sst_fship_apitoken', __( 'API Token' ) )
+						->set_help_text( ' 
+							<a target="_blank" href="https://app.fship.in/setting">[Click here to get API Token]</a>
+							' ),
+							Field::make( 'html', 'bt_sst_test_connection_fship', __( 'Help HTML' ) )
+							->set_html(
+							sprintf('
+								<button type="button" class="button" id="api_test_connection_btn_fship">Test Connection</button><br>
+								<em class="cf-field__help">Please click "Save Changes" to save api credentials before testing the connection</em>
+								<div id="api_test_connection_modal_fship" class="modal">
+									<div class="modal-background"></div>
+									<div class="modal-card">
+										<header class="modal-card-head">
+										<p id="api_tc-m-content_fship" class="modal-content"></p>
+										<button type="button" id="api_tc_m_close_btn_delh" class="delete" aria-label="close"></button>
+										</header>
+									</div>
+								</div>
+							')),
+							Field::make( 'text', 'bt_sst_fship_pincodepickup', __( 'Pickup Pincode' ) ),
+							Field::make( 'text', 'bt_sst_fship_pick_address_id', __( 'Pick Address ID' ) )
+							
 			) );
 		}
 		$add_corier_popup_html = file_get_contents(plugin_dir_path( dirname( __FILE__ ) )  . 'admin/partials/bt-shipment-tracker-get-and-save-couriers.php');
@@ -1835,7 +1993,7 @@ class Bt_Sync_Shipment_Tracking {
 					'nimbuspost_new' => 'Nimbuspost',
 					'shipmozo'   => 'Shipmozo',
 					'shiprocket' => 'Shiprocket',
-					
+					'fship' => 'Fship',
 				) )
 				->set_help_text('
 				<p><b>Shiprocket:</b> Courier names along with estimated delivery date and rates are fetched from Shiprocket on realtime basis. <br>Make sure the Shiprocket\'s API settings are correctly set to use this provider. <a href="https://www.youtube.com/watch?v=8nds10GbsVE" target="_blank">See Video</a></p>
@@ -1846,82 +2004,9 @@ class Bt_Sync_Shipment_Tracking {
 				<p>International shipping is supported if more than one "Shipping location(s)" are set in <a target="_blank" href="'.$woocommerce_settings_url.'">woocommerce settings.</a></p>
 				')
 				->set_default_value( 'shiprocket' ),
-			Field::make( 'multiselect', 'bt_sst_courier_companies_product_page', __( 'Allowed courier companies are' ) )
-				->set_conditional_logic( array(
-					array(
-						'field' => 'bt_sst_shiprocket_pincode_checker',
-						'value' => true,
-					),
-					array(
-						'field' => 'bt_sst_pincode_data_provider',
-						'value' => 'shiprocket',
-					)
-				) )
-				->set_help_text('Only selected couriers will be available for shipping during checkout, other courier companies will be ignored.
-				<br> Make sure to set "Delivery date & rate provider" first, then do "Save Changes" before courier list can be populated.<br>
-				
-				')
-				->add_options( $arr_active_cc ),
-			Field::make( 'text', 'bt_sst_shiprocket_pickup_pincode', __( 'Pickup Pincode' ) )
-				->set_default_value( $base_postcode )
-				->set_help_text( 'Required. Enter pincode of your warehouse/pickup point. Should be same as given in shipping aggregator.' )
-				->set_conditional_logic( array(
-					array(
-						'field' => 'bt_sst_shiprocket_pincode_checker',
-						'value' => true,
-					),
-					array(
-						'field' => 'bt_sst_pincode_data_provider',
-						'value' => 'shiprocket',
-					)
-				) ),
-				Field::make( 'checkbox', 'bt_sst_product_page_enable_international_shiprocket', __( 'Fetch international estimates from shiprocket.') )
-				->set_option_value( 'no' )
-				->set_help_text( '
-				<p>Enable this option if International Shipping is enabled in your shiprocket account.</p>
-				<p>If this option is disabled, an error is displayed to customer seeking for international estimates.<p>
-				
-				' )
-				->set_conditional_logic( array(
-					array(
-						'field' => 'bt_sst_shiprocket_pincode_checker',
-						'value' => true,
-					),
-					array(
-						'field' => 'bt_sst_pincode_data_provider',
-						'value' => 'shiprocket',
-					)
-				) ),
-				Field::make( 'text', 'bt_sst_shipmozo_pickup_pincode', __( 'Pickup Pincode' ) )
-				->set_default_value( $base_postcode )
-				->set_help_text( 'Required. Enter pincode of your warehouse/pickup point. Should be same as given in shipping aggregator.' )
-				->set_conditional_logic( array(
-					array(
-						'field' => 'bt_sst_shiprocket_pincode_checker',
-						'value' => true,
-					),
-					array(
-						'field' => 'bt_sst_pincode_data_provider',
-						'value' => 'shipmozo',
-					)
-				) ),
 
 
-			
-				
-				Field::make( 'text', 'bt_sst_nimbuspost_pickup_pincode', __( 'Pickup Pincode' ) )
-				->set_default_value( $base_postcode )
-				->set_help_text( 'Required. Enter pincode of your warehouse/pickup point. Should be same as given in shipping aggregator.' )
-				->set_conditional_logic( array(
-					array(
-						'field' => 'bt_sst_shiprocket_pincode_checker',
-						'value' => true,
-					),
-					array(
-						'field' => 'bt_sst_pincode_data_provider',
-						'value' => 'nimbuspost_new',
-					)
-				) ),
+
 
 			
 			Field::make( 'text', 'bt_sst_generic_google_key', __( 'Enter your Google API key.') )
@@ -1976,44 +2061,6 @@ class Bt_Sync_Shipment_Tracking {
 				->set_duplicate_groups_allowed( false )
 				->set_min( 1 )
 				->set_max( 2),
-			Field::make( 'text', 'bt_sst_shiprocket_processing_days', __( 'Global Processing Days (Premium)' ) )
-				->set_help_text( 'Required. Processing days to improve the accuracy of estimated delivery date. This will be added to the EDD of couriers.
-				<br>You can set this at "Product Category" or "Product" or "Variations" level as well. 
-				<br>Precedence: Global < Product Category < Product < Variation
-				' )
-				->set_default_value( '0' )
-				->set_attribute( 'placeholder', '0' )
-				->set_conditional_logic( array(
-					array(
-						'field' => 'bt_sst_shiprocket_pincode_checker',
-						'value' => true,
-					),
-					
-				) ),	
-			Field::make( 'select', 'bt_sst_shiprocket_processing_days_location', __( 'Display Processing Days' ) )
-				->set_options( array(
-					'do_not_show' => 'Do not show',
-					'woocommerce_before_single_product_summary' => 'Before single product summary',
-					'woocommerce_single_product_summary' => 'Single product summary',
-					'woocommerce_before_add_to_cart_form' => 'Before add to cart form',
-					'woocommerce_before_add_to_cart_button' => 'Before add to cart button',
-					'woocommerce_before_add_to_cart_quantity' => 'Before add to cart quantity',
-					'woocommerce_after_add_to_cart_button' => 'After add to cart button',
-					'woocommerce_after_add_to_cart_form' => 'After add to cart form',
-					'woocommerce_product_meta_start' => 'Product meta start',
-					'woocommerce_product_meta_end' => 'Product meta end',
-					'woocommerce_after_single_product_summary' => 'After single product summary',
-
-				) )
-				//->set_default_value( 'do_not_show' )
-				->set_conditional_logic( array(
-					array(
-						'field' => 'bt_sst_shiprocket_pincode_checker',
-						'value' => true,
-					),
-					
-				) ),
-				
 		
 			Field::make( 'text', 'bt_sst_product_page_delivery_checker_label', __( 'Label' ) )
 				->set_help_text( 'Label to be shown in product page, above pincode textbox.  <br><br>
@@ -2198,6 +2245,7 @@ class Bt_Sync_Shipment_Tracking {
 					'nimbuspost_new'=> 'Nimbuspost',
 					'shipmozo' => 'Shipmozo',
 					'shiprocket' => 'Shiprocket',
+					'fship' => 'Fship',
 					
 					
 					
@@ -2250,20 +2298,20 @@ class Bt_Sync_Shipment_Tracking {
 				<br>Leave empty to enable all couriers that are available for a pickup/delivery pincode combination.
 				')
 				->add_options( $arr_active_cc ),
-			Field::make( 'text', 'bt_sst_shipmozo_pickup_pincode_courier', __( 'Pickup pincode' ) )
-				->set_default_value( $base_postcode )
-				->set_attribute( 'type', 'number' )
-				->set_help_text( 'Enter pincode of your warehouse/pickup point. Should be same as given in shipping aggregator.' )
-				->set_conditional_logic( array(
-					array(
-						'field' => 'bt_sst_select_courier_company',
-						'value' => true,
-					),
-					array(
-						'field' => 'bt_sst_courier_rate_provider',
-						'value' => 'shipmozo',
-					)
-				) ),
+			// Field::make( 'text', 'bt_sst_shipmozo_pickup_pincode_courier', __( 'Pickup pincode' ) )
+			// 	->set_default_value( $base_postcode )
+			// 	->set_attribute( 'type', 'number' )
+			// 	->set_help_text( 'Enter pincode of your warehouse/pickup point. Should be same as given in shipping aggregator.' )
+			// 	->set_conditional_logic( array(
+			// 		array(
+			// 			'field' => 'bt_sst_select_courier_company',
+			// 			'value' => true,
+			// 		),
+			// 		array(
+			// 			'field' => 'bt_sst_courier_rate_provider',
+			// 			'value' => 'shipmozo',
+			// 		)
+			// 	) ),
 			Field::make( 'text', 'bt_sst_shipmozo_fall_back_rate', __( 'Fall Back Rate (Per 500gm)' ) )
 				->set_attribute( 'type', 'number' )
 				->set_help_text( 'Fallback rate is used when no courier is available between any pickup/delivery combination. Leave it empty if you do not want to use any fallback rate.' )
@@ -2290,20 +2338,7 @@ class Bt_Sync_Shipment_Tracking {
 						'value' => 'delhivery',
 					)
 				) ),
-				Field::make( 'text', 'bt_sst_nimbuspost_new_pickup_pincode_courier', __( 'Pickup pincode' ) )
-				->set_default_value( $base_postcode )
-				->set_attribute( 'type', 'number' )
-				->set_help_text( 'Enter pincode of your warehouse/pickup point. Should be same as given in shipping aggregator.' )
-				->set_conditional_logic( array(
-					array(
-						'field' => 'bt_sst_select_courier_company',
-						'value' => true,
-					),
-					array(
-						'field' => 'bt_sst_courier_rate_provider',
-						'value' => 'nimbuspost_new',
-					)
-				) ),
+			
 			Field::make( 'text', 'bt_sst_nimbuspost_new_fall_back_rate', __( 'Fall Back Rate (Per 500gm)' ) )
 				->set_attribute( 'type', 'number' )
 				->set_help_text( 'Fallback rate is used when no courier is available between any pickup/delivery combination. Leave it empty if you do not want to use any fallback rate.' )
@@ -2317,20 +2352,20 @@ class Bt_Sync_Shipment_Tracking {
 						'value' => 'nimbuspost_new',
 					)
 				) ),
-				Field::make( 'text', 'bt_sst_shiprocket_pickup_pincode_courier', __( 'Pickup pincode' ) )
-				->set_default_value( $base_postcode )
-				->set_attribute( 'type', 'number' )
-				->set_help_text( 'Enter pincode of your warehouse/pickup point. Should be same as given in shipping aggregator.' )
-				->set_conditional_logic( array(
-					array(
-						'field' => 'bt_sst_select_courier_company',
-						'value' => true,
-					),
-					array(
-						'field' => 'bt_sst_courier_rate_provider',
-						'value' => 'shiprocket',
-					)
-				) ),
+				// Field::make( 'text', 'bt_sst_shiprocket_pickup_pincode_courier', __( 'Pickup pincode' ) )
+				// ->set_default_value( $base_postcode )
+				// ->set_attribute( 'type', 'number' )
+				// ->set_help_text( 'Enter pincode of your warehouse/pickup point. Should be same as given in shipping aggregator.' )
+				// ->set_conditional_logic( array(
+				// 	array(
+				// 		'field' => 'bt_sst_select_courier_company',
+				// 		'value' => true,
+				// 	),
+				// 	array(
+				// 		'field' => 'bt_sst_courier_rate_provider',
+				// 		'value' => 'shiprocket',
+				// 	)
+				// ) ),
 			Field::make( 'text', 'bt_sst_shiprocket_fall_back_rate', __( 'Fall Back Rate (Per 500gm)' ) )
 				->set_attribute( 'type', 'number' )
 				->set_help_text( 'Fallback rate is used when no courier is available between any pickup/delivery combination. Leave it empty if you do not want to use any fallback rate.' )
@@ -2365,7 +2400,7 @@ class Bt_Sync_Shipment_Tracking {
 					array(
 						'field' => 'bt_sst_courier_rate_provider',
 						'compare' => 'IN',
-						'value' => array('shiprocket','shipmozo'),
+						'value' => array('shiprocket','shipmozo','delhivery'),
 					)
 				) ),
 			Field::make( 'text', 'bt_sst_shipment_processing_days', __( 'Processing Days' ) )
@@ -2464,30 +2499,19 @@ class Bt_Sync_Shipment_Tracking {
 		) );
 
 		if(is_admin() && isset($_GET["page"]) && $_GET['page']=="crb_carbon_fields_container_shipment_tracking.php"){
-			$premium_html = file_get_contents(plugin_dir_path( dirname( __FILE__ ) )  . 'admin/partials/bt-st-buy-premium-feature-tab.php');
-			$csrf =  wp_nonce_field( 'check_user_data_for_premium_features','_wpnonce',true,false );
-			$premium_html = str_ireplace("##csrf##", $csrf, $premium_html);
 			$bulma = plugin_dir_url(dirname(__FILE__)) . 'admin/css/bulma.min.css';
-			$premium_html = str_ireplace("##bulma##",$bulma,$premium_html);
-			$premium_html = str_ireplace("##premiumfeatures##",$login_html,$premium_html);
-			$container = $container->add_tab( __( 'Premium Activation' ), array(
-				Field::make( 'html', 'bt_sst_premium_html', __( 'Buy Premium Features' ) )
-					->set_html(
-						$premium_html
-					),
-			) );
-
 		
 
 			$container = $container->add_tab( __( 'About' ), array(
 				Field::make( 'html', 'bt_sst_about_html', __( 'About HTML' ) )
 					->set_html(
 						sprintf( '		
+						<link rel="stylesheet" href="'.$bulma.'" />
 						<div class="content">					
 							<img src="'.self::BITSSLOGO.'" alt="Bitss Techniques logo"/><br>
-							<b>Developed by: <a target="_blank" href="https://bitss.tech">Bitss Techniques</a></b><br>
-							<em>Made in India</em>
-							<br><br>
+							<b>Developed by: <a target="_blank" href="https://bitss.tech">Bitss Techniques</a></b>, a 15 year old company based out of Rajasthan (India).<br>
+							
+							<br>
 							If you find this plugin useful, please spare a minute to leave a 5 star review on wordpress. 
 							<br>
 							<a target="_blank" href="https://wordpress.org/support/plugin/shipment-tracker-for-woocommerce/reviews/#new-post">Rate This Plugin (Shipment Tracker)</a>
@@ -2535,33 +2559,22 @@ class Bt_Sync_Shipment_Tracking {
 									</a>
 								</li>
 							</ol>
+
+							<b>Help us, contribute to the plugin development.</b>
+
+							We hope this plugin has made your eCommerce journey smoother. Creating and maintaining it takes countless hours, and offering support ensures no user feels stranded—all at no cost to you.
+
+							If this plugin has helped you, consider supporting its development. Every contribution, big or small, makes a difference, but donations above ₹500 are especially helpful.
+
+							As a thank you, we\'ll give you a coupon equal to your donation amount, which you can use for any future purchase of our products or services—including plugins, SMS, hosting, website maintenance, malware cleanup, or custom software development. Plus, you\'ll get a GST invoice for your contribution. You can donate once, multiple times, or even monthly—it\'s entirely up to you.
+														
+
 							</div>
 						')
 					),
 			) );
 
-			$container = $container->add_tab( __( 'Donate' ), array(
-				Field::make( 'html', 'bt_sst_donate_html', __( 'Donate HTML' ) )
-					->set_html(
-						sprintf( '							
-							We hope this plugin have made your life easier as an ecommerce store developer/owner. But at the same time, developing and maintaining plugin like this demand lots of time and efforts. Also, things does not always work as it should so providing support is critical so people dont feel hanging. And all of this at no cost to the plugin users.<br><br>
-
-							There are many more features coming along the way in future updates like support for Custom Order Statuses based on shipment status, Bulk Sync tracking, Adding many more shipping aggregators, SMS, Email and WhatsApp integration to inform shipment status to customers, pincode based shipping rate and estimated delivery checker,  etc. Some of these features may be premium while all basic features will be free forever.
-
-							<br><br>
-
-							Until we release a premium version, if you would like to contribute for the plugin development today, click on the "Donate" link below. You can donate any amount you like, but donating something above Rs. 500 would be really helpful.
-							
-							<br><br>
-
-							If you choose to donate, as a token of appreciation, we will provide you all future premium versions free of cost (for any 1 of your website(s)), irrespective of the amount you donate.
-							<br><br>
-							We will send you GST invoice as well for the donations you make. Also, its your choice to donate just once, more than once, or monthly :-)
-							<br><br>
-							<a href="https://pmny.in/6JB4CzvwowVL" target="_blank">Click here to Donate</a>
-						')
-					),
-			) );
+		
 		}
 	}
 
@@ -2574,7 +2587,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Bt_Sync_Shipment_Tracking_Public( $this->get_plugin_name(), $this->get_version() ,$this->shiprocket, $this->shipmozo, $this->nimbuspost_new, $this->licenser, $this->delhivery);
+		$plugin_public = new Bt_Sync_Shipment_Tracking_Public( $this->get_plugin_name(), $this->get_version() ,$this->shiprocket, $this->shipmozo, $this->nimbuspost_new, $this->licenser, $this->delhivery, $this->fship);
 
 		// $pincode_checker_location_hook = carbon_get_theme_option( 'bt_sst_pincode_checker_location' );
 		// $this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_public, 'custom_dokan_order_details', 10, 1 );
@@ -2614,13 +2627,15 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_shortcode( 'bt_shipment_courier_name', $plugin_public,  'bt_shipment_courier_name_shortcode_callback' );
 		$this->loader->add_shortcode( 'bt_shipment_edd', $plugin_public,  'bt_shipment_edd_shortcode_callback' );
 		$this->loader->add_shortcode( 'bt_shipment_awb', $plugin_public,  'bt_shipment_awb_shortcode_callback' );
-		$this->loader->add_shortcode( 'bt_shipment_timer', $plugin_public,  'bt_shipment_timer_shortcode_callback' );
+		$this->loader->add_shortcode( 'bt_free_shipping_timer', $plugin_public,  'bt_shipment_timer_shortcode_callback' );
 
 		$this->loader->add_filter( 'woocommerce_email_format_string', $plugin_public,  'woocommerce_email_format_string_shipment_placeholders_callback', 10, 2  );
 
 		$this->loader->add_filter( 'woocommerce_my_account_my_orders_actions', $plugin_public,  'add_track_button_to_my_orders', 10, 2  );
 		$this->loader->add_filter( 'query_vars', $plugin_public,  'add_query_vars' );
 		$this->loader->add_action( 'woocommerce_account_bt-track-order_endpoint', $plugin_public,  'woocommerce_account_track_order_endpoint' );
+		$this->loader->add_action('woocommerce_checkout_create_order_shipping_item',$plugin_public, 'custom_save_shipping_rate_meta_to_order', 10, 4);
+
 
 
 	}

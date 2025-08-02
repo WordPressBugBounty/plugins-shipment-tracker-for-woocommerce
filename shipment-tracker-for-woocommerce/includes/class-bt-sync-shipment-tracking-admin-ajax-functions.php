@@ -7,13 +7,15 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
     private $crons;
     private $nimbuspost;
     private $manual;
+    private $fship;
     
-    public function __construct( $crons,$shiprocket,$shyplite,$nimbuspost,$manual,$licenser ) {
+    public function __construct( $crons,$shiprocket,$shyplite,$nimbuspost,$manual,$licenser,$fship ) {
         $this->crons = $crons;
         $this->shiprocket = $shiprocket;
         $this->shyplite = $shyplite;
         $this->nimbuspost = $nimbuspost;
         $this->manual = $manual;
+        $this->fship = $fship;
     }
 
     public function bt_sync_now_shyplite(){
@@ -240,5 +242,394 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
         return  $response ;
 
     }
+
+
+    function bt_shipment_data_callback() {
+        // Initialize response array
+        $response = array(
+            'orders_received_last_7_days' => 0,
+            'orders_waiting_to_be_shipped' => 0,
+            'orders_not_delivered_after_10_days' => 0,
+            'orders_marked_as_rto' => 0,
+            'get_delayed_orders_list' => 0,
+        );
+
+        $days = 30;
+
+        $orders_received_last_x_days = $this->orders_received_last_x_days($days);
+        $orders_waiting_to_be_shipped = $this->get_orders_waiting_to_be_shipped($days);
+        //$orders_not_delivered_after_10_days = $this->get_orders_not_delivered_after_10_days($days);
+        $orders_in_transit = $this->get_orders_in_transit($days);
+        //$orders_marked_as_rto = $this->get_orders_marked_as_rto($days);
+        $get_delayed_orders_list = $this->get_delayed_orders_list($days);
+        $get_delivered_orders_count = $this->get_delivered_orders_count($days);
+
+        $response['orders_received_last_x_days'] = $orders_received_last_x_days;
+        $response['orders_waiting_to_be_shipped'] = $orders_waiting_to_be_shipped;
+        //$response['orders_not_delivered_after_10_days'] = $orders_not_delivered_after_10_days;
+        $response['orders_in_transit'] = $orders_in_transit;
+        //$response['orders_marked_as_rto'] = $orders_marked_as_rto;
+        $response['get_delayed_orders_list'] = $get_delayed_orders_list;
+        $response['get_delivered_orders_count'] = $get_delivered_orders_count;
+
+    
+       
+        // Return the response as JSON
+        wp_send_json_success($response);
+    }
+
+    private function orders_received_last_x_days($last_days=30) {
+        // Ensure WooCommerce is loaded
+        if ( ! class_exists( 'WC_Order_Query' ) ) {
+            return array(
+                'status'  => false,
+                'message' => 'WooCommerce is not available.',
+                'data'    => array(),
+            );
+        }
+    
+        // Calculate the date 7 days ago
+        $date_7_days_ago = date( 'Y-m-d H:i:s', strtotime( "-$last_days days" ) );
+    
+        // Get all registered order statuses
+        $all_statuses = array_keys( wc_get_order_statuses() );
+    
+        // Define unsuccessful statuses to exclude
+        $unsuccessful_statuses = array( 'wc-failed', 'wc-cancelled', 'wc-refunded' );
+    
+        // Filter out unsuccessful statuses
+        $successful_statuses = array_diff( $all_statuses, $unsuccessful_statuses );
+    
+        // Query WooCommerce orders
+        $query = new WC_Order_Query( array(
+            'status'        => $successful_statuses, // Include only successful statuses
+            'date_created'  => '>=' . $date_7_days_ago,
+            'return'        => 'ids', // Return only order IDs
+            'limit' => -1, // No limit on the number of orders
+        ) );
+    
+        $orders = $query->get_orders();
+    
+        // Return the count of orders received in the last 7 days
+        return count( $orders );
+    }
+
+    public function get_orders_waiting_to_be_shipped($last_days=30) {
+        // Ensure WooCommerce is loaded
+        if ( ! class_exists( 'WC_Order_Query' ) ) {
+            return array(
+                'status'  => false,
+                'message' => 'WooCommerce is not available.',
+                'data'    => array(),
+            );
+        }
+        $date_7_days_ago = date( 'Y-m-d H:i:s', strtotime( "-$last_days days" ) );
+        // Get all registered order statuses
+        $all_statuses = array_keys( wc_get_order_statuses() );
+    
+        // Define unsuccessful statuses to exclude
+        $unsuccessful_statuses = array( 'wc-failed', 'wc-cancelled', 'wc-refunded' );
+    
+        // Filter out unsuccessful statuses
+        $successful_statuses = array_diff( $all_statuses, $unsuccessful_statuses );
+    
+        // Query WooCommerce orders that do not have a shipping AWB (not shipped yet)
+        $query = new WC_Order_Query( array(
+            'status'        => $successful_statuses, // Include only successful statuses
+            'date_created'  => '>=' . $date_7_days_ago,
+            'meta_key'      => '_bt_shipping_awb',
+            'meta_compare'  => 'NOT EXISTS', // Orders without the AWB meta key
+            'return'        => 'ids', // Return only order IDs
+            'limit'         => -1, // No limit on the number of orders
+        ) );
+    
+        $orders = $query->get_orders();
+    
+        // Generate the URL to filter orders in the WooCommerce admin
+        $filter_url = "#"; //to do
+    
+        // Return the count of orders waiting to be shipped along with the filter URL
+        return array(
+            'orders_waiting_to_be_shipped' => count( $orders ),
+            'filter_url'                   => $filter_url,
+        );
+    }
+
+    public function get_orders_in_transit($last_days=30) {
+        // Ensure WooCommerce is loaded
+        if ( ! class_exists( 'WC_Order_Query' ) ) {
+            return array(
+                'status'  => false,
+                'message' => 'WooCommerce is not available.',
+                'data'    => array(),
+            );
+        }
+        $date_7_days_ago = date( 'Y-m-d H:i:s', strtotime( "-$last_days days" ) );
+        // Get all registered order statuses
+        $all_statuses = array_keys( wc_get_order_statuses() );
+    
+        // Define unsuccessful statuses to exclude
+        $unsuccessful_statuses = array( 'wc-failed', 'wc-cancelled', 'wc-refunded' );
+    
+        // Filter out unsuccessful statuses
+        $successful_statuses = array_diff( $all_statuses, $unsuccessful_statuses );
+    
+        // Query WooCommerce orders that do not have a shipping AWB (not shipped yet)
+        // First, get orders with _bt_shipping_awb meta key EXISTS
+        $query = new WC_Order_Query( array(
+            'status'        => $successful_statuses, // Include only successful statuses
+            'date_created'  => '>=' . $date_7_days_ago,
+            'meta_key'      => '_bt_shipping_awb',
+            'meta_compare'  => 'EXISTS', // Orders with the AWB meta key
+            'return'        => 'ids', // Return only order IDs
+            'limit'         => -1, // No limit on the number of orders
+        ) );
+
+        $orders = $query->get_orders();
+
+        // Now filter orders where _bt_shipment_tracking meta's current_status is 'in-transit'
+        $in_transit_orders = array();
+        foreach ( $orders as $order_id ) {
+            $shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id( $order_id );
+            if ( ! empty( $shipment_tracking->current_status ) && ($shipment_tracking->current_status === 'in-transit' || $shipment_tracking->current_status === 'in transit') ) {
+                $in_transit_orders[] = $order_id;
+            }
+        }
+        // Overwrite $orders with filtered list for further processing
+        $orders = $in_transit_orders;
+        
+        // Generate the URL to filter orders in the WooCommerce admin
+        $filter_url = "#"; //to do
+    
+        // Return the count of orders waiting to be shipped along with the filter URL
+        return array(
+            'count' => count( $orders ),
+            'filter_url'                   => $filter_url,
+        );
+    }
+
+    
+    private function get_orders_not_delivered_after_10_days($last_days=30) {
+        // Ensure WooCommerce is loaded
+        if ( ! class_exists( 'WC_Order_Query' ) ) {
+            return array(
+                'status'  => false,
+                'message' => 'WooCommerce is not available.',
+                'data'    => array(),
+            );
+        }
+
+        $date_7_days_ago = date( 'Y-m-d H:i:s', strtotime( "-$last_days days" ) );
+        // Get all registered order statuses
+        $all_statuses = array_keys( wc_get_order_statuses() );
+
+        // Define unsuccessful statuses to exclude
+        $unsuccessful_statuses = array( 'wc-failed', 'wc-cancelled', 'wc-refunded' );
+
+        // Filter out unsuccessful statuses
+        $successful_statuses = array_diff( $all_statuses, $unsuccessful_statuses );
+
+        // Query WooCommerce orders with successful statuses
+        $query = new WC_Order_Query( array(
+            'status'        => $successful_statuses,
+            'date_created'  => '>=' . $date_7_days_ago,
+            'return'        => 'ids', // Return only order IDs
+            'limit'         => -1, // No limit on the number of orders
+        ) );
+
+        $orders = $query->get_orders();
+        $delayed_orders_count = 0;
+
+        // Loop through orders to check for delays
+        foreach ( $orders as $order_id ) {
+            // Get the shipment tracking object from order meta
+            $shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id( $order_id );
+
+            if ( ! empty( $shipment_tracking->etd ) ) {
+                $etd_timestamp = strtotime( $shipment_tracking->etd );
+                $current_timestamp = time();
+
+                // Check if the order is delayed by more than 10 days
+                if ( $current_timestamp > $etd_timestamp + ( 1 * DAY_IN_SECONDS ) ) {
+                    $delayed_orders_count++;
+                }
+            }
+        }
+        $filter_url = "#";//to do
+        // Return the count of delayed orders
+        return array(
+            'orders_not_delivered_after_10_days' => $delayed_orders_count,
+            'filter_url'                   => $filter_url,
+        );
+    }
+
+    
+    private function get_orders_marked_as_rto($last_days=30) {
+        // Ensure WooCommerce is loaded
+        if ( ! class_exists( 'WC_Order_Query' ) ) {
+            return array(
+                'status'  => false,
+                'message' => 'WooCommerce is not available.',
+                'data'    => array(),
+            );
+        }
+
+        // Calculate the date 30 days ago
+        $date_7_days_ago = date( 'Y-m-d H:i:s', strtotime( "-$last_days days" ) );
+
+        // Get all registered order statuses
+        $all_statuses = array_keys( wc_get_order_statuses() );
+
+        // Define unsuccessful statuses to exclude
+        $unsuccessful_statuses = array( 'wc-failed', 'wc-cancelled', 'wc-refunded' );
+
+        // Filter out unsuccessful statuses
+        $successful_statuses = array_diff( $all_statuses, $unsuccessful_statuses );
+
+        // Query WooCommerce orders created in the last 30 days with successful statuses
+        $query = new WC_Order_Query( array(
+            'status'        => $successful_statuses,
+            'date_created'  => '>=' . $date_7_days_ago,
+            'return'        => 'ids', // Return only order IDs
+            'limit'         => -1, // No limit on the number of orders
+        ) );
+
+        $orders = $query->get_orders();
+        $rto_orders_count = 0;
+
+        // Loop through orders to check for RTO status
+        foreach ( $orders as $order_id ) {
+            // Get the shipment tracking object from order meta
+            $shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id( $order_id );
+
+            if ( ! empty( $shipment_tracking->current_status ) ) {
+                // Check if the current status contains "rto" or "return" (case-insensitive)
+                if ( stripos( $shipment_tracking->current_status, 'rto' ) !== false || 
+                    stripos( $shipment_tracking->current_status, 'return' ) !== false ) {
+                    $rto_orders_count++;
+                }
+            }
+        }
+        $filter_url = "";//to do
+        // Return the count of RTO orders
+        return array(
+            'orders_marked_as_rto' => $rto_orders_count,
+            'filter_url'                   => $filter_url
+        );
+    }
+
+    private function get_delayed_orders_list($last_days=30) {
+        // Ensure WooCommerce is loaded
+        if ( ! class_exists( 'WC_Order_Query' ) ) {
+            return array(
+                'status'  => false,
+                'message' => 'WooCommerce is not available.',
+                'data'    => array(),
+            );
+        }
+
+        // Calculate the date X days ago
+        $date_x_days_ago = date( 'Y-m-d H:i:s', strtotime( "-$last_days days" ) );
+
+        // Get all registered order statuses
+        $all_statuses = array_keys( wc_get_order_statuses() );
+
+        // Define unsuccessful statuses to exclude
+        $unsuccessful_statuses = array( 'wc-failed', 'wc-cancelled', 'wc-refunded','wc-completed' );
+
+        // Filter out unsuccessful statuses
+        $successful_statuses = array_diff( $all_statuses, $unsuccessful_statuses );
+
+        // Query WooCommerce orders created in the last X days with successful statuses
+        $query = new WC_Order_Query( array(
+            'status'        => $successful_statuses,
+            'date_created'  => '>=' . $date_x_days_ago,
+            'return'        => 'ids', // Return only order IDs
+            'limit'         => -1, // No limit on the number of orders
+        ) );
+
+        $orders = $query->get_orders();
+        $delayed_orders = array();
+        $today = strtotime(date('Y-m-d'));
+
+        // Loop through orders to check for delayed ETD
+        foreach ( $orders as $order_id ) {
+            // Get the shipment tracking object from order meta
+            $shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id( $order_id );
+
+            if ( ! empty( $shipment_tracking->etd ) ) {
+                $etd_timestamp = strtotime( $shipment_tracking->etd );
+                // If ETD is before today, add to delayed list
+                if ( $etd_timestamp < $today ) {
+                    // echo $shipment_tracking->current_status;
+                    if($shipment_tracking->current_status == 'out-for-delivery' || $shipment_tracking->current_status == 'in-transit'){
+                        $delayed_orders[] = array(
+                            'order_id' => $order_id,
+                            'etd'      => $shipment_tracking->etd,
+                        );
+                    }
+                }
+            }
+        }
+
+        return array(
+            'status' => true,
+            'delayed_orders' =>count($delayed_orders),
+        );
+    }
+
+    public function get_delivered_orders_count($last_days=30) {
+        // Ensure WooCommerce is loaded
+        if ( ! class_exists( 'WC_Order_Query' ) ) {
+            return array(
+                'status'  => false,
+                'message' => 'WooCommerce is not available.',
+                'data'    => array(),
+            );
+        }
+        $date_7_days_ago = date( 'Y-m-d H:i:s', strtotime( "-$last_days days" ) );
+        // Get all registered order statuses
+        $all_statuses = array_keys( wc_get_order_statuses() );
+    
+        // Define unsuccessful statuses to exclude
+        $unsuccessful_statuses = array( 'wc-failed', 'wc-cancelled', 'wc-refunded' );
+    
+        // Filter out unsuccessful statuses
+        $successful_statuses = array_diff( $all_statuses, $unsuccessful_statuses );
+    
+        // Query WooCommerce orders that do not have a shipping AWB (not shipped yet)
+        // First, get orders with _bt_shipping_awb meta key EXISTS
+        $query = new WC_Order_Query( array(
+            'status'        => $successful_statuses, // Include only successful statuses
+            'date_created'  => '>=' . $date_7_days_ago,
+            'meta_key'      => '_bt_shipping_awb',
+            'meta_compare'  => 'EXISTS', // Orders with the AWB meta key
+            'return'        => 'ids', // Return only order IDs
+            'limit'         => -1, // No limit on the number of orders
+        ) );
+
+        $orders = $query->get_orders();
+
+        // Now filter orders where _bt_shipment_tracking meta's current_status is 'in-transit'
+        $in_transit_orders = array();
+        foreach ( $orders as $order_id ) {
+            $shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id( $order_id );
+            if ( ! empty( $shipment_tracking->current_status ) && ($shipment_tracking->current_status === 'delivered')) {
+                $in_transit_orders[] = $order_id;
+            }
+        }
+        // Overwrite $orders with filtered list for further processing
+        $orders = $in_transit_orders;
+        
+        // Generate the URL to filter orders in the WooCommerce admin
+        $filter_url = "#"; //to do
+    
+        // Return the count of orders waiting to be shipped along with the filter URL
+        return array(
+            'count' => count( $orders ),
+            'filter_url'                   => $filter_url,
+        );
+    }
+
 
 }

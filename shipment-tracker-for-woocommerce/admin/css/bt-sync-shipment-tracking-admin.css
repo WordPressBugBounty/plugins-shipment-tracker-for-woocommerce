@@ -156,7 +156,7 @@
     }
 }
 
-.woocommerce_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options h2{
+.shipment-tracking_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options h2{
     display: flex;
     justify-content: space-between;
 }
@@ -205,4 +205,9 @@
 
 .bt_sst_close:hover {
     color: #ff0000;
+}
+
+/* reset wp default button styles */
+.button:focus{
+    background-color: unset !important;;
 }

@@ -15,14 +15,16 @@ class Bt_Sync_Shipment_Tracking_Crons {
     private $shyplite;
     private $licenser;
     private $delhivery;
+    private $fship;
 	
-	public function __construct($shiprocket,$shyplite,$nimbuspost_new,$shipmozo,$licenser,$delhivery) {
+	public function __construct($shiprocket,$shyplite,$nimbuspost_new,$shipmozo,$licenser,$delhivery, $fship) {
 		$this->shiprocket = $shiprocket;
         $this->shipmozo = $shipmozo;
         $this->nimbuspost_new = $nimbuspost_new;
         $this->shyplite = $shyplite;
         $this->licenser = $licenser;
         $this->delhivery = $delhivery;
+        $this->fship = $fship;
     }
     
     public function schedule_recurring_events(){

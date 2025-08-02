@@ -83,6 +83,15 @@ if(empty($bt_sst_review_subheading_text)){
                 $estimated_delivery_date = $tracking['tracking_data']['etd'];
                 $shipment_status = $tracking['tracking_data']['current_status'];
                 $courier_name = $tracking['tracking_data']['courier_name'];
+                $delivery_date = $the_order->get_meta('_bt_shipment_tracking')->delivery_date; 
+                if ($delivery_date && $shipment_status === 'delivered') {
+                    $delivery_date = DateTime::createFromFormat('Y-m-d H:i:s', $delivery_date) ?: DateTime::createFromFormat('Y-m-d', $delivery_date);
+                    $estimated_date = DateTime::createFromFormat('Y-m-d H:i:s', $estimated_delivery_date) ?: DateTime::createFromFormat('Y-m-d', $estimated_delivery_date);
+
+                    if ($delivery_date && $estimated_date && $delivery_date < $estimated_date) {
+                        $estimated_delivery_date = $delivery_date->format('Y-m-d');
+                    }
+                }
                 
                 if (strtolower($shipment_status) != 'delivered') {
                     $delivery_status = "Estimated Delivery:";

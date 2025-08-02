@@ -27,7 +27,7 @@
     }
 
     @font-face { 
-    `font-family:"Font Awesome 5 Free";
+    font-family:"Font Awesome 5 Free";
     font-style:normal;
     font-weight:400;
     font-display:block;
@@ -447,6 +447,9 @@
         width: 18px;
         height: 18px;
     } 
+    .bt_sst_tmp_mster_progressbar_container{
+        color:black
+    }
     .bt-sst-edd-heading, .bt-sst-shipment-status-text{
         font-size: 32px;
         font-weight: 700;;

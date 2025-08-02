@@ -50,7 +50,6 @@ if($tracking && isset($tracking['tracking_data'])){
         } 
         else if (isset($the_order) && $the_order instanceof WC_Order)
         {
-            
             $name = $the_order->get_billing_first_name() ." ". $the_order->get_billing_last_name() ;
             $order_status = $the_order->get_status();      
             $order_status_name = wc_get_order_status_name( $order_status);     
@@ -80,15 +79,22 @@ if($tracking && isset($tracking['tracking_data'])){
             $current_step = 2; //orderplaced=1, shipped=2, outfordelivery=3, delivered=4
             $currentPin = "";
             $currentCountry = "";
-
+            
             $delivery_status = "";
             if(!empty($tracking['tracking_data']['awb']) && $order_status!='cancelled' && $order_status!='on-hold' && $order_status!='pending' && $order_status!='refunded' && $order_status!='failed' && $order_status!='checkout-draft'){
                 $awb_number = $tracking['tracking_data']['awb'];
+                $delivery_date = $the_order->get_meta('_bt_shipment_tracking')->delivery_date; 
                 $estimated_delivery_date = $tracking['tracking_data']['etd'];
                 $shipment_status = $tracking['tracking_data']['current_status'];
                 $courier_name = $tracking['tracking_data']['courier_name'];
-                
-        
+                if ($delivery_date && $shipment_status === 'delivered') {
+                    $delivery_date = DateTime::createFromFormat('Y-m-d H:i:s', $delivery_date) ?: DateTime::createFromFormat('Y-m-d', $delivery_date);
+                    $estimated_date = DateTime::createFromFormat('Y-m-d H:i:s', $estimated_delivery_date) ?: DateTime::createFromFormat('Y-m-d', $estimated_delivery_date);
+
+                    if ($delivery_date && $estimated_date && $delivery_date < $estimated_date) {
+                        $estimated_delivery_date = $delivery_date->format('Y-m-d');
+                    }
+                }
                 if (strtolower($shipment_status) != 'delivered') {
                     $delivery_status = "Arriving ";
                 }else {
@@ -555,18 +561,18 @@ if($tracking && isset($tracking['tracking_data'])){
                                             <div style="">
                                                 <div>
                                                     <?php if(is_user_logged_in()){ ?>
-                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; color:#101212; border-radius:20px; padding:13px;"
+                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; border-radius:20px; padding:13px;"
                                                          href="<?php echo esc_url( $the_order->get_view_order_url() ); ?>" class="">View order details
                                                         </a>
                                                     <?php } else { ?>
-                                                        <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; color:#101212; border-radius:20px; padding:13px;"
+                                                        <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; border-radius:20px; padding:13px;"
                                                             href="/my-account" class="">Login to see more details
                                                         </a>
                                                     <?php } ?>
-                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; color:#101212; border-radius:20px; padding:13px;"
+                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; border-radius:20px; padding:13px;"
                                                          href="<?php echo esc_url(get_permalink( get_the_ID() )); ?>" class="">Track another order
                                                     </a>
-                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; color:#101212; border-radius:20px; padding:13px;"
+                                                    <a style="margin-top:4px; text-decoration:none; width:100%; display:flex; justify-content:center; border: 1px solid #c7c7c7b0; border-radius:20px; padding:13px;"
                                                          href="https://api.whatsapp.com/send?text=<?php echo urlencode($whatsapp_url); ?>" target="_blank">Share on WhatsApp
                                                     </a>
                                                 </div>

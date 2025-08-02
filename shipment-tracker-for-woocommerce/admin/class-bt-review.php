@@ -259,7 +259,7 @@ class Bt_Sync_Shipment_Tracking_Review {
 
 	public function premium_admin_notice(){
 		$current_screen = get_current_screen();
-		if($current_screen!=null && $current_screen->id!="woocommerce_page_crb_carbon_fields_container_shipment_tracking"){
+		if($current_screen!=null && $current_screen->id!="shipment-tracking_page_crb_carbon_fields_container_shipment_tracking"){
 			include_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/bt-st-premium-admin-notice.php';
 		}
 	

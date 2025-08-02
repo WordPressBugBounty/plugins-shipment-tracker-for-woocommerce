@@ -229,6 +229,11 @@
 			$(this).addClass('is-loading');
 			api_test_connection_delh();
 		});
+		$(document).on('click', '#api_test_connection_btn_fship', function (e) {
+			e.preventDefault();
+			$(this).addClass('is-loading');
+			api_test_connection_fship();
+		});
 		$(document).on('click', '#api_test_connection_btn_ship24', function (e) {
 			e.preventDefault();
 			$(this).addClass('is-loading');
@@ -262,31 +267,7 @@
 				},
 			});
 		});
-
-		$(document).on('click', '#bt_premium_login_btn', function (e) {
-			e.preventDefault();
-			var user = $(this).closest("div.bt_premium_login_div").find("input[name='bt_premium_login_user']").val();
-			var password = $(this).closest("div.bt_premium_login_div").find("input[name='bt_premium_login_password']").val();
-			if (user.trim() == "" || password.trim() == "") {
-				return;
-			}
-			check_user_for_premium_features(user, password);
-		});
-
-
-		$(document).on('click', '#bt_st_buy_premium_login_submit_btn', function (e) {
-			e.preventDefault();
-			
-			var email = $('#bt_st_buy_premium_login_email').val();
-			var password = $('#bt_st_buy_premium_login_password').val();
-			if(email.trim()=="" || password.trim()==""){
-				alert("Please enter your registered email/password to activate premium.");
-				return;
-			}
-			$(this).addClass('is-loading');
-			var nonce = $('#_wpnonce').val();
-			check_user_for_premium_features(email, password, nonce);
-		});
+		
 
 		$(document).on('click', '.bt_sync_order_tracking', function (e) {
 			e.preventDefault();
@@ -301,27 +282,33 @@
 			$('#bt-sst-premium-notice').css("display", "none");
 			hide_bt_sst_premium_notice();
 		});
-		var free_msg = "<div>Shipment Tracking - (Free Version) ";
-		$(".woocommerce_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options>h2").html(free_msg);
+		var free_msg = "<div>Shipment Tracking - (Free Version) <a href='https://shipment-tracker-for-woocommerce.bitss.tech/' target='_blank'>Upgrade now</a></div></div>";
+		$(".shipment-tracking_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options>h2").html(free_msg);
 
-		var is_premium = bt_sync_shipment_track_data['is_premium_active'];
-		if (is_premium['is_active'] == true) {
-			$('#bt_st_buy_premium_login_email').val(is_premium['user']);
-			$('#bt_st_buy_premium_login_email').attr('disabled', 'disabled');
-			$('#bt_st_buy_premium_login_password').val("**********");
-			$('#bt_st_buy_premium_login_password').attr('disabled', 'disabled');
-			$('#bt_st_buy_premium_login_submit_btn').attr('disabled', 'disabled');
-			$('#bt_st_buy_premium_login_message').text('Your premium license is active.');
-			$('#bt_st_buy_premium_login_message').removeClass('is-danger');
-			$('#bt_st_buy_premium_login_message').addClass('is-success');
-			$('#bt_st_buy_premium_login_panel').removeClass('is-danger');
-			$('#bt_st_buy_premium_login_panel').addClass('is-success');
-			$(".woocommerce_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options>h2").html("Shipment Tracking - (Premium Version)");
+		const type = getUrlVars()["t"];
+		console.log(type);
+		const typeToButtonMap = {
+		  tracking: "Tracking Widget",
+		  etd: "Product Page",
+		  manual: "Custom Shipping",
+		  delhivery: "Delhivery",
+		  nimbuspost_new: "Nimbuspost (NEW)",
+		  shipmozo: "Shipmozo (Premium Only)",
+		  shiprocket: "Shiprocket",
+		  fship: "Fship",
+		  xpressbees: 'Xpressbees',
+		  nimbuspost: 'Nimbuspost (OLD)',
+		  checkout: 'Checkout Page',
+		};
+		
+		const buttonText = typeToButtonMap[type];
+		if (buttonText) {
+			setTimeout(() => {
+				 $(`button:contains("${buttonText}")`).trigger('click');
+			}, 500);
+		 
 		}
 
-		if (getUrlVars()["t"] == 'bp') {
-			$('button:contains("Buy Premium")').trigger('click');
-		}
 
 		
 		$(document).on('click', '.show_st_popup', function (e) {
@@ -940,6 +927,21 @@
 			}
 		)
 	}
+	function api_test_connection_fship() {
+		// console.log(bt_sync_shipment_track_data.test_conn_nonce);		
+		var nonce = bt_sync_shipment_track_data.test_conn_fship_nonce;
+		console.log(nonce);
+		$.get(
+			bt_sync_shipment_track_data.ajax_url,
+			{ action: 'api_call_for_fship_test_connection', value: nonce },
+			function (res) {
+				$('#api_tc-m-content_fship').html(res.message);
+				$('#api_test_connection_modal_fship').addClass('is-active');
+				$('#api_test_connection_btn_fship').removeClass('is-loading');
+
+			}
+		)
+	}
 	function api_test_connection_ship24() {
 		// console.log(bt_sync_shipment_track_data.test_conn_nonce);		
 		var nonce = bt_sync_shipment_track_data.test_conn_nonce;
@@ -985,35 +987,7 @@
 		});
 	}
 
-	function check_user_for_premium_features(user, password, nonce) {
-		$.post(
-			bt_sync_shipment_track_data.ajax_url,
-			{ action: "check_user_data_for_premium_features", value: { "user": user, "password": password, "nonce": nonce } },
-			function (abc) {
-				$('#bt_st_buy_premium_login_submit_btn').removeClass('is-loading');
-				if (abc.status) {
-					$('#bt_st_buy_premium_login_message').html(abc.message);
-					$('#bt_st_buy_premium_login_email').attr('disabled', 'disabled');
-					$('#bt_st_buy_premium_login_password').attr('disabled', 'disabled');
-					$('#bt_st_buy_premium_login_submit_btn').attr('disabled', 'disabled');
-					$('#bt_st_buy_premium_login_message').removeClass('is-danger');
-					$('#bt_st_buy_premium_login_message').addClass('is-success');
-					$('#bt_st_buy_premium_login_panel').removeClass('is-danger');
-					$('#bt_st_buy_premium_login_panel').addClass('is-success');
-					$(".woocommerce_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options>h2").html("Shipment Tracking - (Premium Version)");
-				} else {
-					$('#bt_st_buy_premium_login_message').html(abc.message);
-					$('#bt_st_buy_premium_login_message').addClass('is-danger');
-					$('#bt_st_buy_premium_login_message').removeClass('is-success');
-					$('#bt_st_buy_premium_login_panel').addClass('is-danger');
-					$('#bt_st_buy_premium_login_panel').removeClass('is-success');
-					var free_msg = "Shipment Tracking - (Free Version) <a href='https://billing.bitss.tech/order.php?step=2&productGroup=5&product=612&paymentterm=12' target='_blank'>Upgrade now</a>";
-					$(".woocommerce_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options>h2").html(free_msg);
-					//$(".woocommerce_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options>h2").html("Shipment Tracking - (Free Version)");
-				}
-			}
-		);
-	}
+
 
 })(jQuery);
 
@@ -1202,7 +1176,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	$(document).on('click', '#get_sms_trial', function (e) {
 		$('#get_sms_trial').addClass('is-loading');
 		var selectValue = document.getElementById('myselect').value;
-		var phoneNumber = document.getElementById('bt_otpfy_test_phone_otp').value;
+		var phoneNumber = document.getElementById('bt_sst_test_phone_otp').value;
 		var nonce = bt_sync_shipment_track_data.get_sms_trial_nonce;
 		$.get(
 			bt_sync_shipment_track_data.ajax_url,
@@ -1323,3 +1297,89 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	});
 })(jQuery);
+
+
+(function ($) {
+	//premium activation page
+    $(document).on('click', '#bt_st_buy_premium_login_submit_btn', function (e) {
+			e.preventDefault();
+			
+			var email = $('#bt_st_buy_premium_login_email').val();
+			var password = $('#bt_st_buy_premium_login_password').val();
+			if(email.trim()=="" || password.trim()==""){
+				alert("Please enter your registered email/password to activate premium.");
+				return;
+			}
+			$(this).addClass('is-loading');
+			var nonce = $('#_wpnonce').val();
+			check_user_for_premium_features(email, password, nonce);
+		});
+
+		function check_user_for_premium_features(user, password, nonce) {
+			$.post(
+				bt_sync_shipment_track_data.ajax_url,
+				{ action: "check_user_data_for_premium_features", value: { "user": user, "password": password, "nonce": nonce } },
+				function (abc) {
+					$('#bt_st_buy_premium_login_submit_btn').removeClass('is-loading');
+					if (abc.status) {
+						$('#bt_st_buy_premium_login_message').html(abc.message);
+						$('#bt_st_buy_premium_login_email').attr('disabled', 'disabled');
+						$('#bt_st_buy_premium_login_password').attr('disabled', 'disabled');
+						$('#bt_st_buy_premium_login_submit_btn').attr('disabled', 'disabled');
+						$('#bt_st_buy_premium_login_message').removeClass('is-danger');
+						$('#bt_st_buy_premium_login_message').addClass('is-success');
+						$('#bt_st_buy_premium_login_panel').removeClass('is-danger');
+						$('#bt_st_buy_premium_login_panel').addClass('is-success');
+						$(".shipment-tracking_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options>h2").html("Shipment Tracking - (Premium Version)");
+					} else {
+						$('#bt_st_buy_premium_login_message').html(abc.message);
+						$('#bt_st_buy_premium_login_message').addClass('is-danger');
+						$('#bt_st_buy_premium_login_message').removeClass('is-success');
+						$('#bt_st_buy_premium_login_panel').addClass('is-danger');
+						$('#bt_st_buy_premium_login_panel').removeClass('is-success');
+						var free_msg = "Shipment Tracking - (Free Version) <a href='https://billing.bitss.tech/order.php?step=2&productGroup=5&product=612&paymentterm=12' target='_blank'>Upgrade now</a>";
+						$(".shipment-tracking_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options>h2").html(free_msg);
+						//$(".shipment-tracking_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options>h2").html("Shipment Tracking - (Free Version)");
+					}
+				}
+			);
+		}
+
+		$(document).ready(()=>{
+			var is_premium = bt_sync_shipment_track_data['is_premium_active'];
+			
+			if (is_premium['is_active'] == true) {
+				$('#bt_st_buy_premium_login_email').val(is_premium['user']);
+				$('#bt_st_buy_premium_login_email').attr('disabled', 'disabled');
+				$('#bt_st_buy_premium_login_password').val("**********");
+				$('#bt_st_buy_premium_login_password').attr('disabled', 'disabled');
+				$('#bt_st_buy_premium_login_submit_btn').attr('disabled', 'disabled');
+				$('#bt_st_buy_premium_login_message').text('Your premium license is active.');
+				$('#bt_st_buy_premium_login_message').removeClass('is-danger');
+				$('#bt_st_buy_premium_login_message').addClass('is-success');
+				$('#bt_st_buy_premium_login_panel').removeClass('is-danger');
+				$('#bt_st_buy_premium_login_panel').addClass('is-success');
+				$(".shipment-tracking_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options>h2").html("Shipment Tracking - (Premium Version)");
+			}else{
+				$('.bt_sst_is_premium_remove_container').html('');
+			}
+			
+
+		});
+
+		$(document).on('click', '#bt_sst_premium_remove', function (e) {
+			e.preventDefault();
+			$(this).addClass('is-loading');
+			$.get(
+				bt_sync_shipment_track_data.ajax_url,
+				{ action: 'bt_remove_license' },
+				function (res) {
+					window.location.reload();
+					console.log('License removed:', res);
+				}
+			).fail(function (err) {
+				$(this).removeClass('is-loading');
+				console.error('AJAX failed:', err);
+			});
+		});
+  })(jQuery);

@@ -16,7 +16,7 @@
  * Plugin Name:       Shipment Tracker for Woocommerce
  * Plugin URI:        https://shipment-tracker-for-woocommerce.bitss.tech/
  * Description:       Most comprehensive shipment tracking plugin that extends your woocommerce store with shipment related features. Keeps you & your customers informed about shipment movement.
- * Version:           1.4.24.16
+ * Version:           1.5.1.1
  * Author:            Bitss Techniques
  * Author URI:        https://shipment-tracker-for-woocommerce.bitss.tech
  * License:           GPL-2.0+
@@ -58,9 +58,9 @@ if ( ! defined( 'WPINC' ) ) {
  }
 
 define( 'Carbon_Fields\URL', trailingslashit( plugin_dir_url( __FILE__ ) ) . 'vendor/htmlburger/carbon-fields/' );//fix for Bitnami installations.
-define( 'BT_SYNC_SHIPMENT_TRACKING_VERSION', '1.4.24.16' );
-define( 'BT_SHIPPING_PROVIDERS', array('delhivery' =>'Delhivery','nimbuspost' => 'Nimbuspost (Deprecated)','nimbuspost_new' => 'Nimbuspost','shipmozo'=>'Shipmozo','shiprocket' => 'Shiprocket', 'xpressbees' => 'Xpressbees', 'manual' =>'Custom Shipping') );
-define( 'BT_SHIPPING_PROVIDERS_WITH_NONE', array('none' =>'none','delhivery' =>'Delhivery', 'nimbuspost' => 'Nimbuspost (OLD)','nimbuspost_new' => 'Nimbuspost(NEW)','shipmozo'=>'Shipmozo','shiprocket' => 'Shiprocket', 'xpressbees' => 'Xpressbees','manual' =>'Custom Shipping') );
+define( 'BT_SYNC_SHIPMENT_TRACKING_VERSION', '1.5.1.1' );
+define( 'BT_SHIPPING_PROVIDERS', array('delhivery' =>'Delhivery','nimbuspost' => 'Nimbuspost (Deprecated)','nimbuspost_new' => 'Nimbuspost','shipmozo'=>'Shipmozo','shiprocket' => 'Shiprocket', 'xpressbees' => 'Xpressbees', 'manual' =>'Custom Shipping', 'fship' => 'Fship') );
+define( 'BT_SHIPPING_PROVIDERS_WITH_NONE', array('none' =>'none','delhivery' =>'Delhivery', 'nimbuspost' => 'Nimbuspost (OLD)','nimbuspost_new' => 'Nimbuspost(NEW)','shipmozo'=>'Shipmozo','shiprocket' => 'Shiprocket', 'xpressbees' => 'Xpressbees','manual' =>'Custom Shipping' , 'fship' => 'Fship') );
 define( 'BT_SST_MANUAL_DEFAULT_COURIER_NAME', $default_manual_coriure_name);
 define( 'BT_SHIPPING_STATUS', array('pending-pickup' => 'Pending pickup', 'out-for-pickup' => 'Out for pickup', 'in-transit' =>'In Transit', 'out-for-delivery' => 'Out for delivery', 'delivered' => 'Delivered', 'canceled' =>'Canceled', 'rto-in-transit' =>'RTO in Transit', 'rto-delivered' =>'RTO Delivered') );
 define( 'BT_SYNC_SHIPMENT_TRACKING_PREMIUM_PURCHASE_URL', 'https://shipment-tracker-for-woocommerce.bitss.tech/pricing-plans/' );
@@ -148,3 +148,9 @@ add_action( 'before_woocommerce_init', function() {
     }
 } );
 run_bt_sync_shipment_tracking();
+// Enable error reporting for debugging (development only)
+// if (defined('WP_DEBUG') && WP_DEBUG) {
+//     error_reporting(E_ALL);
+//     ini_set('display_errors', '1');
+//     ini_set('display_startup_errors', '1');
+// }
