@@ -1,0 +1,8 @@
+# Build
+/build/
+
+# Composer
+/vendor/
+
+# WordPress
+/wordpress/

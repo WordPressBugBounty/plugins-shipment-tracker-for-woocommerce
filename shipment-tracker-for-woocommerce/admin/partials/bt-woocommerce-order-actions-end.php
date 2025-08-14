@@ -15,7 +15,6 @@ if(!$post_id){
 	?>
 <div class="wide" id="bt_sst_actions" style="column-span: all;">
     <label>Shipping Provider</label>
-        <input type="hidden" name="wc_order_action" value="update_bt_sst_shipping_provider"></input>
         <select name="wc_order_action_bt_sst_shipping_provider" style="width: 80%;box-sizing: border-box;float: left;">
             <?php
             $shipping_mode_is_manual_or_ship24 = carbon_get_theme_option('bt_sst_enabled_custom_shipping_mode');

@@ -96,7 +96,7 @@
   <!-- FAQ Section -->
             <div class="column ">
                 <div class="">
-                    <h2 class="title is-4 mb-5 has-text-link">Frequently Asked Questions</h2>
+                    <div class="title is-4 mb-5 has-text-link">Frequently Asked Questions</div>
 
                     <div class="content">
                         <details class="mb-1 box">
