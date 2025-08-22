@@ -3,11 +3,10 @@
 namespace PhpUnitsOfMeasureTest\PhysicalQuantity;
 
 use PhpUnitsOfMeasure\PhysicalQuantity\SolidAngle;
-use PhpUnitsOfMeasure\PhysicalQuantityInterface;
 
 class SolidAngleTest extends AbstractPhysicalQuantityTestCase
 {
-    protected array $supportedUnitsWithAliases = [
+    protected $supportedUnitsWithAliases = [
         'sr',
         'steradian',
         'steradians',
@@ -73,7 +72,7 @@ class SolidAngleTest extends AbstractPhysicalQuantityTestCase
         'yoctosteradians',
     ];
 
-    protected function instantiateTestQuantity(): PhysicalQuantityInterface
+    protected function instantiateTestQuantity()
     {
         return new SolidAngle(1, 'steradian');
     }

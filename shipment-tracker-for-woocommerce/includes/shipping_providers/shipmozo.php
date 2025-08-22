@@ -412,7 +412,7 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
         
         $so = array(
             "order_id"=> $order->get_id(),
-            "order_date"=> $order->get_date_created()->date("Y-m-d H:i:s"),
+            "order_date"=> $order->get_date_created()->date("Y-m-d"),
             "order_type"=> "NON_ESSENTIALS",
             "consignee_name"=> $get_shipping_first_name . ' ' . $get_shipping_last_name,
             "consignee_phone"=> $phoneNumber,

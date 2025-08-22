@@ -3,11 +3,10 @@
 namespace PhpUnitsOfMeasureTest\PhysicalQuantity;
 
 use PhpUnitsOfMeasure\PhysicalQuantity\Area;
-use PhpUnitsOfMeasure\PhysicalQuantityInterface;
 
 class AreaTest extends AbstractPhysicalQuantityTestCase
 {
-    protected array $supportedUnitsWithAliases = [
+    protected $supportedUnitsWithAliases = [
         'm^2',
         'm²',
         'meter squared',
@@ -62,12 +61,12 @@ class AreaTest extends AbstractPhysicalQuantityTestCase
         'acres',
     ];
 
-    protected function instantiateTestQuantity(): PhysicalQuantityInterface
+    protected function instantiateTestQuantity()
     {
         return new Area(1, 'm^2');
     }
 
-    public function testToHectares(): void
+    public function testToHectares()
     {
         $area = new Area(3, 'ha');
 
@@ -78,7 +77,7 @@ class AreaTest extends AbstractPhysicalQuantityTestCase
      * There aren't lots of super nice conversions between ac -> m^2,
      * so we'll check that it's close.
      */
-    public function testToAcres(): void
+    public function testToAcres()
     {
         $area = new Area(13, 'ac');
 
@@ -87,13 +86,13 @@ class AreaTest extends AbstractPhysicalQuantityTestCase
         $this->assertEquals(52609.133491, $area);
     }
 
-    public function testToAre(): void
+    public function testToAre()
     {
         $area = new Area(100, 'm^2');
         $this->assertEquals(1, $area->toUnit('are'));
     }
 
-    public function testToDecare(): void
+    public function testToDecare()
     {
         $area = new Area(1000, 'm^2');
         $this->assertEquals(1, $area->toUnit('decare'));

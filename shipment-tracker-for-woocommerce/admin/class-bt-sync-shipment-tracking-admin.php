@@ -741,6 +741,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 
 					$note = str_ireplace("#track_link#", '<a target="_blank" href="' . $shipment_obj->get_tracking_link() . '">Track</a>', $note);
+					$note = $note . "\n\n- Shipment tracker for woocommerce";
 					$order->add_order_note($note, $bt_sst_order_note_type == 'customer');
 				}
 			}
@@ -2325,8 +2326,8 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	function bt_sst_update_status_mapping()
 	{
-		$is_premium = $this->licenser->is_license_active();
-		if ($is_premium) {
+		//$is_premium = $this->licenser->is_license_active();
+		//if ($is_premium) {
 			$order_status_key = sanitize_text_field($_POST['shipping_data']['shippingValue']);
 			$shipping_status_Key = sanitize_text_field($_POST['shipping_data']['shippingKey']);
 			$updated_order_and_shipp_status_keys_array = get_option('bt_sst_order_and_shipp_status_keys_array', array());
@@ -2338,27 +2339,41 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 			$result = update_option('bt_sst_order_and_shipp_status_keys_array', $updated_order_and_shipp_status_keys_array);
 			wp_send_json_success(array('message' => 'Updated Status Successfully'));
-		} else {
-			wp_send_json_error(array('message' => 'Upgrade to premium version to activate custom order status mapping.'));
-		}
+		//} else {
+		//	wp_send_json_error(array('message' => 'Upgrade to premium version to activate custom order status mapping.'));
+		//}
 
 
 	}
 	function bt_sst_remove_status_mapping()
 	{
-		$is_premium = $this->licenser->is_license_active();
-		if ($is_premium) {
+		//$is_premium = $this->licenser->is_license_active();
+		//if ($is_premium) {
 			$shipping_status_Key = sanitize_text_field($_POST['shipping_key']);
 			$updated_order_and_shipp_status_keys_array = get_option('bt_sst_order_and_shipp_status_keys_array', array());
-			if ($shipping_status_Key) {
+			$order_status_key = "";
+			if ($shipping_status_Key && isset($updated_order_and_shipp_status_keys_array[$shipping_status_Key])) {
+				$order_status_key = $updated_order_and_shipp_status_keys_array[$shipping_status_Key];
 				unset($updated_order_and_shipp_status_keys_array[$shipping_status_Key]);
+			}
+
+			$order_status_array = get_option('bt_sst_order_status_list', array());
+			foreach ($order_status_array as $order_status) {
+				// Validate required fields
+				if ('wc-' . $order_status['slug'] == $order_status_key) {
+					$key = array_search($order_status, $order_status_array);
+					if ($key !== false) {
+						unset($order_status_array[$key]);
+						$result2 = update_option('bt_sst_order_status_list', $order_status_array);
+					}
+				}
 			}
 
 			$result = update_option('bt_sst_order_and_shipp_status_keys_array', $updated_order_and_shipp_status_keys_array);
 			wp_send_json_success(array('message' => 'Remove Status Successfully'));
-		} else {
-			wp_send_json_error(array('message' => 'Upgrade to premium version to activate custom order status mapping.'));
-		}
+		//} else {
+		//	wp_send_json_error(array('message' => 'Upgrade to premium version to activate custom order status mapping.'));
+		//}
 
 
 	}
@@ -2600,6 +2615,62 @@ class Bt_Sync_Shipment_Tracking_Admin
 			require_once (dirname(__FILE__)) . '/partials/bt-st-buy-credits-popup.php';
 			require_once (dirname(__FILE__)) . '/partials/bt-st-setup-guide.php';
 		}
+		$bt_sst_enable_orde_status_mapping = carbon_get_theme_option('bt_sst_enable_orde_status_mapping');
+		if($bt_sst_enable_orde_status_mapping){
+			$this->add_custom_order_status_colors();
+		}
+	}
+
+
+	private function add_custom_order_status_colors(){
+		$statuses = [
+			// Original statuses with colors from second snippet
+			'pre-order'             => ['#ffcc00', '#000'],         // Yellow with black text
+			'custom-order'          => ['#ff5733', '#fff'],         // Orange with white text
+			
+			// Your original shipping statuses
+			'ready-to-ship'         => ['#00c1d4', '#fff'],         // Teal with white text
+			'out-for-pickup'        => ['#9c27b0', '#fff'],         // Purple with white text
+			'pickup-scheduled'      => ['#673ab7', '#fff'],         // Deep purple with white text
+			'pickup-pending'        => ['#3f51b5', '#fff'],         // Indigo with white text
+			
+			// Refund-related statuses (with corrected slugs)
+			'refunded'              => ['#8e24aa', '#fff'],         // Vibrant purple with white text
+			'wc-return-requested'   => ['#ff9800', '#000'],         // Amber with black text
+			'wc-return-approved'    => ['#4caf50', '#fff'],         // Green with white text
+			
+			// Shipping statuses
+			'wc-in-transit'         => ['#00bcd4', '#fff'],         // Cyan with white text (for in-transit)
+			
+			// Standard WooCommerce statuses (for reference)
+			//'completed'             => ['#4caf50', '#fff'],         // Green with white text
+			//'processing'            => ['#2196f3', '#fff'],         // Blue with white text
+			//'on-hold'               => ['#ff9800', '#000'],         // Amber with black text
+			//'cancelled'             => ['#f44336', '#fff'],         // Red with white text
+		];
+		
+		$css = '';
+		foreach ($statuses as $status => $colors) {
+			$clean_status = str_replace('wc-', '', $status); // Remove wc- prefix for some selectors
+			$css .= "
+			.order-status.status-{$status},
+			.order-status.status-{$clean_status},  
+			.widefat .column-order_status mark.{$status},
+			.widefat .column-order_status mark.{$clean_status},
+			.order-preview .order-status.status-{$status},
+			.order-preview .order-status.status-{$clean_status} {
+				background: {$colors[0]} !important;
+				color: {$colors[1]} !important;
+				border-color: {$colors[0]} !important;
+			}
+			.order-status.status-{$status}:after,
+			.order-status.status-{$clean_status}:after {
+				color: {$colors[1]} !important;
+			}
+			";
+		}
+		
+		echo '<style>' . $css . '</style>';
 	}
 
 	function register_shipment_email($email_classes)

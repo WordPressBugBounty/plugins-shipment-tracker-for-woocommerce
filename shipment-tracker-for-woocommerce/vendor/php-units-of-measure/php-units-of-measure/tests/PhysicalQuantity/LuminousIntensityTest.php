@@ -3,11 +3,10 @@
 namespace PhpUnitsOfMeasureTest\PhysicalQuantity;
 
 use PhpUnitsOfMeasure\PhysicalQuantity\LuminousIntensity;
-use PhpUnitsOfMeasure\PhysicalQuantityInterface;
 
 class LuminousIntensityTest extends AbstractPhysicalQuantityTestCase
 {
-    protected array $supportedUnitsWithAliases = [
+    protected $supportedUnitsWithAliases = [
         'cd',
         'candela',
         'Ycd',
@@ -52,7 +51,7 @@ class LuminousIntensityTest extends AbstractPhysicalQuantityTestCase
         'yoctocandela',
     ];
 
-    protected function instantiateTestQuantity(): PhysicalQuantityInterface
+    protected function instantiateTestQuantity()
     {
         return new LuminousIntensity(1, 'cd');
     }

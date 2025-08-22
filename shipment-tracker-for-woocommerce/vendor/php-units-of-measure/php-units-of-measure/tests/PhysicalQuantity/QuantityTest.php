@@ -3,11 +3,10 @@
 namespace PhpUnitsOfMeasureTest\PhysicalQuantity;
 
 use PhpUnitsOfMeasure\PhysicalQuantity\Quantity;
-use PhpUnitsOfMeasure\PhysicalQuantityInterface;
 
 class QuantityTest extends AbstractPhysicalQuantityTestCase
 {
-    protected array $supportedUnitsWithAliases = [
+    protected $supportedUnitsWithAliases = [
         'mol',
         'mole',
         'moles',
@@ -73,7 +72,7 @@ class QuantityTest extends AbstractPhysicalQuantityTestCase
         'yoctomoles',
     ];
 
-    protected function instantiateTestQuantity(): PhysicalQuantityInterface
+    protected function instantiateTestQuantity()
     {
         return new Quantity(1, 'mol');
     }

@@ -3,11 +3,10 @@
 namespace PhpUnitsOfMeasureTest\PhysicalQuantity;
 
 use PhpUnitsOfMeasure\PhysicalQuantity\Angle;
-use PhpUnitsOfMeasure\PhysicalQuantityInterface;
 
 class AngleTest extends AbstractPhysicalQuantityTestCase
 {
-    protected array $supportedUnitsWithAliases = [
+    protected $supportedUnitsWithAliases = [
         'rad',
         'radian',
         'radians',
@@ -250,18 +249,18 @@ class AngleTest extends AbstractPhysicalQuantityTestCase
         'yas',
     ];
 
-    protected function instantiateTestQuantity(): PhysicalQuantityInterface
+    protected function instantiateTestQuantity()
     {
         return new Angle(1, 'deg');
     }
 
-    public function testToDegrees(): void
+    public function testToDegrees()
     {
         $angle = new Angle(2 * M_PI, 'rad');
         $this->assertEquals(360, $angle->toUnit('deg'));
     }
 
-    public function testToRadians(): void
+    public function testToRadians()
     {
         $angle = new Angle(720, 'degree');
         $this->assertEquals(M_PI * 4, $angle->toUnit('rad'));

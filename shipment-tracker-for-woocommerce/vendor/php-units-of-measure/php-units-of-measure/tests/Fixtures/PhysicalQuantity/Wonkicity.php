@@ -9,7 +9,7 @@ class Wonkicity extends AbstractPhysicalQuantity
 {
     protected static $unitDefinitions;
 
-    protected static function initialize(): void
+    protected static function initialize()
     {
         $native = UnitOfMeasure::nativeUnitFactory('u');
         $native->addAlias('uvee');

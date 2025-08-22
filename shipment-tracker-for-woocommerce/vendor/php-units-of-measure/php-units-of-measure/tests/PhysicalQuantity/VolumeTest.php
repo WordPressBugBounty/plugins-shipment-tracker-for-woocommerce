@@ -3,11 +3,10 @@
 namespace PhpUnitsOfMeasureTest\PhysicalQuantity;
 
 use PhpUnitsOfMeasure\PhysicalQuantity\Volume;
-use PhpUnitsOfMeasure\PhysicalQuantityInterface;
 
 class VolumeTest extends AbstractPhysicalQuantityTestCase
 {
-    protected array $supportedUnitsWithAliases = [
+    protected $supportedUnitsWithAliases = [
         'm^3',
         'm³',
         'cubic meter',
@@ -85,7 +84,7 @@ class VolumeTest extends AbstractPhysicalQuantityTestCase
         'cups',
     ];
 
-    protected function instantiateTestQuantity(): PhysicalQuantityInterface
+    protected function instantiateTestQuantity()
     {
         return new Volume(1, 'm^3');
     }

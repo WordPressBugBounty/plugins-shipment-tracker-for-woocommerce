@@ -3,11 +3,10 @@
 namespace PhpUnitsOfMeasureTest\PhysicalQuantity;
 
 use PhpUnitsOfMeasure\PhysicalQuantity\Acceleration;
-use PhpUnitsOfMeasure\PhysicalQuantityInterface;
 
 class AccelerationTest extends AbstractPhysicalQuantityTestCase
 {
-    protected array $supportedUnitsWithAliases = [
+    protected $supportedUnitsWithAliases = [
         'm/s^2',
         'm/s²',
         'meter per second squared',
@@ -16,7 +15,7 @@ class AccelerationTest extends AbstractPhysicalQuantityTestCase
         'metres per second squared',
     ];
 
-    protected function instantiateTestQuantity(): PhysicalQuantityInterface
+    protected function instantiateTestQuantity()
     {
         return new Acceleration(1, 'm/s^2');
     }

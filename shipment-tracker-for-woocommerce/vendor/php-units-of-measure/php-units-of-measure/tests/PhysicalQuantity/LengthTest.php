@@ -3,11 +3,10 @@
 namespace PhpUnitsOfMeasureTest\PhysicalQuantity;
 
 use PhpUnitsOfMeasure\PhysicalQuantity\Length;
-use PhpUnitsOfMeasure\PhysicalQuantityInterface;
 
 class LengthTest extends AbstractPhysicalQuantityTestCase
 {
-    protected array $supportedUnitsWithAliases = [
+    protected $supportedUnitsWithAliases = [
         'm',
         'meter',
         'meters',
@@ -136,42 +135,42 @@ class LengthTest extends AbstractPhysicalQuantityTestCase
         'astronomical units',
     ];
 
-    protected function instantiateTestQuantity(): PhysicalQuantityInterface
+    protected function instantiateTestQuantity()
     {
         return new Length(1, 'm');
     }
 
-    public function testToMillimeters(): void
+    public function testToMillimeters()
     {
         $quantity = new Length(5, 'm');
         $this->assertEquals(5000, $quantity->toUnit('mm'));
     }
 
-    public function testToMegameters(): void
+    public function testToMegameters()
     {
         $quantity = new Length(5, 'm');
         $this->assertEquals(5/1e6, $quantity->toUnit('Mm'));
     }
 
-    public function testToInches(): void
+    public function testToInches()
     {
         $quantity = new Length(2, 'ft');
-        $this->assertEquals(24, round($quantity->toUnit('in')));
+        $this->assertEquals(24, $quantity->toUnit('in'));
     }
 
-    public function testToNauticalMiles(): void
+    public function testToNauticalMiles()
     {
         $quantity = new Length(3704, 'm');
         $this->assertEquals(2, $quantity->toUnit('nmi'));
     }
 
-    public function testToScandinavianMil(): void
+    public function testToScandinavianMil()
     {
         $quantity = new Length(20000, 'm');
         $this->assertEquals(2, $quantity->toUnit('mil'));
     }
 
-    public function testToAstronomicalUnit(): void
+    public function testToAstronomicalUnit()
     {
         $quantity = new Length(150000000, 'km');
         $this->assertEquals(1.0026880683402668, $quantity->toUnit('AU'));

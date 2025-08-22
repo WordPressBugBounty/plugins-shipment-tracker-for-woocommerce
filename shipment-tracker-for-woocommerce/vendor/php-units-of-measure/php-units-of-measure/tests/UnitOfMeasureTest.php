@@ -2,16 +2,15 @@
 
 namespace PhpUnitsOfMeasureTest;
 
-use PHPUnit\Framework\TestCase;
 use PhpUnitsOfMeasure\UnitOfMeasure;
 
-class UnitOfMeasureTest extends TestCase
+class UnitOfMeasureTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @covers \PhpUnitsOfMeasure\UnitOfMeasure::__construct
      * @covers \PhpUnitsOfMeasure\UnitOfMeasure::getName
      */
-    public function testGetName(): void
+    public function testGetName()
     {
         $uom = new UnitOfMeasure(
             'quatloos',
@@ -28,10 +27,10 @@ class UnitOfMeasureTest extends TestCase
 
     /**
      * @covers \PhpUnitsOfMeasure\UnitOfMeasure::__construct
+     * @expectedException \PhpUnitsOfMeasure\Exception\NonStringUnitName
      */
-    public function testConstructWithNonStringName(): void
+    public function testConstructWithNonStringName()
     {
-        $this->expectException(\PhpUnitsOfMeasure\Exception\NonStringUnitName::class);
         $uom = new UnitOfMeasure(
             42,
             function ($valueInNativeUnit) {
@@ -47,7 +46,7 @@ class UnitOfMeasureTest extends TestCase
      * @covers \PhpUnitsOfMeasure\UnitOfMeasure::addAlias
      * @covers \PhpUnitsOfMeasure\UnitOfMeasure::getAliases
      */
-    public function testGetAliases(): void
+    public function testGetAliases()
     {
         $uom = new UnitOfMeasure(
             'quatloos',
@@ -70,10 +69,10 @@ class UnitOfMeasureTest extends TestCase
 
     /**
      * @covers \PhpUnitsOfMeasure\UnitOfMeasure::addAlias
+     * @expectedException \PhpUnitsOfMeasure\Exception\NonStringUnitName
      */
-    public function testAddAliasWithNonStringAlias(): void
+    public function testAddAliasWithNonStringAlias()
     {
-        $this->expectException(\PhpUnitsOfMeasure\Exception\NonStringUnitName::class);
         $uom = new UnitOfMeasure(
             'quatloos',
             function ($valueInNativeUnit) {
@@ -90,7 +89,7 @@ class UnitOfMeasureTest extends TestCase
     /**
      * @covers \PhpUnitsOfMeasure\UnitOfMeasure::isAliasOf
      */
-    public function testIsAliasOf(): void
+    public function testIsAliasOf()
     {
         $uom = new UnitOfMeasure(
             'quatloos',
@@ -110,7 +109,7 @@ class UnitOfMeasureTest extends TestCase
     /**
      * @covers \PhpUnitsOfMeasure\UnitOfMeasure::isAliasOf
      */
-    public function testIsNotAliasOf(): void
+    public function testIsNotAliasOf()
     {
         $uom = new UnitOfMeasure(
             'quatloos',
@@ -129,11 +128,10 @@ class UnitOfMeasureTest extends TestCase
 
     /**
      * @covers \PhpUnitsOfMeasure\UnitOfMeasure::isAliasOf
-     *
+     * @expectedException \PhpUnitsOfMeasure\Exception\NonStringUnitName
      */
-    public function testIsAliasOfWithNonStringAlias(): void
+    public function testIsAliasOfWithNonStringAlias()
     {
-        $this->expectException(\PhpUnitsOfMeasure\Exception\NonStringUnitName::class);
         $uom = new UnitOfMeasure(
             'quatloos',
             function ($valueInNativeUnit) {
@@ -152,7 +150,7 @@ class UnitOfMeasureTest extends TestCase
     /**
      * @covers \PhpUnitsOfMeasure\UnitOfMeasure::convertValueFromNativeUnitOfMeasure
      */
-    public function testConvertValueFromNativeUnitOfMeasure(): void
+    public function testConvertValueFromNativeUnitOfMeasure()
     {
         $uom = new UnitOfMeasure(
             'quatloos',
@@ -169,10 +167,10 @@ class UnitOfMeasureTest extends TestCase
 
     /**
      * @covers \PhpUnitsOfMeasure\UnitOfMeasure::convertValueFromNativeUnitOfMeasure
+     * @expectedException \PhpUnitsOfMeasure\Exception\NonNumericValue
      */
-    public function testConvertValueFromNativeUnitOfMeasureWithNonNumericalValue(): void
+    public function testConvertValueFromNativeUnitOfMeasureWithNonNumericalValue()
     {
-        $this->expectException(\PhpUnitsOfMeasure\Exception\NonNumericValue::class);
         $uom = new UnitOfMeasure(
             'quatloos',
             function ($valueInNativeUnit) {
@@ -189,7 +187,7 @@ class UnitOfMeasureTest extends TestCase
     /**
      * @covers \PhpUnitsOfMeasure\UnitOfMeasure::convertValueToNativeUnitOfMeasure
      */
-    public function testConvertValueToNativeUnitOfMeasure(): void
+    public function testConvertValueToNativeUnitOfMeasure()
     {
         $uom = new UnitOfMeasure(
             'quatloos',
@@ -206,10 +204,10 @@ class UnitOfMeasureTest extends TestCase
 
     /**
      * @covers \PhpUnitsOfMeasure\UnitOfMeasure::convertValueToNativeUnitOfMeasure
+     * @expectedException \PhpUnitsOfMeasure\Exception\NonNumericValue
      */
-    public function testConvertValueToNativeUnitOfMeasureWithNonNumericalValue(): void
+    public function testConvertValueToNativeUnitOfMeasureWithNonNumericalValue()
     {
-        $this->expectException(\PhpUnitsOfMeasure\Exception\NonNumericValue::class);
         $uom = new UnitOfMeasure(
             'quatloos',
             function ($valueInNativeUnit) {

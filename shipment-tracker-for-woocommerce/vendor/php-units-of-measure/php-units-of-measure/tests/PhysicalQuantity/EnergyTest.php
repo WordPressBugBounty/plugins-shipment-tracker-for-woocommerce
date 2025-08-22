@@ -3,11 +3,10 @@
 namespace PhpUnitsOfMeasureTest\PhysicalQuantity;
 
 use PhpUnitsOfMeasure\PhysicalQuantity\Energy;
-use PhpUnitsOfMeasure\PhysicalQuantityInterface;
 
 class EnergyTest extends AbstractPhysicalQuantityTestCase
 {
-    protected array $supportedUnitsWithAliases = [
+    protected $supportedUnitsWithAliases = [
         'Wh',
         'watt hour',
         'watt hours',
@@ -59,30 +58,30 @@ class EnergyTest extends AbstractPhysicalQuantityTestCase
         'petajoules',
     ];
 
-    protected function instantiateTestQuantity(): PhysicalQuantityInterface
+    protected function instantiateTestQuantity()
     {
         return new Energy(1, 'Wh');
     }
 
-    public function testToKilowattHour(): void
+    public function testToKilowattHour()
     {
         $quantity = new Energy(1000, 'Wh');
         $this->assertEquals(1, $quantity->toUnit('kWh'));
     }
 
-    public function testToWattHour(): void
+    public function testToWattHour()
     {
         $quantity = new Energy(1, 'kWh');
         $this->assertEquals(1000, $quantity->toUnit('Wh'));
     }
 
-    public function testToMegaJoule(): void
+    public function testToMegaJoule()
     {
         $quantity = new Energy(1, 'kWh');
         $this->assertEquals(3.6, $quantity->toUnit('megajoule'));
     }
 
-    public function testToJoule(): void
+    public function testToJoule()
     {
         $quantity = new Energy(1, 'Wh');
         $this->assertEquals(3600, $quantity->toUnit('joule'));

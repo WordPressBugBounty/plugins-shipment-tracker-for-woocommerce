@@ -3,11 +3,10 @@
 namespace PhpUnitsOfMeasureTest\PhysicalQuantity;
 
 use PhpUnitsOfMeasure\PhysicalQuantity\Pressure;
-use PhpUnitsOfMeasure\PhysicalQuantityInterface;
 
 class PressureTest extends AbstractPhysicalQuantityTestCase
 {
-    protected array $supportedUnitsWithAliases = [
+    protected $supportedUnitsWithAliases = [
         'Pa',
         'pascal',
         'YPa',
@@ -84,7 +83,7 @@ class PressureTest extends AbstractPhysicalQuantityTestCase
         'pounds per square inch',
     ];
 
-    protected function instantiateTestQuantity(): PhysicalQuantityInterface
+    protected function instantiateTestQuantity()
     {
         return new Pressure(1, 'Pa');
     }
