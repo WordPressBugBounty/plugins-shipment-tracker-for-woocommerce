@@ -98,6 +98,8 @@ $timer_url = admin_url('admin.php?page=bt-shipment-tracking-timer');
 				include plugin_dir_path(dirname(__FILE__)) . '../partials/new_settings/bt-shipment-premium_setting_tab.php';
 			}elseif ($active_tab == 'help_tab') {
 				include plugin_dir_path(dirname(__FILE__)) . '../partials/new_settings/bt-shipment-help.php';
+			}elseif ($active_tab == 'developer_tab') {
+				include plugin_dir_path(dirname(__FILE__)) . '../partials/new_settings/bt-shipment-developer.php';
 			}
 			?>
 		</nav>

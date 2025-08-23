@@ -3165,12 +3165,31 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 		add_submenu_page(
 			'bt-shipment-tracking',
+			'Developer - Shipment Tracker for Woocommerce',           // Page title
+			'Developer',       // Menu title
+			'manage_options',          // Capability
+			'bt-shipment-tracking-developer',           // Menu slug
+			[$this, 'bt_shipment_tracking_developer_callback'], // Correct way to call class method
+		);
+
+		add_submenu_page(
+			'bt-shipment-tracking',
 			'Help & Support - Shipment Tracker for Woocommerce',           // Page title
 			'Help & Support',       // Menu title
 			'manage_options',          // Capability
 			'bt-shipment-tracking-help-support',           // Menu slug
 			[$this, 'bt_shipment_tracking_help_callback'], // Correct way to call class method
 		);
+	}
+
+	public function bt_shipment_tracking_developer_callback()
+	{
+		// wp_enqueue_script('bt-shipment-new-settings-js');
+		wp_enqueue_script($this->plugin_name);
+		$active_tab = "developer_tab";
+		wp_enqueue_style('bulma-css');
+		include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/new_settings/bt-shipment-new-settings.php';
+		// include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/new_settings/bt-shipment-help.php';
 	}
 
 	public function bt_shipment_tracking_help_callback()
