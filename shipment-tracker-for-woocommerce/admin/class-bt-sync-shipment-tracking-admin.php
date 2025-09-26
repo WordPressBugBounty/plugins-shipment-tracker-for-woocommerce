@@ -52,6 +52,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 	private $delhivery;
 	private $ship24;
 	private $fship;
+	private $ekart;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -60,7 +61,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct($plugin_name, $version, $shiprocket, $shyplite, $nimbuspost, $manual, $licenser, $shipmozo, $nimbuspost_new, $delhivery, $ship24, $fship)
+	public function __construct($plugin_name, $version, $shiprocket, $shyplite, $nimbuspost, $manual, $licenser, $shipmozo, $nimbuspost_new, $delhivery, $ship24, $fship, $ekart)
 	{
 
 		$this->plugin_name = $plugin_name;
@@ -75,6 +76,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 		$this->delhivery = $delhivery;
 		$this->ship24 = $ship24;
 		$this->fship = $fship;
+		$this->ekart = $ekart;
 	}
 
 
@@ -165,6 +167,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 				"test_conn_shipmozo_nonce" => wp_create_nonce('api_call_for_shipmozo_test_connection'),
 				"test_conn_delhivery_nonce" => wp_create_nonce('api_call_for_delhivery_test_connection'),
 				"test_conn_fship_nonce" => wp_create_nonce('api_call_for_fship_test_connection'),
+				"test_conn_ekart_nonce" => wp_create_nonce('api_call_for_ekart_test_connection'),
 				"test_conn_ship24_nonce" => wp_create_nonce('api_call_for_ship24_test_connection'),
 				"test_conn_nimbuspost_nonce" => wp_create_nonce('api_check_for_nimbuspost_test_connection'),
 				"buy_credit_balance_nonce" => wp_create_nonce('buy_credit_balance'),
@@ -296,6 +299,15 @@ class Bt_Sync_Shipment_Tracking_Admin
 					$order = wc_get_order($order_id);
 					$order->add_order_note('Added schedule to push this order to delhivery.' . "\n\n- Shipment tracker for woocommerce", false);
 					wp_schedule_single_event(time() + 1, 'bt_push_order_to_delhivery', array($order_id));
+
+				}
+			} else if ($bt_shipping_provider == "ekart") {
+				$bt_sst_ekart_push_order_method_is_automatic = carbon_get_theme_option('bt_sst_ekart_push_orders');
+				$is_premium = $this->licenser->is_license_active();
+				if ($bt_sst_ekart_push_order_method_is_automatic == 1 && $is_premium) {
+					$order = wc_get_order($order_id);
+					$order->add_order_note('Added schedule to push this order to delhivery.' . "\n\n- Shipment tracker for woocommerce", false);
+					wp_schedule_single_event(time() + 1, 'bt_push_order_to_ekart', array($order_id));
 
 				}
 			}
@@ -605,6 +617,44 @@ class Bt_Sync_Shipment_Tracking_Admin
 				$order->add_order_note("Failed to push order to Delhivery, please verify api credentials." . "\n\n- Shipment tracker for woocommerce", false);
 				$order->add_order_note("Response from Delhivery Push api: " . json_encode($push_resp) . "\n\n- Shipment tracker for woocommerce", false);
 			}
+		} catch (Exception $e) {
+			error_log('Error in pushing order id: ' . $order_id . ' got error: ' . $e->getMessage());
+		}
+	}
+	public function push_order_to_ekart($order_id)
+	{
+		try {
+			$order = wc_get_order($order_id);
+
+			if (!empty(Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_ekart_tracking_id', true))) {
+				$order->add_order_note('Delivery is already assigned with tracking No: ' . Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_ekart_tracking_id', true) . "\n\n- Shipment tracker for woocommerce", false);
+				return;
+			}
+
+			$order->add_order_note('Pushing order to Ekart: ' . $order_id . "\n\n- Shipment tracker for woocommerce", false);
+			$push_resp = $this->ekart->push_order_to_ekart($order_id);
+
+			if ($push_resp === null) {
+				$order->add_order_note(
+					"Failed to push order to Ekart, please verify API credentials or payload.\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+				return;
+			}
+			
+			if (isset($push_resp["status"]) && $push_resp["status"] === true) {
+				$ekart_tracking_id = $push_resp['tracking_id'] ?? '';
+				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_ekart_tracking_id', $ekart_tracking_id);
+				$order->add_order_note("Order pushed to Ekart. Tracking No: " . $ekart_tracking_id . "\n\n- Shipment tracker for woocommerce", false);
+				// bt_force_sync_order_tracking($order_id);
+			} else {
+				$remarks = $push_resp['remark'] ?? ($push_resp['packages'][0]['remarks'] ?? 'Unknown error');
+				$order->add_order_note(
+					"Failed to push order to Ekart, got error response: '{$remarks}'\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+			}				
+			
 		} catch (Exception $e) {
 			error_log('Error in pushing order id: ' . $order_id . ' got error: ' . $e->getMessage());
 		}
@@ -1100,6 +1150,30 @@ class Bt_Sync_Shipment_Tracking_Admin
 			);
 		}
 		// $response = "idfugdf";
+		wp_send_json($response);
+		die();
+	}
+	public function api_call_for_ekart_test_connection()
+	{
+		$nonce = sanitize_text_field($_GET["value"]);
+
+		if (!wp_verify_nonce($nonce, 'api_call_for_ekart_test_connection')) {
+			return;
+		}
+		$response = array(
+			"status" => false,
+			"data" => null,
+			"message" => "Test Connection Failed. Please verify api credentials and try again."
+		);
+		$api_call = $this->ekart->generate_access_token_object();
+
+		if ($api_call) {
+			$response = array(
+				"status" => true,
+				"data" => null,
+				"message" => "Test Connection Successful. Great work!!"
+			);
+		}
 		wp_send_json($response);
 		die();
 	}
@@ -1705,7 +1779,11 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 		$bt_sst_shipment_when_to_send_messages = carbon_get_theme_option('bt_sst_shipment_when_to_send_messages');
 
-		if (!$bt_sst_shipment_when_to_send_messages  || !in_array($event_name, $bt_sst_shipment_when_to_send_messages, true)) {
+		if (!$bt_sst_shipment_when_to_send_messages) {
+			return $send_via;
+		}
+
+		if (!in_array($event_name, $bt_sst_shipment_when_to_send_messages, true)) {
 			return $send_via;
 		}
 
@@ -2083,6 +2161,13 @@ class Bt_Sync_Shipment_Tracking_Admin
 			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
 			$getresponce = $this->push_order_on_fship($order_id);
 			unset($_GET['bt_push_to_fship']);
+			global $pagenow;
+			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
+			wp_safe_redirect($current_page);
+		} else if (isset($_GET['bt_push_to_ekart']) && $_GET['bt_push_to_ekart'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
+			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
+			$getresponce = $this->push_order_to_ekart($order_id);
+			unset($_GET['bt_push_to_ekart']);
 			global $pagenow;
 			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
 			wp_safe_redirect($current_page);
@@ -2614,6 +2699,9 @@ class Bt_Sync_Shipment_Tracking_Admin
 		if (is_admin() && isset($_GET["page"]) && $_GET['page'] == "crb_carbon_fields_container_shipment_tracking.php") {
 			require_once (dirname(__FILE__)) . '/partials/bt-st-buy-credits-popup.php';
 			require_once (dirname(__FILE__)) . '/partials/bt-st-setup-guide.php';
+		}
+		if (is_admin() && isset($_GET["page"]) && $_GET['page'] == "bt-shipment-tracking-sms-setting") {
+			require_once (dirname(__FILE__)) . '/partials/bt-st-buy-credits-popup.php';
 		}
 		$bt_sst_enable_orde_status_mapping = carbon_get_theme_option('bt_sst_enable_orde_status_mapping');
 		if($bt_sst_enable_orde_status_mapping){
@@ -3361,7 +3449,11 @@ class Bt_Sync_Shipment_Tracking_Admin
 		wp_send_json_success(['message' => 'License removed successfully.']);
 	}
 
-
+	public function bt_sst_get_ekart_adress_list(){
+		$api_data = $this->ekart->get_addresses_list();
+		wp_send_json($api_data);
+		die();
+	}
 
 
 
@@ -3423,6 +3515,9 @@ function bt_force_sync_order_tracking($order_id)
 		}
 	}else if ($bt_shipping_provider == 'fship') {
 		$obj = new Bt_Sync_Shipment_Tracking_Fship();
+		$response = $obj->update_order_shipment_status($order_id);
+	}else if ($bt_shipping_provider == 'ekart') {
+		$obj = new Bt_Sync_Shipment_Tracking_Ekart();
 		$response = $obj->update_order_shipment_status($order_id);
 	}
 

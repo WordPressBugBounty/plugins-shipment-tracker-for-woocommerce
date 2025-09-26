@@ -73,6 +73,7 @@ class Bt_Sync_Shipment_Tracking {
     private $ship24;
 	private $licenser;
 	private $fship;
+	private $ekart;
 
 	/**
 	 * Define the core functionality of the plugin.
@@ -229,6 +230,7 @@ class Bt_Sync_Shipment_Tracking {
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/manual.php';
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/ship24.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-bt-sync-shipment-tracking-public.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/ekart.php';
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-bt-sync-shipment-tracking-rest.php';
 
@@ -249,6 +251,7 @@ class Bt_Sync_Shipment_Tracking {
         $this->ship24 = new Bt_Sync_Shipment_Tracking_Ship24();
 		$this->licenser = new Bt_Licenser();
 		$this->fship = new Bt_Sync_Shipment_Tracking_Fship();
+		$this->ekart = new Bt_Sync_Shipment_Tracking_Ekart();
         ( new Bt_Sync_Shipment_Tracking_Review() )->hooks();
 	}
 
@@ -260,7 +263,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_cron_events() {
 
-		$this->crons = new Bt_Sync_Shipment_Tracking_Crons($this->shiprocket,$this->shyplite,$this->nimbuspost_new,$this->shipmozo, $this->licenser, $this->delhivery, $this->ship24, $this->fship);
+		$this->crons = new Bt_Sync_Shipment_Tracking_Crons($this->shiprocket,$this->shyplite,$this->nimbuspost_new,$this->shipmozo, $this->licenser, $this->delhivery, $this->ship24, $this->fship, $this->ekart);
 
 		$this->loader->add_action( Bt_Sync_Shipment_Tracking_Crons::BT_MINUTELY_JOB, $this->crons, 'minutely_job');
 		$this->loader->add_action( Bt_Sync_Shipment_Tracking_Crons::BT_15MINS_JOB, $this->crons, 'bt_every_15_minutes_job');
@@ -336,7 +339,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Bt_Sync_Shipment_Tracking_Admin( $this->get_plugin_name(), $this->get_version(),$this->shiprocket,$this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->shipmozo, $this->nimbuspost_new, $this->delhivery, $this->ship24, $this->fship);
+		$plugin_admin = new Bt_Sync_Shipment_Tracking_Admin( $this->get_plugin_name(), $this->get_version(),$this->shiprocket,$this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->shipmozo, $this->nimbuspost_new, $this->delhivery, $this->ship24, $this->fship, $this->ekart);
 		$this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_admin, 'custom_dokan_order_details', 10, 1 );
 		$this->loader->add_action('carbon_fields_save_post',$plugin_admin, 'update_woocommerce_data_on_carbon_fields_save', 10, 3);
 		$this->loader->add_action( 'woocommerce_order_status_changed',$plugin_admin, 'woocommerce_order_status_changed_of_shipment_tracker', 10, 3 );
@@ -373,9 +376,10 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'bt_push_order_to_shiprocket', $plugin_admin, 'push_order_to_shiprocket',10,3);
 		$this->loader->add_action( 'bt_push_order_to_shipmozo', $plugin_admin, 'push_order_to_shipmozo',10,3);
 		$this->loader->add_action( 'bt_push_order_to_delhivery', $plugin_admin, 'push_order_to_delhivery',10,3);
+		$this->loader->add_action( 'bt_push_order_to_ekart', $plugin_admin, 'push_order_to_ekart',10,3);
 		$this->loader->add_action( 'bt_push_order_to_nimbuspost', $plugin_admin, 'push_order_to_nimbuspost',10,3);
 
-		$ajax_functions = new Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions($this->crons, $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->delhivery, $this->ship24, $this->fship);
+		$ajax_functions = new Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions($this->crons, $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->delhivery, $this->ship24, $this->fship, $this->ekart);
 		$this->loader->add_action( 'wp_ajax_sync_now_shyplite', $ajax_functions, 'bt_sync_now_shyplite',10,2);
 
         $this->loader->add_action('wp_ajax_force_sync_tracking',$ajax_functions, 'force_sync_tracking');
@@ -397,6 +401,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'wp_ajax_api_call_for_test_connection', $plugin_admin, 'api_call_for_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_delhivery_test_connection', $plugin_admin, 'api_call_for_delhivery_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_fship_test_connection', $plugin_admin, 'api_call_for_fship_test_connection' );
+		$this->loader->add_action( 'wp_ajax_api_call_for_ekart_test_connection', $plugin_admin, 'api_call_for_ekart_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_ship24_test_connection', $plugin_admin, 'api_call_for_ship24_test_connection' );
 		$this->loader->add_action( 'wp_ajax_get_sms_trial', $plugin_admin, 'get_sms_trial' );
 		$this->loader->add_action( 'wp_ajax_get_bt_sst_email_trial', $plugin_admin, 'get_bt_sst_email_trial' );
@@ -419,6 +424,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action('wp_ajax_bt_sst_remove_status_mapping',$plugin_admin, 'bt_sst_remove_status_mapping');
 		$this->loader->add_action('wp_ajax_bt_sst_update_tracking_settings',$plugin_admin, 'bt_sst_update_tracking_settings');
 		$this->loader->add_action('wp_ajax_bt_sst_get_tracking_settings_data',$plugin_admin, 'bt_sst_get_tracking_settings_data');
+		$this->loader->add_action('wp_ajax_bt_sst_get_ekart_adress_list',$plugin_admin, 'bt_sst_get_ekart_adress_list');
 
 		$this->loader->add_filter('bulk_actions-edit-shop_order', $plugin_admin,'status_orders_bulk_actions');
 		$this->loader->add_filter('bulk_actions-woocommerce_page_wc-orders', $plugin_admin,'status_orders_bulk_actions');
@@ -1826,6 +1832,58 @@ class Bt_Sync_Shipment_Tracking {
 
 			) );
 		}
+		if(is_array($enabled_shipping_providers) && in_array('ekart',$enabled_shipping_providers)){
+			$container = $container->add_tab( __( 'Ekart' ), array(
+				Field::make( 'text', 'bt_sst_ekart_client_id', __( 'Client ID' ) )
+					->set_help_text( ' 
+						<a target="_blank" href="https://app.elite.ekartlogistics.in/settings/api/documentation">[Click here to get Client ID]</a>
+						' ),
+				Field::make( 'text', 'bt_sst_ekart_username', __( 'Username' ) ),
+				Field::make( 'text', 'bt_sst_ekart_password', __( 'Password' ) )
+				->set_attribute( 'type', 'password' ),
+				Field::make( 'text', 'bt_sst_ekart_pickup_pin', __( 'Pick-up Pincode' ) ),
+				Field::make( 'text', 'bt_sst_ekart_pick_up_location', __( 'Pick-up Location' ) )
+						->set_help_text( '
+						<div class="address_popup_container"></div>
+						<a href="#" id="bt_sst_add_ekart_address">Select Pick-up Location</a>' ),
+				Field::make( 'html', 'bt_sst_test_connection_ekart', __( 'Help HTML' ) )
+						->set_html(
+						sprintf('
+							<button type="button" class="button" id="api_test_connection_btn_ekart">Test Connection</button><br>
+							<em class="cf-field__help">Please click "Save Changes" to save api credentials before testing the connection</em>
+							<div id="api_test_connection_modal_ekart" class="modal">
+								<div class="modal-background"></div>
+								<div class="modal-card">
+									<header class="modal-card-head">
+									<p id="api_tc-m-content_ekart" class="modal-content"></p>
+									<button type="button" id="api_tc_m_close_btn_delh" class="delete" aria-label="close"></button>
+									</header>
+								</div>
+							</div>
+						')),
+				Field::make( 'checkbox', 'bt_sst_ekart_push_orders', __( 'Automatically Push Orders to Ekart (Premium Only)') )
+						->set_classes( 'title is-6' )
+						->set_help_text( 'Plugin will automatically push "processing" orders to ekat.<br>
+						You can still push orders by clicking "Push Now" link available in individual order.
+						<br>This feature also pushes correct order weight and dimensions of package to ekart, it helps in reducing weight discrepancy issues.
+						<br>For this option to work, make sure that the weight and dimensions are correctly set for every product. Keep some packaging buffer for better accuracy in calculation. 
+						' )
+						->set_option_value( '1' )
+						->set_default_value( '0' ),
+				Field::make( 'select', 'bt_sst_ekart_shipping_mode', __( 'Default Shipping Mode' ) )
+					->add_options( 
+						array(
+							'EXPRESS'=>'Express',
+							'SURFACE'=>'Surface',
+							)
+						)
+						->set_help_text(
+							'This order is pushed to one ekart portal using this shipping mode.'
+						),
+				
+			) );
+		}
+
 		if(is_array($enabled_shipping_providers) && in_array('fship',$enabled_shipping_providers)){
 			
 			$container = $container->add_tab( __( 'Fship' ), array(
@@ -2246,6 +2304,7 @@ class Bt_Sync_Shipment_Tracking {
 					'shipmozo' => 'Shipmozo',
 					'shiprocket' => 'Shiprocket',
 					'fship' => 'Fship',
+					'ekart' => 'Ekart',
 					
 					
 					
@@ -2336,6 +2395,19 @@ class Bt_Sync_Shipment_Tracking {
 					array(
 						'field' => 'bt_sst_courier_rate_provider',
 						'value' => 'delhivery',
+					)
+				) ),
+				Field::make( 'text', 'bt_sst_ekart_fall_back_rate', __( 'Fall Back Rate (Per 500gm)' ) )
+				->set_attribute( 'type', 'number' )
+				->set_help_text( 'Fallback rate is used when no courier is available between any pickup/delivery combination. Leave it empty if you do not want to use any fallback rate.' )
+				->set_conditional_logic( array(
+					array(
+						'field' => 'bt_sst_select_courier_company',
+						'value' => true,
+					),
+					array(
+						'field' => 'bt_sst_courier_rate_provider',
+						'value' => 'ekart',
 					)
 				) ),
 			

@@ -318,12 +318,12 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         $total_height_cm = $total_height->toUnit('cm');
 
         $total_length = new Length($total_length, $dimension_unit);
-        $total_height_cm = $total_length->toUnit('cm');
+        $total_length_cm = $total_length->toUnit('cm');
         
         $postData['shipments'][0]['weight'] = $total_weight_kg>0?$total_weight_kg:100;
         $postData['shipments'][0]['shipment_width'] = $total_width_cm>0?$total_width_cm:5;
         $postData['shipments'][0]['shipment_height'] = $total_height_cm>0?$total_height_cm:5;
-        $postData['shipments'][0]['shipment_length'] = $total_height_cm>0?$total_height_cm:5;
+        $postData['shipments'][0]['shipment_length'] = $total_length_cm>0?$total_length_cm:5;
      
         return $postData;
         

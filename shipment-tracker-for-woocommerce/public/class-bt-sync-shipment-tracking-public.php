@@ -1460,6 +1460,9 @@ class Bt_Sync_Shipment_Tracking_Public
 			return $rates;
 		}
 		$delivery_pincode = $package['destination']['postcode'];
+		if( empty($delivery_pincode)) {
+			return $rates;
+		}
 		$delivery_country = $package['destination']['country'];
 		$bt_sst_courier_rate_provider = carbon_get_theme_option("bt_sst_courier_rate_provider");
 
@@ -2447,10 +2450,172 @@ class Bt_Sync_Shipment_Tracking_Public
 				}
 			}
 
+		}else if ($bt_sst_courier_rate_provider == 'ekart') {
+			$cart_totals = $this->get_cart_weight_and_dimentions();
+			$weight_in_kg = $cart_totals['total_weight_kg'];
+			$length_in_cms = $cart_totals['total_length_cm'];
+			$breadth_in_cms = $cart_totals['total_width_cm'];
+			$height_in_cms = $cart_totals['total_height_cm'];
+			$declared_value = $cart_totals['declared_value'];
+
+			if ($weight_in_kg < 0.1) {
+				$weight_in_kg = 0.1;
+			}
+			if ($length_in_cms < 1) {
+				$length_in_cms = 10;
+			}
+			if ($breadth_in_cms < 1) {
+				$breadth_in_cms = 10;
+			}
+			if ($height_in_cms < 1) {
+				$height_in_cms = 10;
+			}
+
+			if ($weight_in_kg > 0) {
+				if (false === ($bt_sst_cached_ekart_estimates_delhivery = get_transient('bt_sst_cached_ekart_estimates_delhivery'))) {
+					$bt_sst_cached_ekart_estimates_delhivery = array();
+				}
+				if ($delivery_country == "IN") {
+					$pickup_pincode = carbon_get_theme_option("bt_sst_ekart_pickup_pin");
+					if (!empty($pickup_pincode)) {
+						$pm = $cod == 1 ? "COD" : "PREPAID";
+						$cached_pincode_key = $pickup_pincode . "_" . $delivery_pincode . "_" . $weight_in_kg . '_' . $pm;
+						if (isset($bt_sst_cached_ekart_estimates_delhivery[$cached_pincode_key])) {
+							$push_resp = $bt_sst_cached_ekart_estimates_delhivery[$cached_pincode_key];
+						} else {
+							$push_resp = $this->delhivery->get_rate_calcultor(
+															$delivery_pincode, 
+															$weight_in_kg, 
+															$length_in_cms, 
+															$height_in_cms, 
+															$breadth_in_cms,
+															$invoiceAmount
+														);
+							if ($push_resp != null && !empty($push_resp)) {
+								$bt_sst_cached_ekart_estimates_delhivery[$cached_pincode_key] = $push_resp;
+								set_transient('bt_sst_cached_ekart_estimates_delhivery', $bt_sst_cached_ekart_estimates_delhivery, 1 * HOUR_IN_SECONDS);
+							} else {
+								$push_resp = [];
+							}
+						}
+						$filtered_arr = $push_resp;
+					}
+				}
+			}
+
+			$free_shipping_rates = [];
+			foreach ($rates as $key => $r) {
+				if (strpos($key, 'free_shipping') !== false) {
+					$free_shipping_rates[$key] = $r;
+				}
+			}
+			$rates = $free_shipping_rates;
+
+			if ($filtered_arr == null || sizeof($filtered_arr) == 0) {
+
+				if ($delivery_country == "IN") {
+					$cost = carbon_get_theme_option("bt_sst_ekart_fall_back_rate");
+					if ($cost && $cost > 0) {
+						$WC_Shipping_Rate = new WC_Shipping_Rate();
+						$id = 'flat_rate:ekart:fallback';
+						$WC_Shipping_Rate->set_id($id);
+						$WC_Shipping_Rate->set_label('Flat rate');
+						$WC_Shipping_Rate->set_method_id($id);
+
+						if ($weight_in_kg > 0.5) {
+							$t_weight = $weight_in_kg / 0.5;
+							$t_weight = ceil($t_weight);
+							$cost = round($t_weight * $cost);
+						}
+
+						$WC_Shipping_Rate->set_cost($cost);
+						$WC_Shipping_Rate->set_instance_id($id);
+						$bt_sst_shipping_duration_days = 4;
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
+
+						$rates[$id] = $WC_Shipping_Rate;
+					}
+				} else {
+					//to handle international fallback rate
+				}
+			} else {
+
+				if ($delivery_country == "IN") {
+					usort($filtered_arr, function ($a, $b) {
+						return ($a['total'] - ($b['total']));
+					});
+
+					$i = 0;
+					foreach ($filtered_arr as $rb) {
+
+						$lable = "Ekart " . ucfirst($rb['mode']);
+						$bt_sst_shipping_duration_days = null;
+						$bt_sst_shipping_edd = null;
+						if (isset($rb['tat']) && $rb['tat'] != null) {
+							$bt_sst_shipping_duration_days = $rb['tat'];
+							$bt_sst_shipping_edd = new DateTime("+" . $bt_sst_shipping_duration_days . " days");
+						}
+						$id = 'flat_rate:ekart:' . $rb['mode'];
+						$method_id = 'flat_rate';
+						$markup_cost = carbon_get_theme_option(
+							"bt_sst_markup_charges"
+						);
+						if (!$markup_cost) {
+							$markup_cost = 0;
+						}
+						if (($rb['total'] + $markup_cost) < 0) {
+							$markup_cost = 0;
+						}
+
+						$delivery_charge = 0;
+						if ($cod == 1) {
+							$two_percent = $rb['total'] * (2 / 100);
+							if ($two_percent > 40) {
+								$delivery_charge = $two_percent;
+							} else {
+								$delivery_charge = 40;
+							}
+						}
+						$cost = round($rb['total'] + $markup_cost + $delivery_charge, 2);
+
+
+						$texes = [];
+						$delivery_date = '';
+						$processing_days = $this->bt_get_processing_days();
+						if (!$processing_days) {
+							$processing_days = carbon_get_theme_option("bt_sst_shipment_processing_days");
+						}
+						if (!$processing_days || $processing_days < 0) {
+							$processing_days = 0;
+						}
+						$delivery_date = $this->addDayswithdate($bt_sst_shipping_edd->format('Y-m-d H:i:s'), $processing_days);
+						
+						$show_delivery_date = carbon_get_theme_option("bt_sst_show_delivery_date");
+						if ($show_delivery_date == 1) {
+							$lable .= " (Edd: " . $delivery_date . ")";
+						}
+						$WC_Shipping_Rate = new WC_Shipping_Rate();
+						$WC_Shipping_Rate->add_meta_data("edd", $delivery_date);
+						$WC_Shipping_Rate->set_id($id);
+						$WC_Shipping_Rate->set_label($lable);
+						$WC_Shipping_Rate->set_method_id($method_id);
+						$WC_Shipping_Rate->set_cost($cost);
+						$WC_Shipping_Rate->set_instance_id($id);
+						$WC_Shipping_Rate->set_taxes($texes);
+						$WC_Shipping_Rate->add_meta_data('bt_sst_courier_company_name', $lable);
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipment_provider', 'ekart');
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
+						$WC_Shipping_Rate->add_meta_data('bt_sst_processing_days', $processing_days);
+						$rates[$id] = $WC_Shipping_Rate;
+					}
+
+
+				}
+			}
+
 		}
 
 		$saved_data = get_option('bt_sst_timer_settings', []);
-		// Set default percentage_discount to 0 if not set or not numeric
 		$percentage_discount = isset($saved_data['discount_percentage']) && is_numeric($saved_data['discount_percentage'])
 			? floatval($saved_data['discount_percentage'])
 			: 0;
@@ -2459,20 +2624,18 @@ class Bt_Sync_Shipment_Tracking_Public
 
 		$elapsedTime = $currentTime - $startTime;
 
-		// 3. Validate and retrieve timer values
 		$timerHours   = isset($saved_data['bt_sst_timer_hours']) && is_numeric($saved_data['bt_sst_timer_hours']) ? (int) $saved_data['bt_sst_timer_hours'] : 0;
 		$timerMinutes = isset($saved_data['bt_sst_timer_minutes']) && is_numeric($saved_data['bt_sst_timer_minutes']) ? (int) $saved_data['bt_sst_timer_minutes'] : 0;
 		$timerSeconds = isset($saved_data['bt_sst_timer_seconds']) && is_numeric($saved_data['bt_sst_timer_seconds']) ? (int) $saved_data['bt_sst_timer_seconds'] : 0;
 
-		// 4. Calculate total countdown duration in seconds
 		$total_seconds = ($timerHours * 3600) + ($timerMinutes * 60) + $timerSeconds;
 
 		if ($elapsedTime < $total_seconds && isset($saved_data['bt_sst_timer_enable']) && $saved_data['bt_sst_timer_enable']) {
 			$free_shipping = !empty($saved_data['free_shipping']);
 
 			foreach ($rates as $rate_key => $rate) {
-				$original_cost = number_format(floatval($rate->cost), 2); // Ensure cost is float before formatting
-				$strikethrough_price = preg_replace('/./u', '$0̶', $original_cost); // Unicode strikethrough
+				$original_cost = number_format(floatval($rate->cost), 2);
+				$strikethrough_price = preg_replace('/./u', '$0̶', $original_cost);
 
 				if ($free_shipping) {
 					$rates[$rate_key]->cost = 0;

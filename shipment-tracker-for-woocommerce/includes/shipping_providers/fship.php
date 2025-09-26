@@ -44,8 +44,7 @@ public function test_fship()
 
         $body = wp_remote_retrieve_body($response);
         $resp = json_decode($body, true);
-        echo "vishnu<pre>"; print_r($resp); echo "</pre>"; // Debugging output d
-        die;
+
 
         if (isset($resp) && is_array($resp) && count($resp) > 0) {
             return true;

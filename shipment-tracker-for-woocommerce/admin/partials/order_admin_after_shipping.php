@@ -35,6 +35,12 @@ if(isset($order_id)){
 ?>
     <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
 
+     <?php elseif($bt_shipping_provider == "ekart" && wc_get_order($order_id)->has_status('processing')): 
+    global $pagenow;
+    $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_ekart" => true)))));    
+?>
+    <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
+
      <?php elseif($bt_shipping_provider == "fship" && wc_get_order($order_id)->has_status('processing')): 
     global $pagenow;
     $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_fship" => true)))));    

@@ -234,6 +234,11 @@
 			$(this).addClass('is-loading');
 			api_test_connection_fship();
 		});
+		$(document).on('click', '#api_test_connection_btn_ekart', function (e) {
+			e.preventDefault();
+			$(this).addClass('is-loading');
+			api_test_connection_ekart();
+		});
 		$(document).on('click', '#api_test_connection_btn_ship24', function (e) {
 			e.preventDefault();
 			$(this).addClass('is-loading');
@@ -299,6 +304,7 @@
 		  xpressbees: 'Xpressbees',
 		  nimbuspost: 'Nimbuspost (OLD)',
 		  checkout: 'Checkout Page',
+		  ekart: 'Ekart',
 		};
 		
 		const buttonText = typeToButtonMap[type];
@@ -942,6 +948,21 @@
 			}
 		)
 	}
+	function api_test_connection_ekart() {
+		// console.log(bt_sync_shipment_track_data.test_conn_nonce);		
+		var nonce = bt_sync_shipment_track_data.test_conn_ekart_nonce;
+		console.log(nonce);
+		$.get(
+			bt_sync_shipment_track_data.ajax_url,
+			{ action: 'api_call_for_ekart_test_connection', value: nonce },
+			function (res) {
+				$('#api_tc-m-content_ekart').html(res.message);
+				$('#api_test_connection_modal_ekart').addClass('is-active');
+				$('#api_test_connection_btn_ekart').removeClass('is-loading');
+
+			}
+		)
+	}
 	function api_test_connection_ship24() {
 		// console.log(bt_sync_shipment_track_data.test_conn_nonce);		
 		var nonce = bt_sync_shipment_track_data.test_conn_nonce;
@@ -1382,4 +1403,70 @@ document.addEventListener('DOMContentLoaded', () => {
 				console.error('AJAX failed:', err);
 			});
 		});
+
+	$(document).on('click', '#bt_sst_add_ekart_address', function (e) {
+		e.preventDefault();
+		const $button = $(this);
+		$button.addClass('is-loading');
+
+		$.get(
+			bt_sync_shipment_track_data.ajax_url,
+			{ action: 'bt_sst_get_ekart_adress_list' },
+			function (res) {
+				$button.removeClass('is-loading');
+
+				let popupHtml = `
+				<div id="ekart_address_popup" class="modal is-active">
+				<div class="modal-background"></div>
+				<div class="modal-card">
+					<header class="modal-card-head">
+					<p class="modal-card-title">Select Address</p>
+					<button class="delete" aria-label="close" id="ekart_address_close"></button>
+					</header>
+					<section class="modal-card-body">
+					<div class="field">
+						<label class="label">Address</label>
+						<div class="control">
+						<div class="select is-fullwidth">
+							<select id="ekart_address_select">
+							<option value="">-- Select --</option>
+							</select>
+						</div>
+						</div>
+					</div>
+					</section>
+					<footer class="modal-card-foot">
+					<button class="button is-light" id="ekart_address_close">Close</button>
+					</footer>
+				</div>
+				</div>
+				`;
+				$('.address_popup_container').append(popupHtml);
+
+				if (Array.isArray(res) && res.length > 0) {
+					res.forEach(function(item){
+						const alias = item.alias ? item.alias.toLowerCase() : '';
+						$('#ekart_address_select').append(`<option value="${alias}">${item.alias}</option>`);
+					});
+				}
+
+				$('#ekart_address_select').on('change', function(){
+					const selectedAlias = $(this).val();
+					if(selectedAlias){
+						$('input[name="carbon_fields_compact_input[_bt_sst_ekart_pick_up_location]"]').val(selectedAlias);
+						$('#ekart_address_popup').remove();
+					}
+				});
+
+				$('#ekart_address_close').on('click', function(){
+					$('#ekart_address_popup').remove();
+				});
+
+			}
+		).fail(function (err) {
+			$button.removeClass('is-loading');
+			console.error('AJAX failed:', err);
+		});
+	});
+
   })(jQuery);

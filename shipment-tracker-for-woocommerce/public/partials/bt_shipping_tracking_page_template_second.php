@@ -145,7 +145,7 @@ if($tracking && isset($tracking['tracking_data'])){
 
                 
 
-                if(stripos($shipment_status,'delivered')!==false && stripos($shipment_status,'rto')===false){
+                if(strtolower($shipment_status) == 'delivered'){
                     $current_step = 4; 
                 } else if(stripos($shipment_status,'out')!==false && stripos($shipment_status,'rto')===false && stripos($shipment_status,'pick')===false){
                     $current_step = 3; 
@@ -203,7 +203,7 @@ if($tracking && isset($tracking['tracking_data'])){
             $whatsapp_url .= $estimated_delivery_date . "\n";
             }
             if($estimated_delivery_date=="NA" || !$estimated_delivery_date){
-                if(stripos($shipment_status,'delivered')!==false && stripos($shipment_status,'rto')===false){
+                if (strtolower($shipment_status) === 'delivered') {
                     $estimated_delivery_date = "Delivered";
                 }else{
                     $estimated_delivery_date = "Arriving Soon";

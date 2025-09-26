@@ -38,6 +38,9 @@ if(isset($order_id)){
         }else if ($bt_shipping_provider == "fship"){
             $edit =  "<br><a class='bt_sync_order_tracking' data-order-id='$order_id' href='#'>Sync Now</a>";
         }
+        else if ($bt_shipping_provider == "ekart"){
+            $edit =  "<br><a class='bt_sync_order_tracking' data-order-id='$order_id' href='#'>Sync Now</a>";
+        }
    // }
 }
 ?>
