@@ -282,7 +282,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_rest_apis() {
 
-		$rest = new Bt_Sync_Shipment_Tracking_Rest( $this->get_plugin_name(), $this->get_version(), $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->xpressbees, $this->shipmozo, $this->nimbuspost_new, $this->ship24);
+		$rest = new Bt_Sync_Shipment_Tracking_Rest( $this->get_plugin_name(), $this->get_version(), $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->xpressbees, $this->shipmozo, $this->nimbuspost_new, $this->ship24, $this->ekart);
 
 		//shiprocket webhook & apis
 		$this->loader->add_action( 'rest_api_init', $rest, 'rest_shiprocket_webhook');
@@ -306,6 +306,9 @@ class Bt_Sync_Shipment_Tracking {
 
         $this->loader->add_action( 'rest_api_init', $rest, 'rest_ship24_webhook');
         $this->loader->add_action( 'init', $rest, 'generate_random_webhook_secret_key');
+
+        $this->loader->add_action( 'rest_api_init', $rest, 'rest_ekart_webhook');
+        // $this->loader->add_action( 'init', $rest, 'generate_random_webhook_secret_key');
 
 		//manual provider webhook & apis
         $this->loader->add_action( 'rest_api_init', $rest, 'rest_manual_webhook');
@@ -1833,7 +1836,20 @@ class Bt_Sync_Shipment_Tracking {
 			) );
 		}
 		if(is_array($enabled_shipping_providers) && in_array('ekart',$enabled_shipping_providers)){
+			$ekart_webhook_time = get_option('ekart_webhook_called', 'never');
+			if($ekart_webhook_time!="never"){ 
+				$ekart_webhook_time = date('Y-m-d H:i:s', $ekart_webhook_time);
+			}
+
 			$container = $container->add_tab( __( 'Ekart' ), array(
+				Field::make( 'html', 'bt_sst_ekart_webhook_html', __( 'Ekart Webhook URL' ) )
+					->set_html(
+						sprintf( '
+								<b>Ekart Webhook URL: [<a target="_blank" href="https://app.elite.ekartlogistics.in/settings/api/webhooks">Configure Webhook Here</a>] </b> 
+								<p>'.get_site_url(null, '/wp-json/bt-sync-shipment-tracking-ekart/v1.0.0/webhook_receiver').'<a href="#" class="bt_sst_copy_link" > Copy Link</a> </p>
+								<p>Last Webhook Called On: '.$ekart_webhook_time.'</p>
+							')
+					),
 				Field::make( 'text', 'bt_sst_ekart_client_id', __( 'Client ID' ) )
 					->set_help_text( ' 
 						<a target="_blank" href="https://app.elite.ekartlogistics.in/settings/api/documentation">[Click here to get Client ID]</a>
@@ -2052,6 +2068,7 @@ class Bt_Sync_Shipment_Tracking {
 					'shipmozo'   => 'Shipmozo',
 					'shiprocket' => 'Shiprocket',
 					'fship' => 'Fship',
+					'ekart' => 'Ekart',
 				) )
 				->set_help_text('
 				<p><b>Shiprocket:</b> Courier names along with estimated delivery date and rates are fetched from Shiprocket on realtime basis. <br>Make sure the Shiprocket\'s API settings are correctly set to use this provider. <a href="https://www.youtube.com/watch?v=8nds10GbsVE" target="_blank">See Video</a></p>
@@ -2659,7 +2676,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Bt_Sync_Shipment_Tracking_Public( $this->get_plugin_name(), $this->get_version() ,$this->shiprocket, $this->shipmozo, $this->nimbuspost_new, $this->licenser, $this->delhivery, $this->fship);
+		$plugin_public = new Bt_Sync_Shipment_Tracking_Public( $this->get_plugin_name(), $this->get_version() ,$this->shiprocket, $this->shipmozo, $this->nimbuspost_new, $this->licenser, $this->delhivery, $this->fship, $this->ekart);
 
 		// $pincode_checker_location_hook = carbon_get_theme_option( 'bt_sst_pincode_checker_location' );
 		// $this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_public, 'custom_dokan_order_details', 10, 1 );

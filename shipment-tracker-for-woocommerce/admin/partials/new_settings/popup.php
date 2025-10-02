@@ -1,5 +1,6 @@
 <?php
     // echo $check_skip_or_not; die;
+    $class_is_active = "";
     if(!$check_active_registration && $check_skip_or_not===false){
         $class_is_active = 'is-active';
     }

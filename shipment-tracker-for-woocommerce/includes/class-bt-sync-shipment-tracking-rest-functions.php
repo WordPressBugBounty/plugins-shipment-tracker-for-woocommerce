@@ -11,8 +11,9 @@ class Bt_Sync_Shipment_Tracking_Rest_Functions{
     private $xpressbees;
     private $manual;
     private $ship24;
+    private $ekart;
 
-    public function __construct($shiprocket,$shyplite, $nimbuspost, $manual, $xpressbees, $shipmozo, $nimbuspost_new, $ship24 ) {
+    public function __construct($shiprocket,$shyplite, $nimbuspost, $manual, $xpressbees, $shipmozo, $nimbuspost_new, $ship24,$ekart ) {
 
         $this->shiprocket = $shiprocket;
         $this->shipmozo = $shipmozo;
@@ -22,6 +23,7 @@ class Bt_Sync_Shipment_Tracking_Rest_Functions{
         $this->xpressbees = $xpressbees;
         $this->manual = $manual;
         $this->ship24 = $ship24;
+        $this->ekart = $ekart;
     }
 
     public function shiprocket_webhook_receiver($request){
@@ -30,6 +32,9 @@ class Bt_Sync_Shipment_Tracking_Rest_Functions{
 
     public function ship24_webhook_receiver($request){
         return $this->ship24->ship24_webhook_receiver($request);
+    }
+    public function ekart_webhook_receiver($request){
+        return $this->ekart->ekart_webhook_receiver($request);
     }
 
     public function shipmozo_webhook_receiver($request){

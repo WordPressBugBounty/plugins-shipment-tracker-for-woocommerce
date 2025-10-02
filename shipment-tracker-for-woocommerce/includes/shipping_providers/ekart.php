@@ -94,7 +94,6 @@ class Bt_Sync_Shipment_Tracking_Ekart
         if (! $order_payload) {
             return null;
         }
-                // echo "<pre>"; print_r($order_payload); die;
 
         $url = self::API_BASE_URL . '/api/v1/package/create';
 
@@ -133,7 +132,7 @@ class Bt_Sync_Shipment_Tracking_Ekart
             return false;
         }
 
-        $pick_up_location = carbon_get_theme_option('bt_sst_test_connection_ekart');
+        $pick_up_location = carbon_get_theme_option('bt_sst_ekart_pick_up_location');
 
         $order_number = (String)$order->get_id();
         $invoice_number = (String)$order->get_id();
@@ -223,15 +222,26 @@ class Bt_Sync_Shipment_Tracking_Ekart
 
         $total_weight = new Mass($total_weight,  $weight_unit );
         $total_weight_kg = $total_weight->toUnit('g');
+        if($total_weight_kg<0.1){
+            $total_weight_kg = 0.1;
+        }
 
         $total_width = new Length($total_width, $dimension_unit);
         $total_width_cm = $total_width->toUnit('cm');
+        if($total_width_cm<0.1){
+            $total_width_cm = 10;
+        }
 
         $total_height = new Length($total_height, $dimension_unit);
         $total_height_cm = $total_height->toUnit('cm');
-
+        if($total_height_cm<0.1){
+            $total_height_cm = 10;
+        }
         $total_length = new Length($total_length, $dimension_unit);
         $total_length_cm = $total_length->toUnit('cm');
+        if($total_length_cm<0.1){
+            $total_length_cm = 10;
+        }
         
         $payload = [
             // "seller_name" => "Durvient",
@@ -246,22 +256,22 @@ class Bt_Sync_Shipment_Tracking_Ekart
             "consignee_name" => $consignee_name,
             "products_desc" => implode(', ', $products_desc),
             "payment_mode" => $order->get_payment_method()=="cod"?"COD":"PREPAID",
-            "total_amount" => $order->get_total(),
+            "total_amount" => (int)$order->get_total(),
             "tax_value" => floatval($order->get_total_tax()),
             "taxable_amount" => floatval($order->get_subtotal()),
-            "cod_amount" => $order->get_total(),
+            "cod_amount" => (int)$order->get_total(),
             "weight" => $total_weight_kg,
             "length" => $total_length_cm,
             "height" => $total_height_cm,
             "width" => $total_width_cm,
             "drop_location" => [
                 "name"    => $name,
-                "phone"   => $phone,
+                "phone"   => (int)$phone,
                 "address" => $address,
                 "city"    => $city,
                 "state"   => $state,
                 "country" => $country,
-                "pin"     => $pin,
+                "pin"     => (int)$pin,
             ],
             "pickup_location" => [
                 "name" => $pick_up_location,
@@ -281,7 +291,7 @@ class Bt_Sync_Shipment_Tracking_Ekart
         if (strlen($digitsOnly) > 10) {
             $phoneNumber = substr($digitsOnly, -10);
         } else {
-            $phoneNumber = str_pad($digitsOnly, 10, '0', STR_PAD_LEFT);
+            $phoneNumber = str_pad($digitsOnly, 10, '1', STR_PAD_LEFT);
         }
 
         return $phoneNumber;
@@ -326,7 +336,7 @@ class Bt_Sync_Shipment_Tracking_Ekart
         $obj = new Bt_Sync_Shipment_Tracking_Shipment_Model();
         $obj->order_id = $order_id;
         $obj->shipping_provider = 'ekart';
-        $obj->courier_name = 'Delhivery';
+        $obj->courier_name = 'Ekart';
         
         if (!empty($data)) {
             $track = $data['track'];
@@ -389,7 +399,7 @@ class Bt_Sync_Shipment_Tracking_Ekart
         $length, 
         $height, 
         $width,
-        $invoiceAmount,
+        $invoiceAmount
     ){
         $body_express = $this->get_rate_calcultor_by_mode(
                             $drop_pincode, 
@@ -409,8 +419,10 @@ class Bt_Sync_Shipment_Tracking_Ekart
                                 $invoiceAmount,
                                 "SURFACE",
                             );
+        $value = [];
         $value[]=$body_express;
         $value[]=$body_surface;
+        return $value;
 
     }
 
@@ -421,7 +433,7 @@ class Bt_Sync_Shipment_Tracking_Ekart
         $height, 
         $width,
         $invoiceAmount,
-        $shipping_mode,
+        $shipping_mode
     ) {
         $token = $this->get_access_token();
         if (! $token) {
@@ -458,19 +470,124 @@ class Bt_Sync_Shipment_Tracking_Ekart
             return null;
         }
 
-        $response = json_decode(wp_remote_retrieve_body($response), true);
-
+        $response_body = wp_remote_retrieve_body($response);
+        $response_data = json_decode($response_body, true);
         $final_data = [
             'mod'   => $shipping_mode,
             'tat'   => isset($response_data[0]["tat"]["max"]) 
-                            ? $response_data[0]["tat"]["max"] 
-                            : null,
+                        ? $response_data[0]["tat"]["max"] 
+                        : null,
             'total' => isset($response_data[0]["forwardDeliveredCharges"]["totalForwardDeliveredEstimate"]) 
-                            ? $response_data[0]["forwardDeliveredCharges"]["totalForwardDeliveredEstimate"] 
-                            : null,
+                        ? $response_data[0]["forwardDeliveredCharges"]["totalForwardDeliveredEstimate"] 
+                        : null,
         ];
 
         return $final_data;
+    }
+
+    public function get_locality($postcode) {
+        $token = $this->get_access_token();
+        if (! $token) {
+            return null;
+        }
+
+        $this->init_params();
+
+        $url = self::API_BASE_URL . '/api/v2/serviceability/' . $postcode;
+
+        $args = [
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type'  => 'application/json',
+            ]
+        ];
+
+        $response = wp_remote_get($url, $args);
+
+        if (is_wp_error($response)) {
+            return null;
+        }
+
+        $response_body = wp_remote_retrieve_body($response);
+        $response_data = json_decode($response_body, true);
+
+        if (isset($response_data["details"])) {
+            $details = $response_data["details"];
+
+            $data = [
+                "postcode"   => $response_data["pincode"] ?? null,
+                "city"       => $details["city"] ?? null,
+                "state_code" => $details["state"] ?? null,
+                "country"    => "IN"
+            ];
+
+            return $data;
+        }
+
+        return null;
+    }
+
+    public function ekart_webhook_receiver($request){
+
+        update_option( "ekart_webhook_called", time() );
+        $enabled_shipping_providers = carbon_get_theme_option( 'bt_sst_enabled_shipping_providers' );
+        if(is_array($enabled_shipping_providers) && in_array('ekart',$enabled_shipping_providers)){
+            $order_ids=array();
+            if(isset($request["body"]["id"]) && !empty($request["body"]["id"])){
+                $order_ids[]=$request["body"]["id"];
+            }
+            if(isset($request["body"]["wbn"]) && !empty($request["body"]["wbn"])){
+                $awb_number = $request["body"]["wbn"];
+                if(!empty($awb_order_ids = Bt_Sync_Shipment_Tracking_Shipment_Model::get_orders_by_awb_number($awb_number))){
+                    foreach ($awb_order_ids as $awb_order_id) {
+                        if(!in_array($awb_order_id,$order_ids)){
+                            $order_ids[] = $awb_order_id;
+                        }
+                    }                    
+                }
+            }
+
+            if(!empty($order_ids) && is_array($order_ids)){
+                foreach ($order_ids as $order_id) {
+                    if(!empty($order_id)){
+                        if(false !== $order = wc_get_order( $order_id )){
+        
+                            $bt_sst_sync_orders_date = carbon_get_theme_option( 'bt_sst_sync_orders_date' );
+        
+                
+                                $date_created_dt = $order->get_date_created();
+                                $timezone        = $date_created_dt->getTimezone();
+                                $date_created_ts = $date_created_dt->getTimestamp();
+        
+                                $now_dt = new WC_DateTime();
+                                $now_dt->setTimezone( $timezone );
+                                $now_ts = $now_dt->getTimestamp();
+        
+                                $allowed_seconds = $bt_sst_sync_orders_date * 24 * 60 * 60;
+        
+                                $diff_in_seconds = $now_ts - $date_created_ts;
+                                if ( $diff_in_seconds <= $allowed_seconds ) {
+                                    $data = [
+                                        'track' => [
+                                            'status'  => $request['body']['status'] ?? '',
+                                            'details' => $request['body'] ?? [],
+                                        ],
+                                        'wbn' => $request['body']['wbn'] ?? ''
+                                    ];
+                                    $shipment_obj = $this->init_model($request, $order_id);
+                                    Bt_Sync_Shipment_Tracking_Shipment_Model::save_tracking($order_id,$shipment_obj);                           
+                                    return "Thanks Shiprocket! Record updated.";
+                                }else{
+                                    return "Thanks Shiprocket! Order too old.";
+                                }
+                        }
+                    }
+                }                    
+            }
+
+            
+        }
+        return "Thanks Shiprocket!";
     }
 
 }

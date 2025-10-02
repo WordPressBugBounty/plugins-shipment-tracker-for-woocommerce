@@ -48,6 +48,7 @@ class Bt_Sync_Shipment_Tracking_Public
 	private $licenser;
 	private $delhivery;
 	private $fship;
+	private $ekart;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -56,7 +57,7 @@ class Bt_Sync_Shipment_Tracking_Public
 	 * @param      string    $plugin_name       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct($plugin_name, $version, $shiprocket, $shipmozo, $nimbuspost_new, $licenser, $delhivery, $fship)
+	public function __construct($plugin_name, $version, $shiprocket, $shipmozo, $nimbuspost_new, $licenser, $delhivery, $fship, $ekart)
 	{
 
 		$this->plugin_name = $plugin_name;
@@ -67,6 +68,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		$this->licenser = $licenser;
 		$this->delhivery = $delhivery;
 		$this->fship = $fship;
+		$this->ekart = $ekart;
 	}
 
 	/**
@@ -1077,6 +1079,129 @@ class Bt_Sync_Shipment_Tracking_Public
 				if (isset($city_data['destination'])) {
 					$city = $city_data['destination'];
 				}
+			}else if ($pickup_data_provider == 'ekart') {
+				$express_tat = null;
+				if (false === ($bt_sst_cached_ekart_estimates_delhivery = get_transient('bt_sst_cached_ekart_estimates_delhivery'))) {
+					$bt_sst_cached_ekart_estimates_delhivery = array();
+				}
+				if ($delivery_country == "IN") {
+					$pickup_pin = carbon_get_theme_option("bt_sst_ekart_pickup_pin");
+					if (!empty($pickup_pin)) {
+						$cached_pincode_key = $pickup_pin . "_" . $delivery_pincode . "_3";
+						if (isset($bt_sst_cached_ekart_estimates_delhivery[$cached_pincode_key])) {
+							$push_resp = $bt_sst_cached_ekart_estimates_delhivery[$cached_pincode_key][0];
+							$express_tat = $bt_sst_cached_ekart_estimates_delhivery[$cached_pincode_key][1];
+							$response["message"] = "Data fetched from cache.";
+						} else {
+								$cart_totals = $this->get_cart_weight_and_dimentions();
+								$weight_in_kg = $cart_totals['total_weight_kg'];
+								$length_in_cms = $cart_totals['total_length_cm'];
+								$breadth_in_cms = $cart_totals['total_width_cm'];
+								$height_in_cms = $cart_totals['total_height_cm'];
+								$declared_value = $cart_totals['declared_value'];
+
+								if ($weight_in_kg < 0.1) {
+									$weight_in_kg = 0.1;
+								}
+								if ($length_in_cms < 1) {
+									$length_in_cms = 10;
+								}
+								if ($breadth_in_cms < 1) {
+									$breadth_in_cms = 10;
+								}
+								if ($height_in_cms < 1) {
+									$height_in_cms = 10;
+								}
+
+							$total_cost = 0;
+							foreach (WC()->cart->get_cart() as $cart_item) {
+								$product  = $cart_item['data'];
+								$quantity = $cart_item['quantity'];
+								$price    = (float) $product->get_price();
+
+								$total_cost += $price * $quantity;
+							}
+								$push_resp = $this->ekart->get_rate_calcultor_by_mode(
+															$delivery_pincode, 
+															$weight_in_kg, 
+															$length_in_cms, 
+															$height_in_cms, 
+															$breadth_in_cms,
+															$total_cost,
+															"EXPRESS"
+														);
+							if (!isset($push_resp["error"]) && $push_resp != null && !empty($push_resp) && sizeof($push_resp) > 0) {
+
+								if ($push_resp['tat'] && isset($push_resp['tat'])) {
+									$express_tat = $push_resp['tat'];
+								} else {
+									$express_tat = null;
+								}
+								$bt_sst_cached_ekart_estimates_delhivery[$cached_pincode_key] = [$push_resp, $express_tat];
+								set_transient('bt_sst_cached_ekart_estimates_delhivery', $bt_sst_cached_ekart_estimates_delhivery, 1 * HOUR_IN_SECONDS);
+								$response["message"] = "Data fetched from Delhivery.";
+							} else {
+								$push_resp = [];
+							}
+						}
+					}
+
+				}
+
+				$filtered_arr = $push_resp;
+				// var_dump($filtered_arr['error']); die;
+
+				if (is_array($filtered_arr) && sizeof($filtered_arr) > 0) {
+					$check_error_for_hide_show_ponbox["data"] = true;
+					$max_date_charges = $filtered_arr['total'];
+					$min_date_charges = $filtered_arr['total'];
+				
+
+					$max_courier_name = 'ekart';
+					$min_courier_name = 'ekart';
+
+					$min_days = 2;
+					$max_days = 5;
+
+					if ($express_tat != null) {
+						$min_days = $express_tat;
+						$max_days = $express_tat;
+					}
+
+					if (!$min_days) {
+						$min_days = 1;
+					}
+					if (!$max_days) {
+						$max_days = 1;
+					}
+					$current_date = new DateTime();
+					$min_date = $current_date->add(new DateInterval("P{$min_days}D"))->format("l, d M, Y");
+					$max_date = $current_date->add(new DateInterval("P{$max_days}D"))->format("l, d M, Y");
+
+					$processing_days = $this->bt_get_processing_days($product_id, $variation_id);
+					if (!$processing_days) {
+						$processing_days = carbon_get_theme_option("bt_sst_shiprocket_processing_days");
+					}
+
+					if (!$is_premium) {
+						$processing_days = 0; //if not premium, then no processing days.
+					}
+					if ($processing_days && $processing_days > 0) {
+						$min_date = $this->addDayswithdate($min_date, $processing_days);
+						$max_date = $this->addDayswithdate($max_date, $processing_days);
+					} else {
+						$min_date = $this->addDayswithdate($min_date, 0);
+						$max_date = $this->addDayswithdate($max_date, 0);
+					}
+					$check_error_for_hide_show_ponbox["data"] = true;
+				} else {
+					$bt_sst_message_text_template = "Delivery not available. Try a different pincode or contact support.";
+				}
+				$city = $delivery_pincode;
+				$city_data = $this->ekart->get_locality($delivery_pincode);
+				if (isset($city_data['city'])) {
+					$city = $city_data['city'];
+				}
 			}
 
 
@@ -1439,6 +1564,14 @@ class Bt_Sync_Shipment_Tracking_Public
 
 	function update_woocommerce_package_rates($rates, $package)
 	{
+		$total_cost = 0;
+		foreach ($package['contents'] as $item_id => $values) {
+        	$product = $values['data'];
+			$quantity = $values['quantity'];
+			$price = $product->get_price();
+
+			$total_cost += $price * $quantity;
+		}
 
 		$push_resp = [];
 		if (!is_cart() && !is_checkout()) {
@@ -2483,13 +2616,13 @@ class Bt_Sync_Shipment_Tracking_Public
 						if (isset($bt_sst_cached_ekart_estimates_delhivery[$cached_pincode_key])) {
 							$push_resp = $bt_sst_cached_ekart_estimates_delhivery[$cached_pincode_key];
 						} else {
-							$push_resp = $this->delhivery->get_rate_calcultor(
+							$push_resp = $this->ekart->get_rate_calcultor(
 															$delivery_pincode, 
 															$weight_in_kg, 
 															$length_in_cms, 
 															$height_in_cms, 
 															$breadth_in_cms,
-															$invoiceAmount
+															$total_cost
 														);
 							if ($push_resp != null && !empty($push_resp)) {
 								$bt_sst_cached_ekart_estimates_delhivery[$cached_pincode_key] = $push_resp;
@@ -2548,14 +2681,14 @@ class Bt_Sync_Shipment_Tracking_Public
 					$i = 0;
 					foreach ($filtered_arr as $rb) {
 
-						$lable = "Ekart " . ucfirst($rb['mode']);
+						$lable = "Ekart " . ucfirst($rb['mod']);
 						$bt_sst_shipping_duration_days = null;
 						$bt_sst_shipping_edd = null;
 						if (isset($rb['tat']) && $rb['tat'] != null) {
 							$bt_sst_shipping_duration_days = $rb['tat'];
 							$bt_sst_shipping_edd = new DateTime("+" . $bt_sst_shipping_duration_days . " days");
 						}
-						$id = 'flat_rate:ekart:' . $rb['mode'];
+						$id = 'flat_rate:ekart:' . $rb['mod'];
 						$method_id = 'flat_rate';
 						$markup_cost = carbon_get_theme_option(
 							"bt_sst_markup_charges"
@@ -2594,6 +2727,7 @@ class Bt_Sync_Shipment_Tracking_Public
 						if ($show_delivery_date == 1) {
 							$lable .= " (Edd: " . $delivery_date . ")";
 						}
+
 						$WC_Shipping_Rate = new WC_Shipping_Rate();
 						$WC_Shipping_Rate->add_meta_data("edd", $delivery_date);
 						$WC_Shipping_Rate->set_id($id);

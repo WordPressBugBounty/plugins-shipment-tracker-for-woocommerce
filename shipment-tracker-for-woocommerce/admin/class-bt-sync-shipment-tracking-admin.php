@@ -642,9 +642,10 @@ class Bt_Sync_Shipment_Tracking_Admin
 				return;
 			}
 			
-			if (isset($push_resp["status"]) && $push_resp["status"] === true) {
+			if ($push_resp) {
 				$ekart_tracking_id = $push_resp['tracking_id'] ?? '';
 				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_ekart_tracking_id', $ekart_tracking_id);
+				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_awb', $push_resp['barcodes']['wbn']);
 				$order->add_order_note("Order pushed to Ekart. Tracking No: " . $ekart_tracking_id . "\n\n- Shipment tracker for woocommerce", false);
 				// bt_force_sync_order_tracking($order_id);
 			} else {
@@ -956,7 +957,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 		if (!$bt_shipping_provider || ($bt_shipping_provider == 'manual' && $shipping_mode_is_manual_or_ship24 == "manual")) {
 			include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/bt-shipment-tracking-manual-metabox.php';
-		} else if ($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite' || $bt_shipping_provider == 'nimbuspost' || $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo' || $bt_shipping_provider == 'nimbuspost_new' || $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24 == "ship24" || $bt_shipping_provider == "fship") {
+		} else if ($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite' || $bt_shipping_provider == 'nimbuspost' || $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo' || $bt_shipping_provider == 'nimbuspost_new' || $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24 == "ship24" || $bt_shipping_provider == "fship" || $bt_shipping_provider == "ekart") {
 			$order_id = isset($_GET['post']) ? $_GET['post'] : sanitize_text_field($_GET['id']);
 			include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/bt-shipment-tracking-metabox.php';
 		}
