@@ -257,22 +257,31 @@ if($tracking && isset($tracking['tracking_data'])){
                                         <div class="fl-photo-content fl-photo-img-png">
                                         <div style="display:flex; align-items: center;">
                                                 <?php
-                                                    $i=1;
+                                                    $i = 0;
+                                                    $max_items = 3;
+
                                                     foreach ( $the_order->get_items() as $item_id => $item ) {
-                                                        $product = $item->get_product();
-                                                        if ( $product ) {
-                                                            $image_id = $product->get_image_id();
-                                                            $image_url = wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' );
-                                                            if($i<4){
-                                                                echo '<img style="height:77px; margin:5px;" src="' . esc_url( $image_url ) . '" alt="' . esc_attr( $product->get_name() ) . '" />';
-                                                            }else if($i==4){
-                                                                echo "<pMore</p>";
-                                                            }
-                                                            $i++;
+                                                        if ( $i >= $max_items ) {
+                                                            echo '<p>+' . (count($the_order->get_items()) - $max_items) . '</p><p> More</p>';
+                                                            break;
                                                         }
+
+                                                        $product = $item->get_product();
+                                                        if ( ! $product ) {
+                                                            continue;
+                                                        }
+
+                                                        $image_id = $product->get_image_id();
+                                                        $image_url = $image_id ? wp_get_attachment_image_url( $image_id, 'woocommerce_thumbnail' )
+                                                                            : wc_placeholder_img_src();
+
+                                                        echo '<img style="height:77px; width:auto; margin:5px; border-radius:6px;" src="' 
+                                                            . esc_url( $image_url ) . '" alt="' . esc_attr( $product->get_name() ) . '" />';
+
+                                                        $i++;
                                                     }
-                                                
-                                                ?>
+                                                    ?>
+
                                             </div>
                                         </div>
                                     </div>

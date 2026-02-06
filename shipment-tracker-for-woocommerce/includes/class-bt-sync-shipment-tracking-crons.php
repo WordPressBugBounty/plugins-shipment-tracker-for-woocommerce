@@ -16,8 +16,9 @@ class Bt_Sync_Shipment_Tracking_Crons {
     private $licenser;
     private $delhivery;
     private $fship;
+    private $courierkaro;
 	
-	public function __construct($shiprocket,$shyplite,$nimbuspost_new,$shipmozo,$licenser,$delhivery, $fship) {
+	public function __construct($shiprocket,$shyplite,$nimbuspost_new,$shipmozo,$licenser,$delhivery, $fship, $courierkaro) {
 		$this->shiprocket = $shiprocket;
         $this->shipmozo = $shipmozo;
         $this->nimbuspost_new = $nimbuspost_new;
@@ -25,6 +26,7 @@ class Bt_Sync_Shipment_Tracking_Crons {
         $this->licenser = $licenser;
         $this->delhivery = $delhivery;
         $this->fship = $fship;
+        $this->courierkaro = $courierkaro;
     }
     
     public function schedule_recurring_events(){
@@ -93,6 +95,17 @@ class Bt_Sync_Shipment_Tracking_Crons {
             $bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($o);
             if(empty($bt_shipment_tracking) || empty($bt_shipment_tracking->current_status) || stripos($bt_shipment_tracking->current_status, "delivered") === false){
                 $objs = $this->nimbuspost_new->update_order_shipment_status($o);
+               // error_log(json_encode($objs));
+            }
+        }
+    }
+
+    private function sync_courierkaro(){
+        $orderids = $this->get_orders('courierpost');
+        foreach($orderids as $o){
+            $bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($o);
+            if(empty($bt_shipment_tracking) || empty($bt_shipment_tracking->current_status) || stripos($bt_shipment_tracking->current_status, "delivered") === false){
+                $objs = $this->courierkaro->update_order_shipment_status($o);
                // error_log(json_encode($objs));
             }
         }
@@ -223,6 +236,10 @@ class Bt_Sync_Shipment_Tracking_Crons {
         $bt_sst_nimbuspost_new_cron_schedule=carbon_get_theme_option( 'bt_sst_nimbuspost_new_cron_schedule' );
         if( $bt_sst_nimbuspost_new_cron_schedule==$cron_freq){
             $this->sync_nimbuspost_new_shipments();
+        }
+        $bt_sst_nimbuspost_new_cron_schedule=carbon_get_theme_option( 'bt_sst_courierkaro_new_cron_schedule' );
+        if( $bt_sst_nimbuspost_new_cron_schedule==$cron_freq){
+            $this->sync_courierkaro();
         }
         $bt_sst_shyplite_cron_schedule=carbon_get_theme_option( 'bt_sst_shyplite_cron_schedule' );
         if( $bt_sst_shyplite_cron_schedule==1){

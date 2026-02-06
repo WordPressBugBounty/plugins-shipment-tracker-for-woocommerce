@@ -35,6 +35,9 @@ class Bt_Sync_Shipment_Tracking_Rest {
     private $rest_route_manual;
     private $rest_route_ship24;
     private $rest_route_nimbuspost_new;
+    private $rest_route_ekart;
+    private $rest_route_courierkaro;
+    private $rest_route_delhivery;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -43,7 +46,7 @@ class Bt_Sync_Shipment_Tracking_Rest {
 	 * @param      string    $plugin_name       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version, $shiprocket, $shyplite, $nimbuspost, $manual, $xpressbees, $shipmozo, $nimbuspost_new, $ship24, $ekart) {
+	public function __construct( $plugin_name, $version, $shiprocket, $shyplite, $nimbuspost, $manual, $xpressbees, $shipmozo, $nimbuspost_new, $ship24, $ekart, $courierkaro, $delhivery ) {
 
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-bt-sync-shipment-tracking-rest-functions.php';
 
@@ -58,8 +61,10 @@ class Bt_Sync_Shipment_Tracking_Rest {
         $this->rest_route_manual = "bt-sync-shipment-tracking-manual";
         $this->rest_route_ship24 = "bt-sync-shipment-tracking-ship24";
         $this->rest_route_ekart = "bt-sync-shipment-tracking-ekart";
+        $this->rest_route_delhivery = "bt-sync-shipment-tracking-delhivery";
+        $this->rest_route_courierkaro = "bt-sync-shipment-tracking-courierkaro";
 
-        $this->rest_functions = new Bt_Sync_Shipment_Tracking_Rest_Functions($shiprocket,$shyplite,$nimbuspost, $manual, $xpressbees,$shipmozo,$nimbuspost_new, $ship24, $ekart);
+        $this->rest_functions = new Bt_Sync_Shipment_Tracking_Rest_Functions($shiprocket,$shyplite,$nimbuspost, $manual, $xpressbees,$shipmozo,$nimbuspost_new, $ship24, $ekart, $courierkaro, $delhivery);
     }
 
     public function rest_shiprocket_webhook(){
@@ -78,6 +83,13 @@ class Bt_Sync_Shipment_Tracking_Rest {
             ));
         }
 
+    }
+    public function apex_create_wc_order(){
+      register_rest_route('apex/v1', '/create-order', [
+            'methods'  => 'POST',
+            'callback' => array($this->rest_functions,"webhook_receiver_apex_create_wc_order"),
+            'permission_callback' => '__return_true',
+        ]);
     }
      
     public function rest_shipmozo_webhook(){
@@ -180,11 +192,26 @@ class Bt_Sync_Shipment_Tracking_Rest {
             'permission_callback' => '__return_true',
         ));
     }
+    public function rest_delhivery_webhook(){
+        register_rest_route( $this->rest_route_delhivery . '/' . $this->version , 'webhook_receiver', array(
+            'methods' => 'POST',
+            'callback' => array($this->rest_functions,"delhivery_webhook_receiver"),
+            'permission_callback' => '__return_true',
+        ));
+    }
 
     public function rest_manual_webhook(){
         register_rest_route( $this->rest_route_manual . '/' . $this->version , 'webhook_receiver', array(
             'methods' => 'POST',
             'callback' => array($this->rest_functions,"manual_webhook_receiver"),
+            'permission_callback' => '__return_true',
+        ));
+    }
+
+    public function rest_courierkaro_webhook(){
+        register_rest_route( $this->rest_route_courierkaro . '/' . $this->version , 'webhook_receiver', array(
+            'methods' => 'POST',
+            'callback' => array($this->rest_functions,"courierkaro_webhook_receiver"),
             'permission_callback' => '__return_true',
         ));
     }

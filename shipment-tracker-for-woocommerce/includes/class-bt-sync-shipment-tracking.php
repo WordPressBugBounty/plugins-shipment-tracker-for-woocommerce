@@ -231,6 +231,7 @@ class Bt_Sync_Shipment_Tracking {
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/ship24.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-bt-sync-shipment-tracking-public.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/ekart.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/courier_karo.php';
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-bt-sync-shipment-tracking-rest.php';
 
@@ -252,6 +253,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->licenser = new Bt_Licenser();
 		$this->fship = new Bt_Sync_Shipment_Tracking_Fship();
 		$this->ekart = new Bt_Sync_Shipment_Tracking_Ekart();
+		$this->courierkaro = new Bt_Sync_Shipment_Tracking_CourierKaro();
         ( new Bt_Sync_Shipment_Tracking_Review() )->hooks();
 	}
 
@@ -282,11 +284,13 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_rest_apis() {
 
-		$rest = new Bt_Sync_Shipment_Tracking_Rest( $this->get_plugin_name(), $this->get_version(), $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->xpressbees, $this->shipmozo, $this->nimbuspost_new, $this->ship24, $this->ekart);
+		$rest = new Bt_Sync_Shipment_Tracking_Rest( $this->get_plugin_name(), $this->get_version(), $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->xpressbees, $this->shipmozo, $this->nimbuspost_new, $this->ship24, $this->ekart, $this->courierkaro, $this->delhivery);
 
 		//shiprocket webhook & apis
 		$this->loader->add_action( 'rest_api_init', $rest, 'rest_shiprocket_webhook');
 		$this->loader->add_action( 'init', $rest, 'generate_random_webhook_string');
+		
+		$this->loader->add_action( 'rest_api_init', $rest, 'apex_create_wc_order');
 
 		//shipmozo webhook & apis
 		$this->loader->add_action( 'rest_api_init', $rest, 'rest_shipmozo_webhook');
@@ -308,7 +312,11 @@ class Bt_Sync_Shipment_Tracking {
         $this->loader->add_action( 'init', $rest, 'generate_random_webhook_secret_key');
 
         $this->loader->add_action( 'rest_api_init', $rest, 'rest_ekart_webhook');
+        $this->loader->add_action( 'rest_api_init', $rest, 'rest_delhivery_webhook');
         // $this->loader->add_action( 'init', $rest, 'generate_random_webhook_secret_key');
+
+		//courierkaro webhook & apis
+        $this->loader->add_action( 'rest_api_init', $rest, 'rest_courierkaro_webhook');
 
 		//manual provider webhook & apis
         $this->loader->add_action( 'rest_api_init', $rest, 'rest_manual_webhook');
@@ -342,7 +350,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Bt_Sync_Shipment_Tracking_Admin( $this->get_plugin_name(), $this->get_version(),$this->shiprocket,$this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->shipmozo, $this->nimbuspost_new, $this->delhivery, $this->ship24, $this->fship, $this->ekart);
+		$plugin_admin = new Bt_Sync_Shipment_Tracking_Admin( $this->get_plugin_name(), $this->get_version(),$this->shiprocket,$this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->shipmozo, $this->nimbuspost_new, $this->delhivery, $this->ship24, $this->fship, $this->ekart, $this->courierkaro);
 		$this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_admin, 'custom_dokan_order_details', 10, 1 );
 		$this->loader->add_action('carbon_fields_save_post',$plugin_admin, 'update_woocommerce_data_on_carbon_fields_save', 10, 3);
 		$this->loader->add_action( 'woocommerce_order_status_changed',$plugin_admin, 'woocommerce_order_status_changed_of_shipment_tracker', 10, 3 );
@@ -380,6 +388,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'bt_push_order_to_shipmozo', $plugin_admin, 'push_order_to_shipmozo',10,3);
 		$this->loader->add_action( 'bt_push_order_to_delhivery', $plugin_admin, 'push_order_to_delhivery',10,3);
 		$this->loader->add_action( 'bt_push_order_to_ekart', $plugin_admin, 'push_order_to_ekart',10,3);
+		$this->loader->add_action( 'bt_push_order_to_courierkaro', $plugin_admin, 'push_order_to_courierkaro',10,3);
 		$this->loader->add_action( 'bt_push_order_to_nimbuspost', $plugin_admin, 'push_order_to_nimbuspost',10,3);
 
 		$ajax_functions = new Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions($this->crons, $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->delhivery, $this->ship24, $this->fship, $this->ekart);
@@ -1160,9 +1169,9 @@ class Bt_Sync_Shipment_Tracking {
 							<p>
 								<ol type="1" style="margin-left: 20px;">
 									<li><a target="_blank" href="https://www.shiprocket.in/">If not already have, Create & Activate Shiprocket Account</a></li>
-									<li><a target="_blank" href="https://app.shiprocket.in/api-user">Create Api User</a></li>
-									<li><a target="_blank" href="https://app.shiprocket.in/shipment-webhook">Configure Webhook URL</a></li>
-									<li><a target="_blank" href="https://app.shiprocket.in/channels">Get Channel ID</a></li>
+									<li><a target="_blank" href="https://app.shiprocket.in/sellers/settings/additional-settings/api-users">Create Api User</a></li>
+									<li><a target="_blank" href="https://app.shiprocket.in/sellers/settings/additional-settings/webhooks">Configure Webhook URL</a></li>
+									<li><a target="_blank" href="https://app.shiprocket.in/seller/channels">Get Channel ID</a></li>
 									<li>Copy API user, Api password and Channel ID to Shiprocket Tab.</li>
 								</ol>
 								
@@ -1374,13 +1383,10 @@ class Bt_Sync_Shipment_Tracking {
 						<div class='content'>
 							<ol>
 								<li>
-									<a target='_blank' href='https://app.shiprocket.in/shipment-webhook'>Setup webhook</a>
+									<a target='_blank' href='https://app.shiprocket.in/sellers/settings/additional-settings/webhooks'>Setup webhook</a>
 								</li>
 								<li>
-									<a target='_blank' href='https://app.shiprocket.in/api-user'>Setup API username/password.</a>
-								</li>
-								<li>
-									<a target='_blank' href='https://app.shiprocket.in/post_order_settings'>Setup custom tracking page</a>
+									<a target='_blank' href='https://app.shiprocket.in/sellers/settings/additional-settings/api-users'>Setup API username/password.</a>
 								</li>
 							
 							</ol>
@@ -1770,8 +1776,19 @@ class Bt_Sync_Shipment_Tracking {
 
 
 		if(is_array($enabled_shipping_providers) && in_array('delhivery',$enabled_shipping_providers)){
-			
+			$delhivery_webhook_time = get_option( "delhivery_webhook_called", "never" );
+			if($delhivery_webhook_time!="never"){
+				$delhivery_webhook_time = date('Y-m-d H:i:s', $delhivery_webhook_time);
+			}
 			$container = $container->add_tab( __( 'Delhivery' ), array(
+					Field::make( 'html', 'bt_sst_delhivery_webhook_html', __( 'Delhivery Webhook URL' ) )
+						->set_html(
+							sprintf( '
+								<p><b>Delhivery Webhook URL: [<a target="_blank" href="https://one.delhivery.com/developer-portal/document/b2c/detail/webhook_functionality">Configure Webhook Here</a>] </b></p>
+								<p>'.get_site_url(null, '/wp-json/bt-sync-shipment-tracking-delhivery/v1.0.0/webhook_receiver') . '<a href="#" class="bt_sst_copy_link" > Copy Link</a> </p>
+								<p>Last Webhook Called On: '.$delhivery_webhook_time.'</p>
+							'),
+						),
 					Field::make( 'text', 'bt_sst_delhivery_apitoken', __( 'API Token' ) )
 						->set_help_text( ' 
 							<a target="_blank" href="https://one.delhivery.com/settings/api-setup">[Click here to get API Token]</a>
@@ -1861,7 +1878,38 @@ class Bt_Sync_Shipment_Tracking {
 				Field::make( 'text', 'bt_sst_ekart_pick_up_location', __( 'Pick-up Location' ) )
 						->set_help_text( '
 						<div class="address_popup_container"></div>
-						<a href="#" id="bt_sst_add_ekart_address">Select Pick-up Location</a>' ),
+						<a href="#" id="bt_sst_add_ekart_address">Select Pick-up Location</a>
+						<div style="margin: 10px 0;">
+							Using "Dokan Multi-Vendor Plugin"? Set Vendor wise pickup location :<br>
+							<button type="button" id="bt_sst_fetch_ekart_pichup_locations" class="button bt_sst_button">Set Vendor Pickup Locations</button>
+						</div>
+						<div id="" class="">
+							<div class="bt_sst_overlay"></div>
+							<div class="bt_sst_popup">
+							  			<span class="bt_sst_close">&times;</span>
+								        <div id="bt_sst_select_vendor" class="field">
+											<label class="label" for="bt_sst_vendor_select">Vendor Name</label>
+											<div class="control">
+											<div class="select">
+												<select id="bt_sst_vendor_select">
+												<option value="option1">Select Vendor</option>
+												</select>
+											</div>
+											</div>
+										</div>
+
+										<div class="field bt_sst_vendor_pickup_location_container">
+											<label class="label" for="bt_sst_vendor_pickup_location">Pickup Location</label>
+											<div class="control">
+												<select id="bt_sst_vendor_pickup_location">
+													<option value="" >Select Pick-Up Location</option>
+												</select>
+											</div>
+										</div>
+										<button id="bt_sst_set_vendor_submit" type="button">Save Vender</button>
+							</div>
+						</div>
+						' ),
 				Field::make( 'html', 'bt_sst_test_connection_ekart', __( 'Help HTML' ) )
 						->set_html(
 						sprintf('
@@ -1897,6 +1945,66 @@ class Bt_Sync_Shipment_Tracking {
 							'This order is pushed to one ekart portal using this shipping mode.'
 						),
 				
+			) );
+		}
+
+		if(is_array($enabled_shipping_providers) && in_array('courierkaro',$enabled_shipping_providers)){
+			$courierkaro_webhook_time = get_option('courierkaro_webhook_called', 'never');
+			if($courierkaro_webhook_time!="never"){ 
+				$courierkaro_webhook_time = date('Y-m-d H:i:s', $courierkaro_webhook_time);
+			}
+
+			$container = $container->add_tab( __( 'Courier Karo' ), array(
+				Field::make( 'html', 'bt_sst_courierkaro_webhook_html', __( 'Courier Karo Webhook URL' ) )
+					->set_html(
+						sprintf( '
+								<b>Courier Karo Webhook URL: [<a target="_blank" href="https://courierkaro.com">Configure Webhook Here</a>] </b> 
+								<p>'.get_site_url(null, '/wp-json/bt-sync-shipment-tracking-courierkaro/v1.0.0/webhook_receiver').'<a href="#" class="bt_sst_copy_link" > Copy Link</a> </p>
+								<p>Last Webhook Called On: '.$courierkaro_webhook_time.'</p>
+							')
+					),
+				Field::make( 'text', 'bt_sst_courier_karo_api_key', __( 'API Key' ) )
+					->set_help_text( ' 
+						<a target="_blank" href="https://courierkaro.com">[Click here to get API Key]</a>
+						' ),
+				Field::make( 'text', 'bt_sst_courier_karo_store_url', __( 'Store URL' ) )
+					->set_help_text( 'Enter your store URL (e.g., https://yourstore.com)' )
+					->set_default_value( get_site_url() ),
+				Field::make( 'html', 'bt_sst_test_connection_courierkaro', __( 'Help HTML' ) )
+						->set_html(
+						sprintf('
+							<button type="button" class="button" id="api_test_connection_btn_courierkaro">Test Connection</button><br>
+							<em class="cf-field__help">Please click "Save Changes" to save api credentials before testing the connection</em>
+							<div id="api_test_connection_modal_courierkaro" class="modal">
+								<div class="modal-background"></div>
+								<div class="modal-card">
+									<header class="modal-card-head">
+									<p id="api_tc-m-content_courierkaro" class="modal-content"></p>
+									<button type="button" id="api_tc_m_close_btn_courierkaro" class="delete" aria-label="close"></button>
+									</header>
+								</div>
+							</div>
+						')),
+						Field::make( 'select', 'bt_sst_courierkaro_new_cron_schedule', __( 'Sync Tracking every' ) )
+						->add_options( 
+							array(
+								'never'=>'never',
+								'15mins'=>'15 mins',
+								'1hour'=>'1 hour',
+								'4hours'=>'4 hours',
+								'24hours'=>'24 hours'
+								) 
+							),
+						
+				Field::make( 'checkbox', 'bt_sst_courierkaro_push_orders', __( 'Automatically Push Orders to Courier Karo') )
+						->set_classes( 'title is-6' )
+						->set_help_text( 'Plugin will automatically push "processing" orders to Courier Karo.<br>
+						You can still push orders by clicking "Push Now" link available in individual order.
+						<br>This feature also pushes correct order weight and dimensions of package to Courier Karo, it helps in reducing weight discrepancy issues.
+						<br>For this option to work, make sure that the weight and dimensions are correctly set for every product. Keep some packaging buffer for better accuracy in calculation. 
+						' )
+						->set_option_value( '1' )
+						->set_default_value( '0' ),
 			) );
 		}
 

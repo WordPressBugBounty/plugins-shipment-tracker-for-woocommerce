@@ -119,6 +119,50 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         return $obj;
 
     }
+
+
+    public function webhook_init_model( $data, $order_id ) {
+        $obj = new Bt_Sync_Shipment_Tracking_Shipment_Model();
+        $obj->order_id          = $order_id;
+        $obj->shipping_provider = 'delhivery';
+        $obj->courier_name      = 'Delhivery';
+
+        if ( ! empty( $data ) && is_array( $data ) ) {
+
+            // Direct shipment data
+            $shipment = $data;
+
+            $obj->awb = ! empty( $shipment['AWB'] )
+                ? $shipment['AWB']
+                : '';
+
+            $obj->current_status = ! empty( $shipment['Status']['Status'] )
+                ? Bt_Sync_Shipment_Tracking_Shipment_Model::convert_string_to_slug(
+                    $shipment['Status']['Status']
+                )
+                : '';
+
+            $obj->etd = ! empty( $shipment['ExpectedDeliveryDate'] )
+                ? $shipment['ExpectedDeliveryDate']
+                : '';
+
+            $obj->scans = ! empty( $shipment['Scans'] )
+                ? $shipment['Scans']
+                : [];
+
+            // Delivery date logic
+            if (
+                strtolower( $obj->current_status ) === 'delivered'
+                && empty( $obj->delivery_date )
+            ) {
+                $obj->delivery_date = date( 'Y-m-d' );
+            }
+        }
+
+        return $obj;
+    }
+
+
     public function get_order_tracking($order_id){
         $this->init_params();
         if(!empty($this->public_key)){
@@ -527,6 +571,83 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         } else {
             return 'Please Enter Token';
         }
+    }
+
+    public function delhivery_webhook_receiver($request){
+        update_option( 'delhivery_webhook_called', time() );
+        $json = $request->get_json_params();
+
+        if ( empty( $json['Shipment'] ) ) {
+            return 'Invalid payload';
+        }
+
+        $shipment = $json['Shipment'];
+
+        $enabled_shipping_providers = carbon_get_theme_option( 'bt_sst_enabled_shipping_providers' );
+
+        if ( ! is_array( $enabled_shipping_providers ) || ! in_array( 'delhivery', $enabled_shipping_providers ) ) {
+            return 'Delhivery not enabled';
+        }
+
+        $order_ids = [];
+
+        if ( ! empty( $shipment['orderId'] ) ) {
+            $order_ids[] = intval( $shipment['orderId'] );
+        }
+
+        if ( ! empty( $shipment['AWB'] ) ) {
+            $awb_number = $shipment['AWB'];
+
+            $awb_order_ids = Bt_Sync_Shipment_Tracking_Shipment_Model::get_orders_by_awb_number( $awb_number );
+
+            if ( ! empty( $awb_order_ids ) && is_array( $awb_order_ids ) ) {
+                foreach ( $awb_order_ids as $awb_order_id ) {
+                    if ( ! in_array( $awb_order_id, $order_ids ) ) {
+                        $order_ids[] = $awb_order_id;
+                    }
+                }
+            }
+        }
+
+        if ( empty( $order_ids ) ) {
+            return 'No order found';
+        }
+
+            if(!empty($order_ids) && is_array($order_ids)){
+                foreach ($order_ids as $order_id) {
+                    if(!empty($order_id)){
+                        if(false !== $order = wc_get_order( $order_id )){
+        
+                            $bt_sst_sync_orders_date = carbon_get_theme_option( 'bt_sst_sync_orders_date' );
+        
+                
+                                $date_created_dt = $order->get_date_created();
+                                $timezone        = $date_created_dt->getTimezone();
+                                $date_created_ts = $date_created_dt->getTimestamp();
+        
+                                $now_dt = new WC_DateTime();
+                                $now_dt->setTimezone( $timezone );
+                                $now_ts = $now_dt->getTimestamp();
+        
+                                $allowed_seconds = $bt_sst_sync_orders_date * 24 * 60 * 60;
+        
+                                $diff_in_seconds = $now_ts - $date_created_ts;
+                                if ( $diff_in_seconds <= $allowed_seconds ) {
+                                    $shipment_obj = $this->webhook_init_model($shipment, $order_id);
+                            
+                                    Bt_Sync_Shipment_Tracking_Shipment_Model::save_tracking($order_id,$shipment_obj);                           
+                                    return "Thanks Delhivery! Record updated.";
+                                }else{
+                                    return "Thanks Delhivery! Order too old.";
+                                }
+                        }
+                    }
+                }                    
+            }
+
+            
+       
+        return "Thanks Delhivery!";
     }
     
 }

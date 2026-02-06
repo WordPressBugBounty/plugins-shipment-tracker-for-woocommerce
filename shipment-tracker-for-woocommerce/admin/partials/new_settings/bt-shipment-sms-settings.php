@@ -15,6 +15,10 @@ $all_options = [
 ];
 
 $selected_methods1 = carbon_get_theme_option('bt_sst_shipment_from_what_send_messages', array());
+$status_mode_map = get_option('bt_sst_shipment_status_mode_map', null);
+if (empty($status_mode_map)) {
+	$status_mode_map = carbon_get_theme_option('bt_sst_shipment_status_mode_map', array());
+}
 $bt_sst_sms_review_url = carbon_get_theme_option('bt_sst_sms_review_url') ?? "";
 
 $method_options = [
@@ -26,15 +30,30 @@ $method_options = [
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	$input = $_POST['carbon_fields_compact_input'] ?? [];
+	$when_messages_send = array();
 	if (!empty($input['_bt_sst_shipment_when_to_send_messages'])) {
-		$when_messages_send = array_map('sanitize_text_field', $input['_bt_sst_shipment_when_to_send_messages']);
+		$when_messages_send = array_map('sanitize_text_field', (array) $input['_bt_sst_shipment_when_to_send_messages']);
 		carbon_set_theme_option('bt_sst_shipment_when_to_send_messages', $when_messages_send);
+	} else {
+		carbon_set_theme_option('bt_sst_shipment_when_to_send_messages', array());
 	}
 
-	if (!empty($input['_bt_sst_shipment_from_what_send_messages'])) {
-		$send_messages_via = array_map('sanitize_text_field', $input['_bt_sst_shipment_from_what_send_messages']);
-		carbon_set_theme_option('bt_sst_shipment_from_what_send_messages', $send_messages_via);
+	if (isset($input['_bt_sst_shipment_status_mode_map']) && is_array($input['_bt_sst_shipment_status_mode_map'])) {
+		$sanitized_mode_map = array();
+		foreach ($input['_bt_sst_shipment_status_mode_map'] as $status => $modes) {
+			$status = sanitize_text_field($status);
+			if (empty($status)) {
+				continue;
+			}
+			if (is_array($modes)) {
+				$sanitized_mode_map[$status] = array_map('sanitize_text_field', $modes);
+			}
+		}
+		update_option('bt_sst_shipment_status_mode_map', $sanitized_mode_map);
+	} else {
+		update_option('bt_sst_shipment_status_mode_map', array());
 	}
+
 	if (!empty($input['_bt_sst_sms_review_url'])) {
 		carbon_set_theme_option('bt_sst_sms_review_url', $input['_bt_sst_sms_review_url']);
 	}
@@ -214,71 +233,95 @@ include plugin_dir_path(dirname(__FILE__)) . '../partials/new_settings/popup.php
 					<div class="container">
 						<form method="post" class="cf-form">
 							<div class="cf-field cf-set box">
-								<div class="cf-field__head"><label class="cf-field__label" for="cf-guE3uPhflWAqk9HhRfjnT">When do
-										you want to send SMS/WhatsApp message?</label></div>
+								<div class="cf-field__head">
+									<label class="cf-field__label">Message automation rules</label>
+									<p class="help mt-2">Enable a status and then choose how you want to notify customers for that
+										status. Each status can use different channels.</p>
+								</div>
 								<div class="cf-field__body">
-									<ul class="cf-set__list">
+									<div class="status-grid">
 										<?php foreach ($all_options as $value => $label): ?>
 											<?php
-											$id = 'cf-' . uniqid() . '-' . $value;
-											$checked = in_array($value, $selected_messages) ? 'checked' : '';
+											$status_enabled = in_array($value, $selected_messages, true);
+											$preselected_modes = [];
+											if (!empty($status_mode_map) && isset($status_mode_map[$value])) {
+												$preselected_modes = (array) $status_mode_map[$value];
+											} else {
+												$preselected_modes = (array) $selected_methods1;
+											}
+											$sanitized_status_key = sanitize_key($value);
+											$status_id = 'status-' . $sanitized_status_key;
 											?>
-											<li class="cf-set__list-item">
-												<input type="checkbox" id="<?php echo esc_attr($id); ?>"
-													name="carbon_fields_compact_input[_bt_sst_shipment_when_to_send_messages][]"
-													class="cf-set__input" value="<?php echo esc_attr($value); ?>" <?php echo $checked; ?>>
-												<label class="cf-set__label" for="<?php echo esc_attr($id); ?>">
-													<?php echo esc_html($label); ?>
-												</label>
-											</li>
+											<div class="box mb-4 js-status-card" data-status="<?php echo esc_attr($value); ?>">
+												<div class="level is-mobile">
+													<div class="level-left">
+														<label class="checkbox is-flex is-align-items-center has-text-weight-semibold">
+															<input type="checkbox"
+																class="js-status-toggle"
+																id="<?php echo esc_attr($status_id); ?>"
+																name="carbon_fields_compact_input[_bt_sst_shipment_when_to_send_messages][]"
+																value="<?php echo esc_attr($value); ?>"
+																<?php checked($status_enabled); ?>>
+															<span class="ml-2"><?php echo esc_html($label); ?></span>
+														</label>
+													</div>
+													<div class="level-right">
+														<span class="tag is-light">Order Status</span>
+													</div>
+												</div>
+												<div class="columns is-multiline mt-2">
+													<?php foreach ($method_options as $method_value => $method_label): ?>
+														<?php
+														$method_id = sprintf('%s-%s', $status_id, $method_value);
+														$method_checked = in_array($method_value, $preselected_modes, true);
+														?>
+														<div class="column is-12-tablet is-6-desktop">
+															<label class="checkbox is-flex is-align-items-center">
+																<input type="checkbox"
+																	class="js-mode-checkbox"
+																	data-status-target="<?php echo esc_attr($value); ?>"
+																	id="<?php echo esc_attr($method_id); ?>"
+																	name="carbon_fields_compact_input[_bt_sst_shipment_status_mode_map][<?php echo esc_attr($value); ?>][]"
+																	value="<?php echo esc_attr($method_value); ?>"
+																	<?php checked($method_checked); ?>
+																	<?php disabled($method_value === 'push_notification'); ?>>
+																<span class="ml-2"><?php echo esc_html($method_label); ?>
+																	<?php if ($method_value === 'push_notification'): ?>
+																		<span class="tag is-warning is-light is-rounded ml-2">Coming soon</span>
+																	<?php endif; ?>
+																</span>
+															</label>
+														</div>
+													<?php endforeach; ?>
+												</div>
+												<?php if ($value === 'review_after_delivery'): ?>
+													<div class="field mt-3 js-review-url-wrapper" <?php if (!$status_enabled) echo 'style="display:none;"'; ?>>
+														<label class="label" for="cf-review-url">Enter Review URL</label>
+														<div class="control">
+															<input type="url" id="cf-review-url"
+																name="carbon_fields_compact_input[_bt_sst_sms_review_url]"
+																class="input"
+																value="<?php echo esc_attr($bt_sst_sms_review_url); ?>"
+																placeholder="https://example.com/review">
+														</div>
+														<p class="help">
+															This link is sent 2 hours after delivery so customers can leave feedback.
+														</p>
+													</div>
+												<?php endif; ?>
+												<p class="help mb-0">
+													Configure email templates inside <a
+														href="<?php echo esc_url($woocommerce_email_settings_url); ?>"
+														target="_blank">WooCommerce → Emails</a>.
+												</p>
+											</div>
 										<?php endforeach; ?>
-									</ul>
-									<div id="review-url-field" class="cf-field mt-4" style="display: none;">
-										<div class="cf-field__head">
-											<label class="cf-field__label" for="cf-Mh9phr8q558uUGntG4Eu9">Enter Review URL</label>
-										</div>
-										<div class="cf-field__body">
-											<input type="url" id="cf-Mh9phr8q558uUGntG4Eu9"
-												name="carbon_fields_compact_input[_bt_sst_sms_review_url]" class="cf-text__input"
-												value="<?php echo $bt_sst_sms_review_url ?>">
-										</div>
-										<em class="cf-field__help">
-											This link will be sent to the customer after 2 hours of delivery. It can be your Google
-											Review URL or your website's URL where the customer can leave feedback.
-										</em>
 									</div>
 								</div>
 							</div>
-							<div class="cf-field cf-set box">
-								<div class="cf-field__head"><label class="cf-field__label" for="cf-JnCJcsCtG8UNTQazjeTm9">Send
-										Message
-										Via</label></div>
-								<div class="cf-field__body">
-									<ul class="cf-set__list">
-										<?php foreach ($method_options as $value => $label): ?>
-											<?php
-											$id = 'cf-' . uniqid() . '-' . $value;
-											$checked = in_array($value, $selected_methods1) ? 'checked' : '';
-											?>
-											<li class="cf-set__list-item">
-												<input type="checkbox" id="<?php echo esc_attr($id); ?>"
-													name="carbon_fields_compact_input[_bt_sst_shipment_from_what_send_messages][]"
-													class="cf-set__input" value="<?php echo esc_attr($value); ?>" <?php echo $checked; ?>>
-												<label class="cf-set__label" for="<?php echo esc_attr($id); ?>">
-													<?php echo esc_html($label); ?>
-												</label>
-											</li>
-										<?php endforeach; ?>
-										<li style="font-size: 12px;">
-											Configure Email in <a href="<?php echo $woocommerce_email_settings_url ?>"
-												target="_blank">WooCommerce Email Settings</a>
-										</li>
-									</ul>
-								</div>
-							</div>
 							<div class="box">
-							<button class="button is-primary is-rounded is-medium mt-4"
-								id="bt_sst_update_sms_and_mail_setting">Update Settings</button>
+								<button class="button is-primary is-rounded is-medium mt-4"
+									id="bt_sst_update_sms_and_mail_setting">Update Settings</button>
 							</div>
 						</form>
 					</div>
@@ -479,24 +522,28 @@ include plugin_dir_path(dirname(__FILE__)) . '../partials/new_settings/popup.php
 	.subtitle {
 		padding-left: 0;
 	}
+	.status-grid .is-disabled {
+		opacity: 0.5;
+	}
 </style>
 <script>
 	document.addEventListener("DOMContentLoaded", function () {
-		// Use startsWith in case the checkbox ID has dynamic uniqid()
-		const checkboxes = document.querySelectorAll('input[type="checkbox"][name="carbon_fields_compact_input[_bt_sst_shipment_when_to_send_messages][]"]');
-		const reviewCheckbox = Array.from(checkboxes).find(cb => cb.value === 'review_after_delivery');
-		const reviewField = document.getElementById('review-url-field');
+		const statusCards = document.querySelectorAll('.js-status-card');
 
-		if (reviewCheckbox) {
-			const toggleReviewField = () => {
-				reviewField.style.display = reviewCheckbox.checked ? 'block' : 'none';
+		statusCards.forEach(card => {
+			const statusToggle = card.querySelector('.js-status-toggle');
+			const reviewField = card.querySelector('.js-review-url-wrapper');
+
+			const updateCardState = () => {
+				const isActive = statusToggle.checked;
+				card.classList.toggle('is-disabled', !isActive);
+				if (reviewField) {
+					reviewField.style.display = isActive ? 'block' : 'none';
+				}
 			};
 
-			// Toggle on page load
-			toggleReviewField();
-
-			// Toggle on change
-			reviewCheckbox.addEventListener('change', toggleReviewField);
-		}
+			updateCardState();
+			statusToggle.addEventListener('change', updateCardState);
+		});
 	});
 </script>

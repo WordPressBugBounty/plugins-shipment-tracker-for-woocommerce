@@ -496,6 +496,24 @@
 			);
 		});
 
+		jQuery(document).on('click', '#bt_sst_fetch_ekart_pichup_locations', function () {
+			$(this).attr("disabled", true);
+			$.post(
+				bt_sync_shipment_track_data.ajax_url,
+				{ action: 'bt_sst_get_users_list', task: 'get_ekart_pick_up_location' },
+				function (res) {
+					console.log(res);
+					if (res) {
+						$(this).attr("disabled", false);
+						// Insert response HTML into modal content
+						$("#pickupLocationContent").html(res.html_pick_lo);
+						// Show modal
+						$("#pickupLocationModal").addClass("is-active");
+					}
+				}
+			);
+		});
+
 		// Listen for changes on the pickup location dropdown
 		jQuery(document).on('change', '#bt_sst_vendor_pickup_location', function () {
 			// Get the selected value

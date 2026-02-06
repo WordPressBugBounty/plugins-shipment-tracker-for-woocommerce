@@ -53,6 +53,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 	private $ship24;
 	private $fship;
 	private $ekart;
+	private $courierkaro;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -61,7 +62,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct($plugin_name, $version, $shiprocket, $shyplite, $nimbuspost, $manual, $licenser, $shipmozo, $nimbuspost_new, $delhivery, $ship24, $fship, $ekart)
+	public function __construct($plugin_name, $version, $shiprocket, $shyplite, $nimbuspost, $manual, $licenser, $shipmozo, $nimbuspost_new, $delhivery, $ship24, $fship, $ekart, $courierkaro)
 	{
 
 		$this->plugin_name = $plugin_name;
@@ -77,6 +78,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 		$this->ship24 = $ship24;
 		$this->fship = $fship;
 		$this->ekart = $ekart;
+		$this->courierkaro = $courierkaro;
 	}
 
 
@@ -308,6 +310,15 @@ class Bt_Sync_Shipment_Tracking_Admin
 					$order = wc_get_order($order_id);
 					$order->add_order_note('Added schedule to push this order to delhivery.' . "\n\n- Shipment tracker for woocommerce", false);
 					wp_schedule_single_event(time() + 1, 'bt_push_order_to_ekart', array($order_id));
+
+				}
+			} else if ($bt_shipping_provider == "courierkaro") {
+				$bt_sst_courierkaro_push_order_method_is_automatic = carbon_get_theme_option('bt_sst_courierkaro_push_orders');
+				$is_premium = $this->licenser->is_license_active();
+				if ($bt_sst_courierkaro_push_order_method_is_automatic == 1 && $is_premium) {
+					$order = wc_get_order($order_id);
+					$order->add_order_note('Added schedule to push this order to Courier Karo.' . "\n\n- Shipment tracker for woocommerce", false);
+					wp_schedule_single_event(time() + 1, 'bt_push_order_to_courierkaro', array($order_id));
 
 				}
 			}
@@ -660,6 +671,51 @@ class Bt_Sync_Shipment_Tracking_Admin
 			error_log('Error in pushing order id: ' . $order_id . ' got error: ' . $e->getMessage());
 		}
 	}
+	public function push_order_to_courierkaro($order_id)
+	{
+		try {
+			$order = wc_get_order($order_id);
+
+			if (!empty(Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_courierkaro_awb', true))) {
+				$order->add_order_note('Delivery is already assigned with AWB No: ' . Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_courierkaro_awb', true) . "\n\n- Shipment tracker for woocommerce", false);
+				return;
+			}
+
+			$order->add_order_note('Pushing order to Courier Karo: ' . $order_id . "\n\n- Shipment tracker for woocommerce", false);
+			$push_resp = $this->courierkaro->push_order_to_courierkaro($order_id);
+
+			if ($push_resp === null) {
+				$order->add_order_note(
+					"Failed to push order to Courier Karo, please verify API credentials or payload.\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+				return;
+			}
+			
+			if (is_array($push_resp) && isset($push_resp['status'])) {
+				$awb_no = $push_resp['awb_no'] ?? '';
+				if (!$awb_no) {
+					$awb_no = $order_id;
+				}
+				if (!empty($awb_no)) {
+					Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_courierkaro_awb', $awb_no);
+					Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_awb', $awb_no);
+					$order->add_order_note("Order pushed to Courier Karo. AWB No: " . $awb_no . "\n\n- Shipment tracker for woocommerce", false);
+				} else {
+					$order->add_order_note("Order pushed to Courier Karo but AWB number not received.\n\n- Shipment tracker for woocommerce", false);
+				}
+			} else {
+				$message = $push_resp['message'] ?? 'Unknown error';
+				$order->add_order_note(
+					"Failed to push order to Courier Karo, got error response: '{$message}'\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+			}				
+			
+		} catch (Exception $e) {
+			error_log('Error in pushing order id: ' . $order_id . ' got error: ' . $e->getMessage());
+		}
+	}
 	public function push_order_to_nimbuspost($order_id)
 	{
 
@@ -937,7 +993,25 @@ class Bt_Sync_Shipment_Tracking_Admin
 			'side',
 			'default'
 		);
-		//}
+		
+		add_meta_box(
+			'bt_message_history', // ID
+			__('Message History', 'shipment-tracker'), // Title
+			array($this, 'bt_render_message_history_metabox'),
+			'shop_order', // Post type
+			'normal', // Context (normal = below main section)
+			'low' // Priority (low = appears below custom fields)
+		);
+
+		add_meta_box(
+			'bt_message_history', // ID
+			__('Message History', 'shipment-tracker'), // Title
+			array($this, 'bt_render_message_history_metabox'),
+			'woocommerce_page_wc-orders', // Post type
+			'normal', // Context (normal = below main section)
+			'low' // Priority (low = appears below custom fields)
+		);
+
 	}
 
 	public function sync_actions_meta_box()
@@ -957,7 +1031,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 		if (!$bt_shipping_provider || ($bt_shipping_provider == 'manual' && $shipping_mode_is_manual_or_ship24 == "manual")) {
 			include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/bt-shipment-tracking-manual-metabox.php';
-		} else if ($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite' || $bt_shipping_provider == 'nimbuspost' || $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo' || $bt_shipping_provider == 'nimbuspost_new' || $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24 == "ship24" || $bt_shipping_provider == "fship" || $bt_shipping_provider == "ekart") {
+		} else if ($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite' || $bt_shipping_provider == 'nimbuspost' || $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo' || $bt_shipping_provider == 'nimbuspost_new' || $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24 == "ship24" || $bt_shipping_provider == "fship" || $bt_shipping_provider == "ekart" || $bt_shipping_provider == "courierkaro") {
 			$order_id = isset($_GET['post']) ? $_GET['post'] : sanitize_text_field($_GET['id']);
 			include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/bt-shipment-tracking-metabox.php';
 		}
@@ -1718,6 +1792,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 	{
 		$this->bt_quickengage_messaging_api($order_id, null, null);
 	}
+
 	function bt_quickengage_messaging_api($order_id, $shipment_obj, $shipment_obj_old)
 	{
 		$order = wc_get_order($order_id);
@@ -1740,6 +1815,14 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 			if (empty($event_name))
 				return;
+
+			// Limit check
+			if (!$this->can_send_event($order, $event_name, 1)) {
+				$this->log_message_history($order, $event_name, [], 'skipped', null, 'limit reached');
+				$order->add_order_note("'$event_name' message skipped (limit reached) \n\n- Shipment tracker for woocommerce.");
+				return;
+			}
+
 			$send_via = $this->should_send_msg($event_name);
 			if (sizeof($send_via) > 0) {
 
@@ -1757,21 +1840,29 @@ class Bt_Sync_Shipment_Tracking_Admin
 				);
 
 				$url = "https://quickengage.bitss.in/trigger/message";
-				$response = wp_remote_post($url, $args); //its a non-blocking call. so website's speed is not effected.
-				$body = wp_remote_retrieve_body($response);
-				//$resp = json_decode($body,true);
+				$response = wp_remote_post($url, $args); 
 
-				$order = wc_get_order($order_id);
-				$order->add_order_note("'$event_name'" . ' Message Sent via ' . implode(",", $send_via) . '. Request ID: ' . $body . "\n\n- Shipment tracker for woocommerce", false);
+				if (is_wp_error($response)) {
+					$this->log_message_history($order, $event_name, $send_via, 'failed');
+					$order->add_order_note("Error sending '$event_name': " . $response->get_error_message() . "\n\n- Shipment tracker for woocommerce", false);
+				} else {
+					$body_content = wp_remote_retrieve_body($response);
+					$this->log_message_history($order, $event_name, $send_via, 'success', $body_content);
+					$order->add_order_note("'$event_name' Message sent via " . implode(',', $send_via) . ".\n\n- Shipment tracker for WooCommerce");
+				}
+
 			} else {
 				$order = wc_get_order($order_id);
+				$this->log_message_history($order, $event_name, [], 'skipped', null, 'inactive event');
 				$order->add_order_note("'$event_name'" . " Message Inactive. \n\n- Shipment tracker for woocommerce", false);
 			}
-		} catch (Exception $Exception) {
-			$order->add_order_note('An error ' . $Exception->getMessage());
+		} catch (Exception $e) {
+			$this->log_message_history($order, 'unknown', [], 'failed', null, $e->getMessage());
+			$order->add_order_note('An error ' . $e->getMessage() . "\n\n- Shipment tracker for woocommerce", false);
 		}
 
 	}
+
 
 	private function should_send_msg($event_name)
 	{
@@ -1788,18 +1879,126 @@ class Bt_Sync_Shipment_Tracking_Admin
 			return $send_via;
 		}
 
-		$bt_sst_shipment_from_what_send_messages = carbon_get_theme_option('bt_sst_shipment_from_what_send_messages');
+		$status_mode_map = get_option('bt_sst_shipment_status_mode_map', null);
+		if (empty($status_mode_map)) {
+			$status_mode_map = carbon_get_theme_option('bt_sst_shipment_status_mode_map', array());
+		}
+		if (!empty($status_mode_map) && isset($status_mode_map[$event_name])) {
+			$allowed_modes = (array) $status_mode_map[$event_name];
+		} else {
+			$allowed_modes = (array) carbon_get_theme_option('bt_sst_shipment_from_what_send_messages', array());
+		}
 
-		if (in_array('sms', $bt_sst_shipment_from_what_send_messages, true)) {
+		if (in_array('sms', $allowed_modes, true)) {
 			$send_via[] = 'sms';
 		}
 
-		if (in_array('whatsapp', $bt_sst_shipment_from_what_send_messages, true)) {
+		if (in_array('whatsapp', $allowed_modes, true)) {
 			$send_via[] = 'whatsapp';
 		}
 
 		return $send_via;
 	}
+
+	private function log_message_history($order, $event_name, $via, $status, $response_id = null, $reason = null)
+	{
+		$history = $order->get_meta('_bt_message_history', true);
+		$history = is_array($history) ? $history : [];
+
+		$history[] = [
+			'event'       => $event_name,
+			'via'         => (array) $via,
+			'status'      => $status,          // 'success', 'failed', 'skipped'
+			'response_id' => $response_id,
+			'reason'      => $reason,          // e.g. "limit reached", "inactive event"
+			'timestamp'   => current_time('mysql'),
+		];
+
+		$order->update_meta_data('_bt_message_history', $history);
+		$order->save();
+	}
+
+
+	public function bt_render_message_history_metabox()
+	{
+		global $post_id;
+		if (empty($post_id)) {
+			$post_id = sanitize_text_field($_GET["id"]);
+		}
+		
+		$order = wc_get_order($post_id);
+		$history = $order->get_meta('_bt_message_history', true);
+		
+		if (empty($history) || !is_array($history)) {
+			echo '<h3>Message History</h3><p>No messages have been logged for this order yet.</p>';
+			return;
+		}
+
+		//echo '<h3>Message History</h3>';
+		echo '<table class="widefat striped" style="margin-top:10px;">';
+		echo '<thead>
+				<tr>
+					<th style="width:15%">Event</th>
+					<th style="width:15%">Via</th>
+					<th style="width:10%">Status</th>
+					<th style="width:25%">Response / Reason</th>
+					<th style="width:20%">Timestamp</th>
+				</tr>
+			</thead><tbody>';
+
+		// Sort by timestamp descending (newest first)
+		usort($history, function ($a, $b) {
+			return strtotime($b['timestamp']) <=> strtotime($a['timestamp']);
+		});
+
+		foreach ($history as $log) {
+			$status = strtolower($log['status'] ?? 'unknown');
+			$color = match ($status) {
+				'success' => 'color:#00a32a;font-weight:600;',   // green
+				'failed'  => 'color:#d63638;font-weight:600;',   // red
+				'skipped' => 'color:#cc9900;font-weight:600;',   // orange
+				default   => 'color:#50575e;font-weight:600;',   // grey
+			};
+
+			echo '<tr>';
+			echo '<td>' . esc_html($log['event'] ?? '-') . '</td>';
+			echo '<td>' . esc_html(implode(', ', (array)($log['via'] ?? []))) . '</td>';
+			echo '<td style="' . esc_attr($color) . '">' . esc_html(ucfirst($status)) . '</td>';
+
+			$resp = $log['response_id'] ?? '';
+			$reason = $log['reason'] ?? '';
+			$resp_display = $resp ?: $reason ?: '-';
+			echo '<td>' . esc_html($resp_display) . '</td>';
+
+			echo '<td>' . esc_html($log['timestamp'] ?? '-') . '</td>';
+			echo '</tr>';
+		}
+
+		echo '</tbody></table>';
+		echo '<br><br>Powered by <b>Shipment Tracker for Woocommerce.</b>';
+	}
+
+	private function can_send_event($order, $event_name, $limit = 2)
+	{
+		$history = $order->get_meta('_bt_message_history', true);
+		$history = is_array($history) ? $history : [];
+
+		$count = 0;
+		foreach ($history as $log) {
+			if (
+				isset($log['event'], $log['status']) &&
+				$log['event'] === $event_name &&
+				strtolower($log['status']) === 'success'
+			) {
+				$count++;
+			}
+		}
+
+		return $count < $limit;
+	}
+
+
+
 
 
 
@@ -2169,6 +2368,13 @@ class Bt_Sync_Shipment_Tracking_Admin
 			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
 			$getresponce = $this->push_order_to_ekart($order_id);
 			unset($_GET['bt_push_to_ekart']);
+			global $pagenow;
+			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
+			wp_safe_redirect($current_page);
+		} else if (isset($_GET['bt_push_to_courierkaro']) && $_GET['bt_push_to_courierkaro'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
+			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
+			$getresponce = $this->push_order_to_courierkaro($order_id);
+			unset($_GET['bt_push_to_courierkaro']);
 			global $pagenow;
 			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
 			wp_safe_redirect($current_page);
@@ -2593,6 +2799,49 @@ class Bt_Sync_Shipment_Tracking_Admin
 			$resp = [
 				"html_pick_lo" => $html_pick_lo,
 			];
+		} elseif (isset($_POST['task']) && sanitize_text_field($_POST['task']) === 'get_ekart_pick_up_location') {
+			$args = array(
+				'role__in' => array('seller'),
+				'orderby' => 'user_nicename',
+				'order' => 'ASC'
+			);
+
+			$users = get_users($args);
+			$html = '<label for="bt_sst_vendor_pickup_location" class="label">Vendor Name</label>';
+			$html .= '<div class="control">
+			  <div class="select">';
+			$html .= '<select id="bt_sst_select">';
+			$html .= '<option value="" >Select Vendor</option>';
+
+			foreach ($users as $user) {
+				$html .= '<option value="' . esc_attr($user->ID) . '" title="' . esc_attr($user->display_name . '(' . $user->user_nicename . ')') . '">';
+				$html .= esc_html($user->display_name) . ' [' . esc_html($user->user_nicename) . ']';
+				$html .= '</option>';
+			}
+			$html_pick_lo = '</select>';
+			$html_pick_lo .= '</div>
+			  </div>';
+			$pick_up_locations = $this->ekart->get_addresses_list();
+			$html_pick_lo .= '<label for="bt_sst_vendor_pickup_location" class="label">Pickup Location</label>';
+			$html_pick_lo .= '<div class="control"><div class="select">';
+			$html_pick_lo .= '<select id="bt_sst_vendor_pickup_location">';
+			$html_pick_lo .= '<option value="">Select Pick-Up Location</option>';
+
+			if (is_array($pick_up_locations) && isset($pick_up_locations['data'])) {
+				foreach ($pick_up_locations['data'] as $value) {
+					$location_name = isset($value['name']) ? $value['name'] : '';
+					if (!empty($location_name)) {
+						$html_pick_lo .= '<option value="' . htmlspecialchars($location_name) . '">' . htmlspecialchars($location_name) . '</option>';
+					}
+				}
+			}
+
+			$html_pick_lo .= '</select></div></div>';
+
+			$resp = [
+				"html_pick_lo" => $html_pick_lo,
+				"html" => $html
+			];
 		} else {
 			$args = array(
 				'role__in' => array('seller'),
@@ -2819,7 +3068,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 	function save_variable_product_processing_time_shipping_field($variation_id, $i)
 	{
 		$bt_sst_product_days_field = isset($_POST['_bt_sst_product_days_field_' . $i]) ? sanitize_text_field($_POST['_bt_sst_product_processing_days_field_' . $i]) : '';
-		Bt_Sync_Shipment_Tracking::bt_sst_update_product_meta($variation_id, '_bt_sst_product_processing_days_field', $bt_sst_product_processing_days_field);
+		Bt_Sync_Shipment_Tracking::bt_sst_update_product_meta($variation_id, '_bt_sst_product_processing_days_field', $bt_sst_product_days_field);
 	}
 
 
@@ -3519,6 +3768,9 @@ function bt_force_sync_order_tracking($order_id)
 		$response = $obj->update_order_shipment_status($order_id);
 	}else if ($bt_shipping_provider == 'ekart') {
 		$obj = new Bt_Sync_Shipment_Tracking_Ekart();
+		$response = $obj->update_order_shipment_status($order_id);
+	}else if ($bt_shipping_provider == 'courierkaro') {
+		$obj = new Bt_Sync_Shipment_Tracking_CourierKaro();
 		$response = $obj->update_order_shipment_status($order_id);
 	}
 

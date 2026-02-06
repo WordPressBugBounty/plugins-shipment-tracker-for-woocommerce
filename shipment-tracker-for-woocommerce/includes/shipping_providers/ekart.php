@@ -132,7 +132,20 @@ class Bt_Sync_Shipment_Tracking_Ekart
             return false;
         }
 
+        // Check for vendor-specific pickup location
         $pick_up_location = carbon_get_theme_option('bt_sst_ekart_pick_up_location');
+        foreach ($order->get_items() as $item_id => $item) {
+            $product_id = $item->get_product_id();
+            $vendor_id = get_post_field('post_author', $product_id);
+            if ( $vendor_id ) {
+                $vendor_pickup_location = get_user_meta( $vendor_id, 'vendor_pickup_location', true );
+                if ( !$vendor_pickup_location ) {
+                    $vendor_pickup_location = carbon_get_theme_option( 'bt_sst_ekart_pick_up_location' );
+                }
+                $pick_up_location = $vendor_pickup_location;
+            }
+            break;
+        }
 
         $order_number = (String)$order->get_id();
         $invoice_number = (String)$order->get_id();

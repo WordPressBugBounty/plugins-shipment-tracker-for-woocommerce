@@ -104,10 +104,26 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
 
     private function should_send_msg($event_name, $old_status , $current_status ){
 		
-		$bt_sst_shipment_from_what_send_messages = carbon_get_theme_option( 'bt_sst_shipment_from_what_send_messages' );
+		$enabled_statuses = carbon_get_theme_option( 'bt_sst_shipment_when_to_send_messages', array() );
+		$current_status_key = strtolower( $current_status );
 
-		if (!in_array($event_name, $bt_sst_shipment_from_what_send_messages, true)) {
+		if ( ! in_array( $current_status_key, (array) $enabled_statuses, true ) ) {
 			return false;
+		}
+
+		$status_mode_map = get_option( 'bt_sst_shipment_status_mode_map', null );
+		if ( empty( $status_mode_map ) ) {
+			$status_mode_map = carbon_get_theme_option( 'bt_sst_shipment_status_mode_map', array() );
+		}
+		if ( ! empty( $status_mode_map ) && isset( $status_mode_map[ $current_status_key ] ) ) {
+			if ( ! in_array( 'email', (array) $status_mode_map[ $current_status_key ], true ) ) {
+				return false;
+			}
+		} else {
+			$bt_sst_shipment_from_what_send_messages = carbon_get_theme_option( 'bt_sst_shipment_from_what_send_messages', array() );
+			if ( ! in_array( 'email', (array) $bt_sst_shipment_from_what_send_messages, true ) ) {
+				return false;
+			}
 		}
 
         if(empty( $current_status)){
