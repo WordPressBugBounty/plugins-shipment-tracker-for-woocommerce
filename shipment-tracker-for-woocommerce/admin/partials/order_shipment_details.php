@@ -44,6 +44,9 @@ if(isset($order_id)){
         else if ($bt_shipping_provider == "courierkaro"){
             $edit =  "<br><a class='bt_sync_order_tracking' data-order-id='$order_id' href='#'>Sync Now</a>";
         }
+        else if ($bt_shipping_provider == "proship"){
+            $edit =  "<br><a class='bt_sync_order_tracking' data-order-id='$order_id' href='#'>Sync Now</a>";
+        }
    // }
 }
 ?>

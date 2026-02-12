@@ -234,6 +234,11 @@
 			$(this).addClass('is-loading');
 			api_test_connection_fship();
 		});
+		$(document).on('click', '#api_test_connection_btn_proship', function (e) {
+			e.preventDefault();
+			$(this).addClass('is-loading');
+			api_test_connection_proship();
+		});
 		$(document).on('click', '#api_test_connection_btn_ekart', function (e) {
 			e.preventDefault();
 			$(this).addClass('is-loading');
@@ -291,7 +296,7 @@
 		$(".shipment-tracking_page_crb_carbon_fields_container_shipment_tracking #wpbody-content .carbon-theme-options>h2").html(free_msg);
 
 		const type = getUrlVars()["t"];
-		console.log(type);
+		if(type){
 		const typeToButtonMap = {
 		  tracking: "Tracking Widget",
 		  etd: "Product Page",
@@ -314,6 +319,7 @@
 			}, 500);
 		 
 		}
+	}
 
 
 		
@@ -347,6 +353,9 @@
 			$('#api_test_connection_modal_ship24').removeClass('is-active');
 			$('#api_test_connection_modal_ship24').css('display', 'none');
 
+		});
+		$(document).on('click', '#api_tc_m_close_btn_proship', function (e) {
+			$('#api_test_connection_modal_proship').removeClass('is-active');
 		});
 		$(document).on('click', '#api_shipmozo_tc_m_close_btn', function (e) {
 			$('#api_shipmozo_test_connection_modal').removeClass('is-active');
@@ -965,6 +974,18 @@
 
 			}
 		)
+	}
+	function api_test_connection_proship() {
+		var nonce = bt_sync_shipment_track_data.test_conn_proship_nonce;
+		$.get(
+			bt_sync_shipment_track_data.ajax_url,
+			{ action: 'api_call_for_proship_test_connection', value: nonce },
+			function (res) {
+				$('#api_tc-m-content_proship').html(res.message);
+				$('#api_test_connection_modal_proship').addClass('is-active');
+				$('#api_test_connection_btn_proship').removeClass('is-loading');
+			}
+		);
 	}
 	function api_test_connection_ekart() {
 		// console.log(bt_sync_shipment_track_data.test_conn_nonce);		

@@ -2,6 +2,8 @@
 
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
+use PhpUnitsOfMeasure\PhysicalQuantity\Mass;
+use PhpUnitsOfMeasure\PhysicalQuantity\Length;
 
 /**
  * The file that defines the core plugin class
@@ -74,6 +76,7 @@ class Bt_Sync_Shipment_Tracking {
 	private $licenser;
 	private $fship;
 	private $ekart;
+	private $proship;
 
 	/**
 	 * Define the core functionality of the plugin.
@@ -161,6 +164,112 @@ class Bt_Sync_Shipment_Tracking {
 		}
 	}
 
+	public static function bt_sst_compute_package_dimensions($order_id) {
+		if (false == $order = wc_get_order($order_id)) {
+			return [
+				'length' => 0,
+				'width' => 0,
+				'height' => 0,
+				'weight' => 0,
+			];
+		}
+
+		$total_weight = 0;
+		$total_width = 0;
+		$total_length = 0;
+		$total_height = 0;
+
+		foreach ($order->get_items() as $item_id => $a) {
+			if (is_a($a, 'WC_Order_Item_Product')) {
+				$product = $a->get_product();
+				if (!$product) continue;
+				$qty = $a->get_quantity();
+
+				if (!empty($product->get_weight()) && $product->get_weight() > 0) {
+					$total_weight += ($product->get_weight() * $qty);
+				}
+				if (!empty($product->get_width()) && $product->get_width() > 0) {
+					$total_width += ($product->get_width() * $qty);
+					if ($product->get_length() > $total_length) {
+						$total_length = $product->get_length();
+					}
+					if ($product->get_height() > $total_height) {
+						$total_height = $product->get_height();
+					}
+				}
+			}
+		}
+
+		return [
+			'length' => (float) $total_length,
+			'width' => (float) $total_width,
+			'height' => (float) $total_height,
+			'weight' => (float) $total_weight,
+		];
+	}
+
+	public static function bt_sst_get_package_dimensions($order_id) {
+		$dimension_unit = get_option('woocommerce_dimension_unit');
+		$weight_unit = get_option('woocommerce_weight_unit');
+
+		// Check order meta overrides (stored in store units)
+		$meta_length = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_package_length');
+		$meta_width = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_package_width');
+		$meta_height = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_package_height');
+		$meta_weight = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_package_weight');
+
+		if (!empty($meta_length) || !empty($meta_width) || !empty($meta_height) || !empty($meta_weight)) {
+			$length_val = !empty($meta_length) ? (float) $meta_length : 0;
+			$width_val = !empty($meta_width) ? (float) $meta_width : 0;
+			$height_val = !empty($meta_height) ? (float) $meta_height : 0;
+			$weight_val = !empty($meta_weight) ? (float) $meta_weight : 0;
+		} else {
+			$computed = Bt_Sync_Shipment_Tracking::bt_sst_compute_package_dimensions($order_id);
+			$length_val = $computed['length'];
+			$width_val = $computed['width'];
+			$height_val = $computed['height'];
+			$weight_val = $computed['weight'];
+		}
+
+		// Convert to standard units: cm for dimensions, g for weight
+		try {
+			$length = new Length($length_val, $dimension_unit);
+			$length_cm = (float) $length->toUnit('cm');
+		} catch (Exception $e) {
+			$length_cm = (float) $length_val;
+		}
+		try {
+			$width = new Length($width_val, $dimension_unit);
+			$width_cm = (float) $width->toUnit('cm');
+		} catch (Exception $e) {
+			$width_cm = (float) $width_val;
+		}
+		try {
+			$height = new Length($height_val, $dimension_unit);
+			$height_cm = (float) $height->toUnit('cm');
+		} catch (Exception $e) {
+			$height_cm = (float) $height_val;
+		}
+		try {
+			$mass = new Mass($weight_val, $weight_unit);
+			$weight_g = (float) $mass->toUnit('g');
+		} catch (Exception $e) {
+			$weight_g = (float) $weight_val;
+		}
+
+		if ($weight_g < 100) $weight_g = 100; // minimum 100g
+		if ($length_cm <= 0) $length_cm = 0.5;
+		if ($width_cm <= 0) $width_cm = 0.5;
+		if ($height_cm <= 0) $height_cm = 0.5;
+
+		return [
+			'length_cm' => $length_cm,
+			'width_cm' => $width_cm,
+			'height_cm' => $height_cm,
+			'weight_g' => $weight_g,
+		];
+	}
+
 	public static function bt_sst_delete_order_meta($order_id, $meta_key) {
 		// Get the order object
 		$order = wc_get_order($order_id);
@@ -232,6 +341,7 @@ class Bt_Sync_Shipment_Tracking {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-bt-sync-shipment-tracking-public.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/ekart.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/courier_karo.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/proship.php';
 
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-bt-sync-shipment-tracking-rest.php';
 
@@ -254,6 +364,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->fship = new Bt_Sync_Shipment_Tracking_Fship();
 		$this->ekart = new Bt_Sync_Shipment_Tracking_Ekart();
 		$this->courierkaro = new Bt_Sync_Shipment_Tracking_CourierKaro();
+		$this->proship = new Bt_Sync_Shipment_Tracking_Proship();
         ( new Bt_Sync_Shipment_Tracking_Review() )->hooks();
 	}
 
@@ -265,7 +376,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_cron_events() {
 
-		$this->crons = new Bt_Sync_Shipment_Tracking_Crons($this->shiprocket,$this->shyplite,$this->nimbuspost_new,$this->shipmozo, $this->licenser, $this->delhivery, $this->ship24, $this->fship, $this->ekart);
+		$this->crons = new Bt_Sync_Shipment_Tracking_Crons($this->shiprocket,$this->shyplite,$this->nimbuspost_new,$this->shipmozo, $this->licenser, $this->delhivery, $this->fship, $this->courierkaro, $this->proship);
 
 		$this->loader->add_action( Bt_Sync_Shipment_Tracking_Crons::BT_MINUTELY_JOB, $this->crons, 'minutely_job');
 		$this->loader->add_action( Bt_Sync_Shipment_Tracking_Crons::BT_15MINS_JOB, $this->crons, 'bt_every_15_minutes_job');
@@ -284,7 +395,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_rest_apis() {
 
-		$rest = new Bt_Sync_Shipment_Tracking_Rest( $this->get_plugin_name(), $this->get_version(), $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->xpressbees, $this->shipmozo, $this->nimbuspost_new, $this->ship24, $this->ekart, $this->courierkaro, $this->delhivery);
+		$rest = new Bt_Sync_Shipment_Tracking_Rest( $this->get_plugin_name(), $this->get_version(), $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->xpressbees, $this->shipmozo, $this->nimbuspost_new, $this->ship24, $this->ekart, $this->courierkaro, $this->delhivery, $this->proship);
 
 		//shiprocket webhook & apis
 		$this->loader->add_action( 'rest_api_init', $rest, 'rest_shiprocket_webhook');
@@ -313,6 +424,7 @@ class Bt_Sync_Shipment_Tracking {
 
         $this->loader->add_action( 'rest_api_init', $rest, 'rest_ekart_webhook');
         $this->loader->add_action( 'rest_api_init', $rest, 'rest_delhivery_webhook');
+        $this->loader->add_action( 'rest_api_init', $rest, 'rest_proship_webhook');
         // $this->loader->add_action( 'init', $rest, 'generate_random_webhook_secret_key');
 
 		//courierkaro webhook & apis
@@ -350,7 +462,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Bt_Sync_Shipment_Tracking_Admin( $this->get_plugin_name(), $this->get_version(),$this->shiprocket,$this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->shipmozo, $this->nimbuspost_new, $this->delhivery, $this->ship24, $this->fship, $this->ekart, $this->courierkaro);
+		$plugin_admin = new Bt_Sync_Shipment_Tracking_Admin( $this->get_plugin_name(), $this->get_version(),$this->shiprocket,$this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->shipmozo, $this->nimbuspost_new, $this->delhivery, $this->ship24, $this->fship, $this->ekart, $this->courierkaro, $this->proship);
 		$this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_admin, 'custom_dokan_order_details', 10, 1 );
 		$this->loader->add_action('carbon_fields_save_post',$plugin_admin, 'update_woocommerce_data_on_carbon_fields_save', 10, 3);
 		$this->loader->add_action( 'woocommerce_order_status_changed',$plugin_admin, 'woocommerce_order_status_changed_of_shipment_tracker', 10, 3 );
@@ -378,7 +490,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'init', $plugin_admin, 'bt_sst_add_custom_order_statuses');
 		$this->loader->	add_filter('wc_order_statuses',$plugin_admin, 'add_custom_status_to_wc_order_statuses');
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'handle_admin_init');
-		$this->loader->add_action('admin_menu', $plugin_admin, 'bt_add_admin_menu',0);
+		$this->loader->add_action('admin_menu', $plugin_admin, 'bt_add_admin_menu',10);
 
 		//$this->loader->add_action( 'init', $plugin_admin, 'register_shipment_arrival_order_status');
 		//$this->loader->add_filter( 'wc_order_statuses', $plugin_admin, 'add_awaiting_shipment_to_order_statuses' );
@@ -389,9 +501,10 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'bt_push_order_to_delhivery', $plugin_admin, 'push_order_to_delhivery',10,3);
 		$this->loader->add_action( 'bt_push_order_to_ekart', $plugin_admin, 'push_order_to_ekart',10,3);
 		$this->loader->add_action( 'bt_push_order_to_courierkaro', $plugin_admin, 'push_order_to_courierkaro',10,3);
+		$this->loader->add_action( 'bt_push_order_to_proship', $plugin_admin, 'push_order_to_proship',10,3);
 		$this->loader->add_action( 'bt_push_order_to_nimbuspost', $plugin_admin, 'push_order_to_nimbuspost',10,3);
 
-		$ajax_functions = new Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions($this->crons, $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->delhivery, $this->ship24, $this->fship, $this->ekart);
+		$ajax_functions = new Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions($this->crons, $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->delhivery, $this->ship24, $this->fship, $this->ekart, $this->proship);
 		$this->loader->add_action( 'wp_ajax_sync_now_shyplite', $ajax_functions, 'bt_sync_now_shyplite',10,2);
 
         $this->loader->add_action('wp_ajax_force_sync_tracking',$ajax_functions, 'force_sync_tracking');
@@ -399,6 +512,7 @@ class Bt_Sync_Shipment_Tracking {
         $this->loader->add_action('wp_ajax_nopriv_bt_get_tracking_data',$ajax_functions, 'get_tracking_data_from_db');
         $this->loader->add_action('wp_ajax_bt_tracking_manual',$ajax_functions, 'bt_tracking_manual');
         $this->loader->add_action('wp_ajax_save_order_awb_number',$ajax_functions, 'save_order_awb_number');
+        $this->loader->add_action('wp_ajax_save_package_dimensions',$ajax_functions, 'save_package_dimensions');
         $this->loader->add_action('wp_ajax_post_customer_feedback_to_sever',$ajax_functions, 'post_customer_feedback_to_sever');
 
 		$this->loader->add_action('wp_ajax_create_and_add_tracking_page',$ajax_functions, 'create_and_add_tracking_page');
@@ -413,6 +527,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'wp_ajax_api_call_for_test_connection', $plugin_admin, 'api_call_for_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_delhivery_test_connection', $plugin_admin, 'api_call_for_delhivery_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_fship_test_connection', $plugin_admin, 'api_call_for_fship_test_connection' );
+		$this->loader->add_action( 'wp_ajax_api_call_for_proship_test_connection', $plugin_admin, 'api_call_for_proship_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_ekart_test_connection', $plugin_admin, 'api_call_for_ekart_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_ship24_test_connection', $plugin_admin, 'api_call_for_ship24_test_connection' );
 		$this->loader->add_action( 'wp_ajax_get_sms_trial', $plugin_admin, 'get_sms_trial' );
@@ -2008,6 +2123,70 @@ class Bt_Sync_Shipment_Tracking {
 			) );
 		}
 
+		if(is_array($enabled_shipping_providers) && in_array('proship', $enabled_shipping_providers)){
+			$proship_webhook_time = get_option('proship_webhook_called', 'never');
+			if($proship_webhook_time!="never"){ 
+				$proship_webhook_time = date('Y-m-d H:i:s', $proship_webhook_time);
+			}	
+			$container->add_tab( __( 'Proship' ), array(
+				
+				Field::make( 'html', 'bt_sst_proship_webhook_html', __( 'Proship Webhook URL' ) )
+					->set_html(
+						sprintf( '
+								<b>Proship Webhook URL: [<a target="_blank" href="https://www.proship.in/view-webhook">Configure Webhook Here</a>] </b> 
+								<p>'.get_site_url(null, '/wp-json/bt-sync-shipment-tracking-proship/v1.0.0/webhook_receiver').'<a href="#" class="bt_sst_copy_link" > Copy Link</a> </p>
+								<p>Last Webhook Called On: '.$proship_webhook_time.'</p>
+							')
+					),
+				Field::make( 'text', 'bt_sst_proship_user_email', __( 'E-mail' ) )
+					->set_width( 50 ),
+				Field::make( 'text', 'bt_sst_proship_user_password', __( 'Password' ) )
+					->set_width( 50 ),
+				
+				Field::make( 'html', 'bt_sst_test_connection_proship' )
+					->set_html('
+						<div style="margin-bottom: 20px;">
+							<button type="button" class="button button-secondary" id="api_test_connection_btn_proship">Test Connection</button>
+							<p class="description">Save changes before testing connection.</p>
+						</div>
+					'),
+				
+				Field::make( 'text', 'bt_sst_proship_from_name', __( 'Sender/Address Name' ) )
+					->set_width( 50 ),
+				Field::make( 'text', 'bt_sst_proship_from_phone', __( 'Phone Number' ) )
+					->set_width( 50 ),
+					
+				Field::make( 'textarea', 'bt_sst_proship_from_address', __( 'Address' ) )
+					->set_rows(2),
+					
+				Field::make( 'text', 'bt_sst_proship_from_addressline', __( 'Address Line 2' ) )
+					->set_width( 33 ),
+				Field::make( 'text', 'bt_sst_proship_from_email', __( 'Contact Email' ) )
+					->set_width( 33 ),
+
+				Field::make( 'text', 'bt_sst_proship_from_city', __( 'City' ) )->set_width( 33 ),
+				Field::make( 'text', 'bt_sst_proship_from_state', __( 'State' ) )->set_width( 33 ),
+				Field::make( 'text', 'bt_sst_proship_from_pincode', __( 'Pincode' ) )->set_width( 33 ),
+
+				Field::make( 'text', 'bt_sst_proship_from_gstin', __( 'GSTIN' ) )
+					->set_width( 33 ),
+				Field::make( 'select', 'bt_sst_proship_cron_schedule', __( 'Sync Tracking Interval' ) )
+					->add_options( array(
+						'never'   => 'Never',
+						'15mins'  => '15 Minutes',
+						'1hour'   => '1 Hour',
+						'4hours'  => '4 Hours',
+						'24hours' => '24 Hours',
+					) ),
+				Field::make( 'checkbox', 'bt_sst_proship_push_orders', __( 'Push orders to Proship') )
+						->set_classes( 'title is-6' )
+						->set_help_text( 'Plugin will push "processing" orders to Proship. Use this if Proship\'s Order Pull is not working correctly. 
+						<br>This feature also pushes correct order weight and dimensions of package to Proship, it helps in reducing weight discrepancy issues.
+						<br>For this option to work, make sure that the weight and dimensions are correctly set for every product. Keep some packaging buffer for better accuracy in calculation. 
+						' ),
+			));
+		}
+
 		if(is_array($enabled_shipping_providers) && in_array('fship',$enabled_shipping_providers)){
 			
 			$container = $container->add_tab( __( 'Fship' ), array(
@@ -2177,6 +2356,7 @@ class Bt_Sync_Shipment_Tracking {
 					'shiprocket' => 'Shiprocket',
 					'fship' => 'Fship',
 					'ekart' => 'Ekart',
+					'proship' => 'Proship',
 				) )
 				->set_help_text('
 				<p><b>Shiprocket:</b> Courier names along with estimated delivery date and rates are fetched from Shiprocket on realtime basis. <br>Make sure the Shiprocket\'s API settings are correctly set to use this provider. <a href="https://www.youtube.com/watch?v=8nds10GbsVE" target="_blank">See Video</a></p>
@@ -2430,6 +2610,7 @@ class Bt_Sync_Shipment_Tracking {
 					'shiprocket' => 'Shiprocket',
 					'fship' => 'Fship',
 					'ekart' => 'Ekart',
+					'proship' => 'Proship',
 					
 					
 					
@@ -2522,6 +2703,19 @@ class Bt_Sync_Shipment_Tracking {
 						'value' => 'delhivery',
 					)
 				) ),
+				Field::make( 'text', 'bt_sst_proship_fall_back_rate', __( 'Fall Back Rate (Per 500gm)' ) )
+				->set_attribute( 'type', 'number' )
+				->set_help_text( 'Fallback rate is used when no courier is available between any pickup/delivery combination. Leave it empty if you do not want to use any fallback rate.' )
+				->set_conditional_logic( array(
+					array(
+						'field' => 'bt_sst_select_courier_company',
+						'value' => true,
+					),
+					array(
+						'field' => 'bt_sst_courier_rate_provider',
+						'value' => 'proship',
+					)
+				) ),
 				Field::make( 'text', 'bt_sst_ekart_fall_back_rate', __( 'Fall Back Rate (Per 500gm)' ) )
 				->set_attribute( 'type', 'number' )
 				->set_help_text( 'Fallback rate is used when no courier is available between any pickup/delivery combination. Leave it empty if you do not want to use any fallback rate.' )
@@ -2597,7 +2791,7 @@ class Bt_Sync_Shipment_Tracking {
 					array(
 						'field' => 'bt_sst_courier_rate_provider',
 						'compare' => 'IN',
-						'value' => array('shiprocket','shipmozo','delhivery'),
+						'value' => array('shiprocket','shipmozo','delhivery','proship'),
 					)
 				) ),
 			Field::make( 'text', 'bt_sst_shipment_processing_days', __( 'Processing Days' ) )
@@ -2784,7 +2978,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Bt_Sync_Shipment_Tracking_Public( $this->get_plugin_name(), $this->get_version() ,$this->shiprocket, $this->shipmozo, $this->nimbuspost_new, $this->licenser, $this->delhivery, $this->fship, $this->ekart);
+		$plugin_public = new Bt_Sync_Shipment_Tracking_Public( $this->get_plugin_name(), $this->get_version() ,$this->shiprocket, $this->shipmozo, $this->nimbuspost_new, $this->licenser, $this->delhivery, $this->fship, $this->ekart, $this->proship);
 
 		// $pincode_checker_location_hook = carbon_get_theme_option( 'bt_sst_pincode_checker_location' );
 		// $this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_public, 'custom_dokan_order_details', 10, 1 );

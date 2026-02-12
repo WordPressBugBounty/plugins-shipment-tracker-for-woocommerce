@@ -85,13 +85,16 @@ class Bt_Sync_Shipment_Tracking_Ekart
 
     public function push_order_to_ekart($order_id)
     {
+        $order = wc_get_order($order_id);
         $token = $this->get_access_token();
         if (! $token) {
+            $order->add_order_note('❌ Ekart: Failed to get access token.');
             return null;
         }
 
         $order_payload = $this->get_ekart_order_object($order_id);
         if (! $order_payload) {
+            $order->add_order_note('❌ Ekart: order payload error.');
             return null;
         }
 
@@ -111,13 +114,16 @@ class Bt_Sync_Shipment_Tracking_Ekart
 
         if (is_wp_error($response)) {
             error_log("Ekart push_order WP error: " . $response->get_error_message());
+            $order->add_order_note('❌ Ekart API request failed: ' . $error_msg);
             return null;
         }
 
         $body_raw = wp_remote_retrieve_body($response);
 
         $resp = json_decode($body_raw, true);
-        if (! is_array($resp)) {
+
+        if($resp['description']){
+            $order->add_order_note('❌ Ekart response JSON parse error.'. $resp['description']);
             error_log("Ekart push_order JSON parse error: " . json_last_error_msg());
             return null;
         }
@@ -268,7 +274,7 @@ class Bt_Sync_Shipment_Tracking_Ekart
             "invoice_date" => $invoice_date,
             "consignee_name" => $consignee_name,
             "products_desc" => implode(', ', $products_desc),
-            "payment_mode" => $order->get_payment_method()=="cod"?"COD":"PREPAID",
+            "payment_mode" => $order->get_payment_method()=="cod"?"COD":"Prepaid",
             "total_amount" => (int)$order->get_total(),
             "tax_value" => floatval($order->get_total_tax()),
             "taxable_amount" => floatval($order->get_subtotal()),
@@ -370,6 +376,10 @@ class Bt_Sync_Shipment_Tracking_Ekart
     public function update_order_shipment_status($order_id){
         $resp=null;
         if(!empty($tracking_id = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, "_bt_ekart_tracking_id"))){
+            $resp= $this->get_order_tracking_by_tracking_id($tracking_id);
+        }
+        if($resp == null){
+            $tracking_id = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, "_bt_shipping_awb");
             $resp= $this->get_order_tracking_by_tracking_id($tracking_id);
         }
 

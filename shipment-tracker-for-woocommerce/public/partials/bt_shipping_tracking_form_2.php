@@ -75,6 +75,12 @@ if(empty($bt_sst_review_subheading_text)){
           
             $currentPin = "";
             $currentCountry = "";
+            $delivery_date_sms = "";
+            $delivery_date_sms_date = $the_order->get_meta('_bt_shipment_tracking')->delivery_date;
+            if($delivery_date_sms_date){
+                $delivery_date_sms = DateTime::createFromFormat('Y-m-d H:i:s', $delivery_date_sms_date) ?: DateTime::createFromFormat('Y-m-d', $delivery_date_sms_date);
+            }
+
 
             $delivery_status = "";
             if(!empty($tracking['tracking_data']['awb']) && $order_status!='cancelled' && $order_status!='on-hold' && $order_status!='pending' && $order_status!='refunded' && $order_status!='failed' && $order_status!='checkout-draft'){
@@ -142,8 +148,7 @@ if(empty($bt_sst_review_subheading_text)){
 
 
                 
-
-                if(stripos($shipment_status,'delivered')!==false && stripos($shipment_status,'rto')===false){
+                if(strtolower($shipment_status) == 'delivered' && stripos($shipment_status,'rto')===false){
                     $current_step = 4; 
                 } else if(stripos($shipment_status,'out')!==false && stripos($shipment_status,'rto')===false && stripos($shipment_status,'pick')===false){
                     $current_step = 3; 
@@ -161,7 +166,11 @@ if(empty($bt_sst_review_subheading_text)){
                     $shipped_message = "Your package is on its way & will reach you soon.";
                 } else{
                     $shipped_string = bt_format_shipment_status($shipment_status);
-                    $shipped_message = apply_filters( 'bt_sst_shipping_status_message', "Your order has been " . $shipped_string, $shipment_status );
+                    if(strtolower($shipment_status) == 'undelivered'){
+                        $shipped_message = apply_filters( 'bt_sst_shipping_status_message', "", $shipment_status );
+                    }else{
+                        $shipped_message = apply_filters( 'bt_sst_shipping_status_message', "Your order has been " . $shipped_string, $shipment_status );
+                    }
                 }
                
 
@@ -271,7 +280,7 @@ if(empty($bt_sst_review_subheading_text)){
                                                                 <div class="snipcss0-15-48-49 obscure-8zZkzlygz obscure-BEzVENpmn"> <span class="snipcss0-16-49-50 obscure-5eLBea7qK">
                                                                         <span class="snipcss0-17-50-51 obscure-Wb9zbk739">
                                                                         <?php
-                                                                                if ($order_status == "cancelled" || $shipped_string == "canceled" ||  $order_status == "refunded" || $order_status == "failed") {
+                                                                                if (strtolower($shipment_status) == "undelivered" || $order_status == "cancelled" || $shipped_string == "canceled" ||  $order_status == "refunded" || $order_status == "failed") {
                                                                                     echo '<span class="bt_st_order_canceled_icone">⚠</span>';
                                                                                 } else {
                                                                                     echo '<i class="snipcss0-18-51-52 obscure-geN8ev7qP obscure-avzpv6m4P ' . ($current_step >= 2 ? "bt_sst_step_completed" : "") . '"></i>';
@@ -329,9 +338,13 @@ if(empty($bt_sst_review_subheading_text)){
                                                                 <div class="info-list-description-dynamic3 snipcss0-15-77-79 obscure-9aVkarqgw obscure-n0EW0n7or">
                                                                     <p class="snipcss0-16-79-80 bt_sst">
                                                                         <?php if($current_step>=4){
+                                                                            if($delivery_date_sms){
+                                                                                echo 'Yay! Your package was delivered on. ';
+                                                                                echo $delivery_date_sms->format('j M Y');
+                                                                            }else{
                                                                                 echo 'Yay! You should have already received your package.';
+                                                                            }
                                                                             }   
-                                                                            echo esc_html($estimated_delivery_date);
                                                                         ?>
                                                                     </p>
                                                                 </div>

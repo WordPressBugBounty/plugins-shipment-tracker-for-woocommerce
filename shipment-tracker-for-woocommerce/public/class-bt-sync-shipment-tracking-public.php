@@ -49,6 +49,7 @@ class Bt_Sync_Shipment_Tracking_Public
 	private $delhivery;
 	private $fship;
 	private $ekart;
+	private $proship;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -57,7 +58,7 @@ class Bt_Sync_Shipment_Tracking_Public
 	 * @param      string    $plugin_name       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct($plugin_name, $version, $shiprocket, $shipmozo, $nimbuspost_new, $licenser, $delhivery, $fship, $ekart)
+	public function __construct($plugin_name, $version, $shiprocket, $shipmozo, $nimbuspost_new, $licenser, $delhivery, $fship, $ekart, $proship)
 	{
 
 		$this->plugin_name = $plugin_name;
@@ -69,6 +70,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		$this->delhivery = $delhivery;
 		$this->fship = $fship;
 		$this->ekart = $ekart;
+		$this->proship = $proship;
 	}
 
 	/**
@@ -1202,6 +1204,123 @@ class Bt_Sync_Shipment_Tracking_Public
 				if (isset($city_data['city'])) {
 					$city = $city_data['city'];
 				}
+			}else if ($pickup_data_provider == 'proship') {
+				$express_tat = null;
+				if (false === ($bt_sst_cached_delivery_estimates_proship = get_transient('bt_sst_cached_delivery_estimates_proship'))) {
+					$bt_sst_cached_delivery_estimates_proship = array();
+				}
+
+				if ($delivery_country == "IN") {
+					$pickup_pin = carbon_get_theme_option(
+						"bt_sst_proship_from_pincode"
+					);
+					$default_mode = carbon_get_theme_option('bt_sst_proship_default_mode');
+					$payment_type = 'PREPAID';
+					$length = 10;
+					$breadth = 10;
+					$height = 10;
+					$weight = '1';
+					$dispatch_mode = "SURFACE";
+					$cod_amount = 100;
+					$order_type = 'FORWARD';
+					if (!empty($pickup_pin)) {
+						$cached_pincode_key = $pickup_pin . "_" . $delivery_pincode . "_3";
+						if (isset($bt_sst_cached_delivery_estimates_proship[$cached_pincode_key])) {
+							$push_resp = $bt_sst_cached_delivery_estimates_proship[$cached_pincode_key][0];
+							$express_tat = $bt_sst_cached_delivery_estimates_proship[$cached_pincode_key][1];
+							$response["message"] = "Data fetched from cache.";
+						} else {
+							$push_resp = $this->proship->get_proship_pricing(
+											$pickup_pin,
+											$delivery_pincode,
+											$payment_type,
+											$length,
+											$breadth,
+											$height,
+											$weight,
+											"SURFACE",
+											$cod_amount,
+											$order_type
+										);
+
+							if (!isset($push_resp["error"]) && $push_resp != null && !empty($push_resp) && sizeof($push_resp) > 0) {
+								$bt_sst_cached_delivery_estimates_proship[$cached_pincode_key] = [$push_resp, $express_tat];
+								set_transient('bt_sst_cached_delivery_estimates_proship', $bt_sst_cached_delivery_estimates_proship, 1 * HOUR_IN_SECONDS);
+								$response["message"] = "Data fetched from Delhivery.";
+							} else {
+								$push_resp = [];
+							}
+						}
+					}
+
+				}
+
+				$filtered_arr = $push_resp;
+				$minMinTat = min(array_column($filtered_arr, 'providerMinTatDays'));
+				$fastest = array_filter($filtered_arr, function ($item) use ($minMinTat) {
+					return $item['providerMinTatDays'] == $minMinTat;
+				});
+				$minMaxTat = min(array_column($fastest, 'providerMaxTatDays'));
+				$fastest = array_filter($fastest, function ($item) use ($minMaxTat) {
+					return $item['providerMaxTatDays'] == $minMaxTat;
+				});
+
+				usort($fastest, function ($a, $b) {
+					return $a['priceAfterTax'] <=> $b['priceAfterTax'];
+				});
+
+				$filtered_arr = $fastest[0];
+
+				if (is_array($filtered_arr) && sizeof($filtered_arr) > 0) {
+					$check_error_for_hide_show_ponbox["data"] = true;
+					$max_date_charges = $filtered_arr['priceAfterTax'];
+					$min_date_charges = $filtered_arr['priceAfterTax'];
+
+					$max_courier_name = 'proship';
+					$min_courier_name = 'proship';
+
+					$min_days = 2;
+					$max_days = 5;
+					$express_tat = $filtered_arr['providerMaxTatDays'];
+					if ($express_tat != null) {
+						$min_days = $express_tat;
+						$max_days = $express_tat;
+					}
+
+					if (!$min_days) {
+						$min_days = 1;
+					}
+					if (!$max_days) {
+						$max_days = 1;
+					}
+					$current_date = new DateTime();
+					$min_date = $current_date->add(new DateInterval("P{$min_days}D"))->format("l, d M, Y");
+					$max_date = $current_date->add(new DateInterval("P{$max_days}D"))->format("l, d M, Y");
+
+					$processing_days = $this->bt_get_processing_days($product_id, $variation_id);
+					if (!$processing_days) {
+						$processing_days = carbon_get_theme_option("bt_sst_shiprocket_processing_days");
+					}
+
+					if (!$is_premium) {
+						$processing_days = 0; //if not premium, then no processing days.
+					}
+					if ($processing_days && $processing_days > 0) {
+						$min_date = $this->addDayswithdate($min_date, $processing_days);
+						$max_date = $this->addDayswithdate($max_date, $processing_days);
+					} else {
+						$min_date = $this->addDayswithdate($min_date, 0);
+						$max_date = $this->addDayswithdate($max_date, 0);
+					}
+					$check_error_for_hide_show_ponbox["data"] = true;
+				} else {
+					$bt_sst_message_text_template = "Delivery not available. Try a different pincode or contact support.";
+				}
+				$city = $delivery_pincode;
+				// $city_data = $this->delhivery->get_locality($delivery_pincode);
+				// if (isset($city_data['city'])) {
+				// 	$city = $city_data['city'];
+				// }
 			}
 
 
@@ -2583,7 +2702,7 @@ class Bt_Sync_Shipment_Tracking_Public
 				}
 			}
 
-		}else if ($bt_sst_courier_rate_provider == 'ekart') {
+		} else if ($bt_sst_courier_rate_provider == 'ekart') {
 			$cart_totals = $this->get_cart_weight_and_dimentions();
 			$weight_in_kg = $cart_totals['total_weight_kg'];
 			$length_in_cms = $cart_totals['total_length_cm'];
@@ -2744,6 +2863,178 @@ class Bt_Sync_Shipment_Tracking_Public
 					}
 
 
+				}
+			}
+
+		} else if ($bt_sst_courier_rate_provider == 'proship') {
+
+			$cart_totals = $this->get_cart_weight_and_dimentions();
+
+			$weight_in_kg = $cart_totals['total_weight_kg'];
+			$length_in_cms = $cart_totals['total_length_cm'];
+			$breadth_in_cms = $cart_totals['total_width_cm'];
+			$height_in_cms = $cart_totals['total_height_cm'];
+			$declared_value = $cart_totals['declared_value'];
+
+			if ($weight_in_kg < 0.1) {
+				$weight_in_kg = 0.1;
+			}
+			if ($length_in_cms < 1) {
+				$length_in_cms = 10;
+			}
+			if ($breadth_in_cms < 1) {
+				$breadth_in_cms = 10;
+			}
+			if ($height_in_cms < 1) {
+				$height_in_cms = 10;
+			}
+
+			if ($weight_in_kg > 0) {
+
+				if (false === ($bt_sst_cached_delivery_estimates_proship = get_transient('bt_sst_cached_delivery_estimates_proship'))) {
+					$bt_sst_cached_delivery_estimates_proship = array();
+				}
+				if ($delivery_country == "IN") {
+					$pickup_pincode = carbon_get_theme_option('bt_sst_proship_from_pincode');
+
+					if (!empty($pickup_pincode)) {
+						$pm = $cod == 1 ? "COD" : "PREPAID";
+						$cached_pincode_key = $pickup_pincode . "_" . $delivery_pincode . "_" . $weight_in_kg . '_' . $pm;
+						if (isset($bt_sst_cached_delivery_estimates_proship[$cached_pincode_key])) {
+							$push_resp = $bt_sst_cached_delivery_estimates_proship[$cached_pincode_key];
+						} else {
+							$cod_amount = $cod == 1 ? $declared_value : 0;
+							$push_resp = $this->proship->get_proship_pricing(
+											$pickup_pincode,
+											$delivery_pincode,
+											$pm, 
+											$length_in_cms,
+											$breadth_in_cms,
+											$height_in_cms,
+											$weight_in_kg,
+											"SURFACE",
+											$cod_amount,
+											"FORWARD",
+										);
+							if ($push_resp != null && !empty($push_resp)) {
+								$bt_sst_cached_delivery_estimates_proship[$cached_pincode_key] = $push_resp;
+								set_transient('bt_sst_cached_delivery_estimates_proship', $bt_sst_cached_delivery_estimates_proship, 1 * HOUR_IN_SECONDS);
+							} else {
+								$push_resp = [];
+							}
+						}
+						$filtered_arr = $push_resp;
+					}
+
+
+				}
+			}
+
+			$free_shipping_rates = [];
+			foreach ($rates as $key => $r) {
+				if (strpos($key, 'free_shipping') !== false) {
+					$free_shipping_rates[$key] = $r;
+				}
+			}
+			$rates = $free_shipping_rates;
+
+			if ($filtered_arr == null || sizeof($filtered_arr) == 0) {
+
+				if ($delivery_country == "IN") {
+					$cost = carbon_get_theme_option("bt_sst_proship_fall_back_rate");
+					if ($cost && $cost > 0) {
+						$WC_Shipping_Rate = new WC_Shipping_Rate();
+						$id = 'flat_rate:proship:fallback';
+						$WC_Shipping_Rate->set_id($id);
+						$WC_Shipping_Rate->set_label('Flat rate');
+						$WC_Shipping_Rate->set_method_id($id);
+
+						if ($weight_in_kg > 0.5) {
+							$t_weight = $weight_in_kg / 0.5;
+							$t_weight = ceil($t_weight);
+							$cost = round($t_weight * $cost);
+						}
+
+						$WC_Shipping_Rate->set_cost($cost);
+						$WC_Shipping_Rate->set_instance_id($id);
+						$bt_sst_shipping_duration_days = 4;
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
+
+						$rates[$id] = $WC_Shipping_Rate;
+					}
+				} else {
+					//to handle international fallback rate
+				}
+			} else {
+
+				if ($delivery_country == "IN") {
+					usort($filtered_arr, function ($a, $b) {
+						return ($a['priceAfterTax'] - ($b['priceAfterTax']));
+					});
+					$i = 0;
+					foreach ($filtered_arr as $rb) {
+						$lable = "Proship " . ucfirst($rb['provider']['parent']);
+						$bt_sst_shipping_duration_days = null;
+						$bt_sst_shipping_edd = null;
+						if (isset($rb['providerMaxTatDays']) && $rb['providerMaxTatDays'] != null) {
+							$bt_sst_shipping_duration_days = $rb['providerMaxTatDays'];
+							$bt_sst_shipping_edd = new DateTime("+" . $bt_sst_shipping_duration_days . " days");
+						}
+						$id = 'flat_rate:delhivery:' . $rb['provider']['parent'];
+						$method_id = 'flat_rate';
+						$markup_cost = carbon_get_theme_option(
+							"bt_sst_markup_charges"
+						);
+						if (!$markup_cost) {
+							$markup_cost = 0;
+						}
+						if (($rb['priceAfterTax'] + $markup_cost) < 0) {
+							$markup_cost = 0;
+						}
+
+						$delivery_charge = 0;
+						if ($cod == 1) {
+							$two_percent = $rb['total_amopriceAfterTaxunt'] * (2 / 100);
+							if ($two_percent > 40) {
+								$delivery_charge = $two_percent;
+							} else {
+								$delivery_charge = 40;
+							}
+						}
+						$cost = round($rb['priceAfterTax'] + $markup_cost + $delivery_charge, 2);
+
+
+						$texes = [];
+						$delivery_date = '';
+						$processing_days = $this->bt_get_processing_days();
+						if (!$processing_days) {
+							$processing_days = carbon_get_theme_option("bt_sst_shipment_processing_days");
+						}
+						if (!$processing_days || $processing_days < 0) {
+							$processing_days = 0;
+						}
+						$delivery_date = $this->addDayswithdate($bt_sst_shipping_edd->format('Y-m-d H:i:s'), $processing_days);
+						
+						$show_delivery_date = carbon_get_theme_option("bt_sst_show_delivery_date");
+						if ($show_delivery_date == 1) {
+							$lable .= " (Edd: " . $delivery_date . ")";
+						}
+
+						$WC_Shipping_Rate = new WC_Shipping_Rate();
+
+						$WC_Shipping_Rate->add_meta_data("edd", $delivery_date);
+						$WC_Shipping_Rate->set_id($id);
+						$WC_Shipping_Rate->set_label($lable);
+						$WC_Shipping_Rate->set_method_id($method_id);
+						$WC_Shipping_Rate->set_cost($cost);
+						$WC_Shipping_Rate->set_instance_id($id);
+						$WC_Shipping_Rate->set_taxes($texes);
+						$WC_Shipping_Rate->add_meta_data('bt_sst_courier_company_name', $lable);
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipment_provider', 'delhivery');
+						$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
+						$WC_Shipping_Rate->add_meta_data('bt_sst_processing_days', $processing_days);
+						$rates[$id] = $WC_Shipping_Rate;
+					}
 				}
 			}
 

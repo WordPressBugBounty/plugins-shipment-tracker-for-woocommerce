@@ -143,6 +143,10 @@ class Bt_Sync_Shipment_Tracking_Shipment_Model{
                 return "https://app.shipmozo.com/track-order?awb=" . $this->awb;
             }else if($this->shipping_provider=="delhivery"){
                 return "https://www.delhivery.com/track/package/" . $this->awb;
+            }else if($this->shipping_provider=="proship"){
+                return "https://tracking.proship.in/?searchBy=waybill&ref_awb_number=" . $this->awb;
+            }else if($this->shipping_provider=="ekart"){
+                return "https://www.ekartlogistics.com/ekartlogistics-web/shipmenttrack/" . $this->awb;
             }
 
         }

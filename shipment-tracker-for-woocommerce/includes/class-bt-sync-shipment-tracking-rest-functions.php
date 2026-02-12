@@ -14,8 +14,9 @@ class Bt_Sync_Shipment_Tracking_Rest_Functions{
     private $ekart;
     private $courierkaro;
     private $delhivery;
+    private $proship;
 
-    public function __construct($shiprocket,$shyplite, $nimbuspost, $manual, $xpressbees, $shipmozo, $nimbuspost_new, $ship24,$ekart, $courierkaro, $delhivery)  {
+    public function __construct($shiprocket,$shyplite, $nimbuspost, $manual, $xpressbees, $shipmozo, $nimbuspost_new, $ship24,$ekart, $courierkaro, $delhivery, $proship)  {
 
         $this->shiprocket = $shiprocket;
         $this->shipmozo = $shipmozo;
@@ -28,6 +29,7 @@ class Bt_Sync_Shipment_Tracking_Rest_Functions{
         $this->ekart = $ekart;
         $this->delhivery = $delhivery;
         $this->courierkaro = $courierkaro;
+        $this->proship = $proship;
     }
 
     public function shiprocket_webhook_receiver($request){
@@ -139,6 +141,9 @@ class Bt_Sync_Shipment_Tracking_Rest_Functions{
     }
     public function delhivery_webhook_receiver($request){
         return $this->delhivery->delhivery_webhook_receiver($request);
+    }
+    public function proship_webhook_receiver($request){
+        return $this->proship->proship_webhook_receiver($request);
     }
 
     public function shipmozo_webhook_receiver($request){

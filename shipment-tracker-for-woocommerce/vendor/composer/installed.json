@@ -2,36 +2,36 @@
     "packages": [
         {
             "name": "doctrine/deprecations",
-            "version": "1.1.5",
-            "version_normalized": "1.1.5.0",
+            "version": "1.1.6",
+            "version_normalized": "1.1.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/deprecations.git",
-                "reference": "459c2f5dd3d6a4633d3b5f46ee2b1c40f57d3f38"
+                "reference": "d4fe3e6fd9bb9e72557a19674f44d8ac7db4c6ca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/deprecations/zipball/459c2f5dd3d6a4633d3b5f46ee2b1c40f57d3f38",
-                "reference": "459c2f5dd3d6a4633d3b5f46ee2b1c40f57d3f38",
+                "url": "https://api.github.com/repos/doctrine/deprecations/zipball/d4fe3e6fd9bb9e72557a19674f44d8ac7db4c6ca",
+                "reference": "d4fe3e6fd9bb9e72557a19674f44d8ac7db4c6ca",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1 || ^8.0"
             },
             "conflict": {
-                "phpunit/phpunit": "<=7.5 || >=13"
+                "phpunit/phpunit": "<=7.5 || >=14"
             },
             "require-dev": {
-                "doctrine/coding-standard": "^9 || ^12 || ^13",
-                "phpstan/phpstan": "1.4.10 || 2.1.11",
+                "doctrine/coding-standard": "^9 || ^12 || ^14",
+                "phpstan/phpstan": "1.4.10 || 2.1.30",
                 "phpstan/phpstan-phpunit": "^1.0 || ^2",
-                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.6 || ^10.5 || ^11.5 || ^12",
+                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.6 || ^10.5 || ^11.5 || ^12.4 || ^13.0",
                 "psr/log": "^1 || ^2 || ^3"
             },
             "suggest": {
                 "psr/log": "Allows logging deprecations via PSR-3 logger implementation"
             },
-            "time": "2025-04-07T20:06:18+00:00",
+            "time": "2026-02-07T07:09:04+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -47,7 +47,7 @@
             "homepage": "https://www.doctrine-project.org/",
             "support": {
                 "issues": "https://github.com/doctrine/deprecations/issues",
-                "source": "https://github.com/doctrine/deprecations/tree/1.1.5"
+                "source": "https://github.com/doctrine/deprecations/tree/1.1.6"
             },
             "install-path": "../doctrine/deprecations"
         },
@@ -1029,17 +1029,17 @@
         },
         {
             "name": "symfony/finder",
-            "version": "v6.4.32",
-            "version_normalized": "6.4.32.0",
+            "version": "v6.4.33",
+            "version_normalized": "6.4.33.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/finder.git",
-                "reference": "3ec24885c1d9ababbb9c8f63bb42fea3c8c9b6de"
+                "reference": "24965ca011dac87431729640feef8bcf7b5523e0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/finder/zipball/3ec24885c1d9ababbb9c8f63bb42fea3c8c9b6de",
-                "reference": "3ec24885c1d9ababbb9c8f63bb42fea3c8c9b6de",
+                "url": "https://api.github.com/repos/symfony/finder/zipball/24965ca011dac87431729640feef8bcf7b5523e0",
+                "reference": "24965ca011dac87431729640feef8bcf7b5523e0",
                 "shasum": ""
             },
             "require": {
@@ -1048,7 +1048,7 @@
             "require-dev": {
                 "symfony/filesystem": "^6.0|^7.0"
             },
-            "time": "2026-01-10T14:09:00+00:00",
+            "time": "2026-01-26T13:03:48+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -1076,7 +1076,7 @@
             "description": "Finds files and directories via an intuitive fluent interface",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/finder/tree/v6.4.32"
+                "source": "https://github.com/symfony/finder/tree/v6.4.33"
             },
             "funding": [
                 {

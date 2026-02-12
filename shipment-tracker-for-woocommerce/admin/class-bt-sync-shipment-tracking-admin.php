@@ -54,6 +54,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 	private $fship;
 	private $ekart;
 	private $courierkaro;
+	private $proship;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -62,7 +63,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct($plugin_name, $version, $shiprocket, $shyplite, $nimbuspost, $manual, $licenser, $shipmozo, $nimbuspost_new, $delhivery, $ship24, $fship, $ekart, $courierkaro)
+	public function __construct($plugin_name, $version, $shiprocket, $shyplite, $nimbuspost, $manual, $licenser, $shipmozo, $nimbuspost_new, $delhivery, $ship24, $fship, $ekart, $courierkaro, $proship)
 	{
 
 		$this->plugin_name = $plugin_name;
@@ -79,6 +80,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 		$this->fship = $fship;
 		$this->ekart = $ekart;
 		$this->courierkaro = $courierkaro;
+		$this->proship = $proship;
 	}
 
 
@@ -172,6 +174,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 				"test_conn_ekart_nonce" => wp_create_nonce('api_call_for_ekart_test_connection'),
 				"test_conn_ship24_nonce" => wp_create_nonce('api_call_for_ship24_test_connection'),
 				"test_conn_nimbuspost_nonce" => wp_create_nonce('api_check_for_nimbuspost_test_connection'),
+				"test_conn_proship_nonce" => wp_create_nonce('api_call_for_proship_test_connection'),
 				"buy_credit_balance_nonce" => wp_create_nonce('buy_credit_balance'),
 				"credit_balance_details_nonce" => wp_create_nonce('credit_balance_details'),
 				"register_for_sms_nonce" => wp_create_nonce('register_for_sms'),
@@ -319,6 +322,15 @@ class Bt_Sync_Shipment_Tracking_Admin
 					$order = wc_get_order($order_id);
 					$order->add_order_note('Added schedule to push this order to Courier Karo.' . "\n\n- Shipment tracker for woocommerce", false);
 					wp_schedule_single_event(time() + 1, 'bt_push_order_to_courierkaro', array($order_id));
+
+				}
+			}else if ($bt_shipping_provider == "proship") {
+				$bt_sst_proship_push_order_method_is_automatic = carbon_get_theme_option('bt_sst_proship_push_orders');
+				$is_premium = $this->licenser->is_license_active();
+				if ($bt_sst_proship_push_order_method_is_automatic == 1 && $is_premium) {
+					$order = wc_get_order($order_id);
+					$order->add_order_note('Added schedule to push this order to delhivery.' . "\n\n- Shipment tracker for woocommerce", false);
+					wp_schedule_single_event(time() + 1, 'bt_push_order_to_proship', array($order_id));
 
 				}
 			}
@@ -652,13 +664,13 @@ class Bt_Sync_Shipment_Tracking_Admin
 				);
 				return;
 			}
-			
+		
 			if ($push_resp) {
 				$ekart_tracking_id = $push_resp['tracking_id'] ?? '';
 				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_ekart_tracking_id', $ekart_tracking_id);
-				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_awb', $push_resp['barcodes']['wbn']);
+				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_awb', $ekart_tracking_id);
 				$order->add_order_note("Order pushed to Ekart. Tracking No: " . $ekart_tracking_id . "\n\n- Shipment tracker for woocommerce", false);
-				// bt_force_sync_order_tracking($order_id);
+				bt_force_sync_order_tracking($order_id);
 			} else {
 				$remarks = $push_resp['remark'] ?? ($push_resp['packages'][0]['remarks'] ?? 'Unknown error');
 				$order->add_order_note(
@@ -716,6 +728,82 @@ class Bt_Sync_Shipment_Tracking_Admin
 			error_log('Error in pushing order id: ' . $order_id . ' got error: ' . $e->getMessage());
 		}
 	}
+
+	public function push_order_to_proship($order_id)
+	{
+		try {
+			$order = wc_get_order($order_id);
+
+			$existing_awb = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta(
+				$order_id,
+				'_bt_proship_waybill_no',
+				true
+			);
+
+			if (!empty($existing_awb)) {
+				$order->add_order_note(
+					'Delivery already assigned. Waybill No: ' . $existing_awb . "\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+				return;
+			}
+
+			$order->add_order_note(
+				'Pushing order to Proship: ' . $order_id . "\n\n- Shipment tracker for WooCommerce",
+				false
+			);
+
+			$push_resp = $this->proship->create_order($order_id);
+
+			if (empty($push_resp) || !isset($push_resp['meta'])) {
+				$order->add_order_note(
+					'Failed to push order to Proship. Empty or invalid response.' . "\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+				return;
+			}
+
+			if (empty($push_resp['meta']['success'])) {
+				$error_msg = $push_resp['meta']['message'] ?? 'Unknown error from Proship';
+
+				$order->add_order_note(
+					"Failed to push order to Proship: {$error_msg}\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+				return;
+			}
+
+			if (!empty($push_resp['result']['awb_number'])) {
+				$awb = $push_resp['result']['awb_number'];
+				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_proship_new_label_url', $push_resp['result']['label_url']);
+
+				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta(
+					$order_id,
+					'_bt_proship_waybill_no',
+					$awb
+				);
+				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_awb', $awb);
+
+				$order->add_order_note(
+					"Order pushed to Proship successfully. Waybill No: {$awb}\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+
+				bt_force_sync_order_tracking($order_id);
+			} else {
+				$order->add_order_note(
+					'Order created but AWB number not received from Proship.' . "\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+			}
+
+		} catch (Exception $e) {
+			error_log(
+				'Proship push error for order ' . $order_id . ': ' . $e->getMessage()
+			);
+		}
+	}
+
 	public function push_order_to_nimbuspost($order_id)
 	{
 
@@ -891,6 +979,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 		}
 
 	}
+
 	function findKeysByValue(string $value, array $array = null): array
 	{
 
@@ -1031,7 +1120,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 		if (!$bt_shipping_provider || ($bt_shipping_provider == 'manual' && $shipping_mode_is_manual_or_ship24 == "manual")) {
 			include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/bt-shipment-tracking-manual-metabox.php';
-		} else if ($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite' || $bt_shipping_provider == 'nimbuspost' || $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo' || $bt_shipping_provider == 'nimbuspost_new' || $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24 == "ship24" || $bt_shipping_provider == "fship" || $bt_shipping_provider == "ekart" || $bt_shipping_provider == "courierkaro") {
+		} else if ($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite' || $bt_shipping_provider == 'nimbuspost' || $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo' || $bt_shipping_provider == 'nimbuspost_new' || $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24 == "ship24" || $bt_shipping_provider == "fship" || $bt_shipping_provider == "ekart" || $bt_shipping_provider == "courierkaro" || $bt_shipping_provider == "proship") {
 			$order_id = isset($_GET['post']) ? $_GET['post'] : sanitize_text_field($_GET['id']);
 			include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/bt-shipment-tracking-metabox.php';
 		}
@@ -1275,6 +1364,29 @@ class Bt_Sync_Shipment_Tracking_Admin
 			);
 		}
 		// $response = "idfugdf";
+		wp_send_json($response);
+		die();
+	}
+
+	public function api_call_for_proship_test_connection()
+	{
+		$nonce = sanitize_text_field($_GET["value"]);
+		if (!wp_verify_nonce($nonce, 'api_call_for_proship_test_connection')) {
+			return;
+		}
+		$response = array(
+			"status" => false,
+			"data" => null,
+			"message" => "Test Connection Failed. Please verify API URL and token and try again."
+		);
+		$api_call = $this->proship->test_proship();
+		if ($api_call) {
+			$response = array(
+				"status" => true,
+				"data" => null,
+				"message" => "Test Connection Successful. Great work!!"
+			);
+		}
 		wp_send_json($response);
 		die();
 	}
@@ -2378,6 +2490,13 @@ class Bt_Sync_Shipment_Tracking_Admin
 			global $pagenow;
 			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
 			wp_safe_redirect($current_page);
+		} else if (isset($_GET['bt_push_to_proship']) && $_GET['bt_push_to_proship'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
+			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
+			$getresponce = $this->push_order_to_proship($order_id);
+			unset($_GET['bt_push_to_proship']);
+			global $pagenow;
+			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
+			wp_safe_redirect($current_page);
 		} else if (is_admin() && isset($_GET['page']) && $_GET['page'] === 'crb_carbon_fields_container_shipment_tracker.php') {
 			wp_safe_redirect(admin_url('admin.php?page=bt-shipment-tracking'));
 			exit;
@@ -3245,6 +3364,13 @@ class Bt_Sync_Shipment_Tracking_Admin
 			} else {
 				$resp = false;
 			}
+		} else if ($shipping_provider == 'proship') {
+			$proship_new_label_url = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_proship_new_label_url', true);
+			if ($proship_new_label_url) {
+				$resp = array($proship_new_label_url);
+			} else {
+				$resp = false;
+			}
 		}
 		// else if($shipping_provider == 'nimbuspost'){
 		// $shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shiprocket_shipment_id', true );
@@ -3597,39 +3723,43 @@ class Bt_Sync_Shipment_Tracking_Admin
 	public function bt_sst_get_tracking_settings_data()
 	{
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-bt-sync-shipment-setting-update-core.php';
+
 		$shipment_setting_obj = new Class_bt_sync_shipment_setting_update_core();
 		$bt_sst_timer_settings = get_option('bt_sst_timer_settings', []);
-		$product_url_etd = get_option('_bt_sst_shiprocket_pincode_checker') ? $shipment_setting_obj->get_first_published_product_url() : false;
-		$product_url_timer = (isset($bt_sst_timer_settings['bt_sst_timer_enable']) && $bt_sst_timer_settings['bt_sst_timer_enable'] === true) ? $shipment_setting_obj->get_first_published_product_url() : false;
-		$bt_sst_timer_settings = get_option('bt_sst_timer_settings', []);
-		$page_id = get_option('_bt_sst_tracking_page');
-		$page_status = get_post_status($page_id);
-		$tracking_url = get_permalink($page_id) && $page_status === 'publish' ? get_permalink($page_id) : '';
-		$shipment_setting_url = admin_url('admin.php?page=crb_carbon_fields_container_shipment_tracking.php');
-		$default_rpvider = get_option('_bt_sst_default_shipping_provider');
-		if ($default_rpvider) {
-			$primary_shipping_provider_url = $shipment_setting_url . '&t=' . $default_rpvider;
-		} else {
-			$primary_shipping_provider_url = $shipment_setting_url . '&t=manual';
-		}
+		$timer_enabled = !empty($bt_sst_timer_settings['bt_sst_timer_enable']);
+		$etd_enabled = !empty(get_option('_bt_sst_shiprocket_pincode_checker'));
+		$product_url_etd = $etd_enabled
+			? $shipment_setting_obj->get_first_published_product_url()
+			: false;
 
+		$product_url_timer = $timer_enabled
+			? $shipment_setting_obj->get_first_published_product_url()
+			: false;
+		$page_id = get_option('_bt_sst_tracking_page');
+		$page_status = $page_id ? get_post_status($page_id) : false;
+		$tracking_url = ($page_status === 'publish')
+			? get_permalink($page_id)
+			: '';
+		$shipment_setting_url = admin_url('admin.php?page=crb_carbon_fields_container_shipment_tracking.php');
+		$default_provider = get_option('_bt_sst_default_shipping_provider');
+		$primary_shipping_provider_url = $shipment_setting_url . '&t=' . ($default_provider ?: 'manual');
 		$resp = [
-			'tracking_page_status' => $page_status === 'publish' ? true : false,
-			'estimate_delivery_checker' => get_option('_bt_sst_shiprocket_pincode_checker') ? true : false,
-			'timer_setting_update' => $bt_sst_timer_settings['bt_sst_timer_enable'] === true ? true : false,
-			'fetch_auto_pincode' => get_option('_bt_sst_enable_auto_postcode_fill') ? true : false,
-			'fetch_weight' => get_option('_bt_sst_show_shipment_weight') ? true : false,
-			'fetch_dynamic_ship_method' => get_option('_bt_sst_select_courier_company') ? true : false,
-			'google_api_key' => get_option('_bt_sst_generic_google_key') ? get_option('_bt_sst_generic_google_key') : "",
-			'primary_shipping_method_setting_update' => get_option('_bt_sst_default_shipping_provider'),
-			'tracking_page_url' => $tracking_url,
-			'primary_shipping_provider_url' => $primary_shipping_provider_url,
-			'product_url_etd' => $product_url_etd,
-			'product_url_timer' => $product_url_timer,
+			'tracking_page_status'                 => $page_status === 'publish',
+			'estimate_delivery_checker'            => (bool) get_option('_bt_sst_shiprocket_pincode_checker'),
+			'timer_setting_update'                 => $timer_enabled,
+			'fetch_auto_pincode'                   => (bool) get_option('_bt_sst_enable_auto_postcode_fill'),
+			'fetch_weight'                         => (bool) get_option('_bt_sst_show_shipment_weight'),
+			'fetch_dynamic_ship_method'            => (bool) get_option('_bt_sst_select_courier_company'),
+			'google_api_key'                       => (string) get_option('_bt_sst_generic_google_key', ''),
+			'primary_shipping_method_setting_update'=> $default_provider ?: 'none',
+			'tracking_page_url'                    => $tracking_url,
+			'primary_shipping_provider_url'        => $primary_shipping_provider_url,
+			'product_url_etd'                      => $product_url_etd,
+			'product_url_timer'                    => $product_url_timer,
 		];
 		wp_send_json_success($resp);
-
 	}
+
 	public function bt_sst_update_tracking_settings()
 	{
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-bt-sync-shipment-setting-update-core.php';
@@ -3771,6 +3901,9 @@ function bt_force_sync_order_tracking($order_id)
 		$response = $obj->update_order_shipment_status($order_id);
 	}else if ($bt_shipping_provider == 'courierkaro') {
 		$obj = new Bt_Sync_Shipment_Tracking_CourierKaro();
+		$response = $obj->update_order_shipment_status($order_id);
+	}else if ($bt_shipping_provider == 'proship') {
+		$obj = new Bt_Sync_Shipment_Tracking_Proship();
 		$response = $obj->update_order_shipment_status($order_id);
 	}
 
