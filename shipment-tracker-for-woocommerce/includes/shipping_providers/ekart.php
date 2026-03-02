@@ -216,25 +216,31 @@ class Bt_Sync_Shipment_Tracking_Ekart
             if (is_a($a, 'WC_Order_Item_Product')) {
                 $product = $a->get_product();
                
-                if(!empty($product->get_weight()) && $product->get_weight()>0){
-                    $total_weight = $total_weight + ($product->get_weight() * $a->get_quantity());
-                }
+                // if(!empty($product->get_weight()) && $product->get_weight()>0){
+                //     $total_weight = $total_weight + ($product->get_weight() * $a->get_quantity());
+                // }
 
-                if(!empty($product->get_width()) && $product->get_width()>0){
-                    $total_width = $total_width + ($product->get_width() * $a->get_quantity());
-                    if($product->get_height()>$total_height){
-                        $total_height =$product->get_height();
-                    }
-                    if($product->get_length()>$total_length){
-                        $total_length =$product->get_length();
-                    }
-                }
+                // if(!empty($product->get_width()) && $product->get_width()>0){
+                //     $total_width = $total_width + ($product->get_width() * $a->get_quantity());
+                //     if($product->get_height()>$total_height){
+                //         $total_height =$product->get_height();
+                //     }
+                //     if($product->get_length()>$total_length){
+                //         $total_length =$product->get_length();
+                //     }
+                // }
                 if(empty($product_description )){
                     $product_description = $product->get_name();
                 }
                 $total_products++;
             }
         }
+
+        $computed = Bt_Sync_Shipment_Tracking::bt_sst_get_package_dimensions($order_id);
+        $meta_length = $computed['length'];
+        $meta_width = $computed['width'];
+        $meta_height = $computed['height'];
+        $meta_weight = $computed['weight'];
 
         $weight_unit = get_option('woocommerce_weight_unit');
         $dimension_unit = get_option('woocommerce_dimension_unit');

@@ -213,9 +213,9 @@ if ( class_exists('WooCommerce') && function_exists('woocommerce_wp_select') ) {
     <button id="bt_sst_add_curent_status_popup" type="button" class="button">Set Current Location (for map)</button>  
 </p>
 <p class="form-field bt_sst_current_saved_data">
-    <span><?php echo $bt_shipment_tracking['current_address'] ?></span>
-    <span><?php echo " ".$bt_shipment_tracking['current_country']." "; ?></span>
-    <span><?php echo $bt_shipment_tracking['current_pincode'] ?></span>
+    <span><?php echo esc_html($bt_shipment_tracking['current_address']); ?></span>
+    <span><?php echo " ".esc_html($bt_shipment_tracking['current_country'])." "; ?></span>
+    <span><?php echo esc_html($bt_shipment_tracking['current_pincode']); ?></span>
 </p>
 <p class="form-field ">
     <label for="bt_manual_etd">Estimated Delivery Date</label><br>

@@ -93,6 +93,43 @@ $coriure_name = get_option('_bt_sst_ship24_active_courier_companies');
             Logistic Partner: <?php echo esc_html($bt_shipping_provider); ?>
         </div>
     <?php } ?>
+        <?php
+
+    if($bt_shipping_provider == "ekart" || $bt_shipping_provider == "ithink" ){
+    $dimension_unit = get_option('woocommerce_dimension_unit');
+    $weight_unit = get_option('woocommerce_weight_unit');
+    
+    $computed = Bt_Sync_Shipment_Tracking::bt_sst_get_package_dimensions($order_id);
+    $meta_length = $computed['length'];
+    $meta_width = $computed['width'];
+    $meta_height = $computed['height'];
+    $meta_weight = $computed['weight'];
+
+    ?>
+    <br>
+    <div style="padding: 10px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
+        <strong>Package Dimensions</strong>
+        <div style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+                <label style="display: block; font-size: 12px; margin-bottom: 4px;">Length (<?php echo esc_html($dimension_unit); ?>)</label>
+                <input type="number" step="any" id="bt_package_length_metabox" name="bt_package_length_metabox" value="<?php echo esc_attr($meta_length); ?>" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 3px;" />
+            </div>
+            <div>
+                <label style="display: block; font-size: 12px; margin-bottom: 4px;">Width (<?php echo esc_html($dimension_unit); ?>)</label>
+                <input type="number" step="any" id="bt_package_width_metabox" name="bt_package_width_metabox" value="<?php echo esc_attr($meta_width); ?>" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 3px;" />
+            </div>
+            <div>
+                <label style="display: block; font-size: 12px; margin-bottom: 4px;">Height (<?php echo esc_html($dimension_unit); ?>)</label>
+                <input type="number" step="any" id="bt_package_height_metabox" name="bt_package_height_metabox" value="<?php echo esc_attr($meta_height); ?>" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 3px;" />
+            </div>
+            <div>
+                <label style="display: block; font-size: 12px; margin-bottom: 4px;">Weight (<?php echo esc_html($weight_unit); ?>)</label>
+                <input type="number" step="any" id="bt_package_weight_metabox" name="bt_package_weight_metabox" value="<?php echo esc_attr($meta_weight); ?>" style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 3px;" />
+            </div>
+        </div>
+        <button type="button" id="save_package_dims" class="button button-primary" style="margin-top: 10px;">Save Package Dimensions</button>
+    </div>
+    <?php } ?>
     <a id="bt_notify_popup" style="display:none;"
         href="#TB_inline?&width=200&height=150&inlineId=bt_notify_popup_content" class="thickbox"></a>
     <div id="bt_notify_popup_content" style="display:none;">
@@ -115,7 +152,7 @@ $coriure_name = get_option('_bt_sst_ship24_active_courier_companies');
             <button type="button" id="add_awb_no_in_ship24" class="button save_order" href='#'>Add AWB No.</button>
         <?php } else { ?>
             <button type="button" id="sync_manual" class="button save_order" href='#'>Sync Tracking Now</button>
-            <?php if ($get_awb_no && $bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'delhivery' || $bt_shipping_provider == 'shipmozo' || $bt_shipping_provider == 'nimbuspost_new' || $bt_shipping_provider == 'nimbuspost'|| $bt_shipping_provider == 'proship') { ?>
+            <?php if ($get_awb_no && $bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'delhivery' || $bt_shipping_provider == 'shipmozo' || $bt_shipping_provider == 'nimbuspost_new' || $bt_shipping_provider == 'nimbuspost'|| $bt_shipping_provider == 'proship'|| $bt_shipping_provider == 'ithink') { ?>
                 <button type="button" style="margin:5px 0" ; id="dawnload_able_pdf" class="button dawnload_able_document"
                     href='#'>Download Label</button>
             <?php }
@@ -337,6 +374,35 @@ $coriure_name = get_option('_bt_sst_ship24_active_courier_companies');
             jQuery('#bt_notify_popup_content_title').text(info_text);
             jQuery('#bt_notify_popup').trigger("click");
         }
+
+          jQuery('#save_package_dims').click(function () {
+            jQuery('#save_package_dims').text('Saving...').prop('disabled', true);
+
+            jQuery.ajax({
+                method: "POST",
+                url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
+                dataType: "json",
+                data: {
+                    'order_id': '<?php echo esc_js($order_id); ?>',
+                    'package_length': jQuery('#bt_package_length_metabox').val(),
+                    'package_width': jQuery('#bt_package_width_metabox').val(),
+                    'package_height': jQuery('#bt_package_height_metabox').val(),
+                    'package_weight': jQuery('#bt_package_weight_metabox').val(),
+                    'action': 'save_package_dimensions'
+                }, success: function (response) {
+                    jQuery('#save_package_dims').text('Save Package Dimensions').prop('disabled', false);
+                    if (response && response.status) {
+                        bt_st_show_info("Package dimensions saved successfully.");
+                    } else {
+                        alert('Failed to save package dimensions: ' + (response?.message || 'Unknown error'));
+                    }
+                }, error: function (jqXHR, textStatus, errorThrown) {
+                    jQuery('#save_package_dims').text('Save Package Dimensions').prop('disabled', false);
+                    alert('Error saving package dimensions: ' + errorThrown);
+                }
+            });
+        });
+
 
     </script>
 </div>

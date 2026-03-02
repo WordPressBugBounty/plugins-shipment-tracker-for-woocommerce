@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 class Bt_Sync_Shipment_Tracking_Ship24 {
 
     public function init_params() {

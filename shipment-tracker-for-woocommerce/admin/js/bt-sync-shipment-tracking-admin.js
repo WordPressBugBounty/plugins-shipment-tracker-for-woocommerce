@@ -249,6 +249,12 @@
 			$(this).addClass('is-loading');
 			api_test_connection_ship24();
 		});
+		$(document).on('click', '#api_test_connection_btn_ithink', function (e) {
+			e.preventDefault();
+			// alert("Please save the settings first, then test the connection.");
+			$(this).addClass('is-loading');
+			api_test_connection_ithink();
+		});
 
 		$(document).on('click', '#btn-bt-sync-now-shyplite', function (e) {
 			e.preventDefault();
@@ -348,6 +354,10 @@
 		});
 		$(document).on('click', '#api_tc_m_close_btn_delh', function (e) {
 			$('#api_test_connection_modal_delh').removeClass('is-active');
+		});
+		$(document).on('click', '#api_tc_m_close_btn_ithink', function (e) {
+			$('#api_test_connection_modal_ithink').removeClass('is-active');
+			$('#api_test_connection_modal_ithink').css('display', 'none');
 		});
 		$(document).on('click', '#api_tc_m_close_btn_ship24', function (e) {
 			$('#api_test_connection_modal_ship24').removeClass('is-active');
@@ -1013,6 +1023,20 @@
 				$('#api_test_connection_modal_ship24').addClass('is-active');
 				$('#api_test_connection_modal_ship24').css('display', 'flex');
 				$('#api_test_connection_btn_ship24').removeClass('is-loading');
+
+			}
+		)
+	}
+	function api_test_connection_ithink() {
+		var nonce = bt_sync_shipment_track_data.test_conn_nonce;
+		$.get(
+			bt_sync_shipment_track_data.ajax_url,
+			{ action: 'api_call_for_ithink_test_connection', value: nonce },
+			function (res) {
+				$('#api_tc-m-content_ithink').html(res.message);
+				$('#api_test_connection_modal_ithink').addClass('is-active');
+				$('#api_test_connection_modal_ithink').css('display', 'flex');
+				$('#api_test_connection_btn_ithink').removeClass('is-loading');
 
 			}
 		)

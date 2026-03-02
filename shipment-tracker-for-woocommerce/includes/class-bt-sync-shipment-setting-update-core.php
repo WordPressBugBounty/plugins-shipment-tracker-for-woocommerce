@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 class Class_bt_sync_shipment_setting_update_core
 {
 

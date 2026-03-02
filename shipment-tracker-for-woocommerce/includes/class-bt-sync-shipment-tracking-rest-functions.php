@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 
 class Bt_Sync_Shipment_Tracking_Rest_Functions{
 

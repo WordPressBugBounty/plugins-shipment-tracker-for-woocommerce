@@ -1,6 +1,7 @@
 <?php
 use PhpUnitsOfMeasure\PhysicalQuantity\Mass;
 use PhpUnitsOfMeasure\PhysicalQuantity\Length;
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * The nimbuspost-specific functionality of the plugin.

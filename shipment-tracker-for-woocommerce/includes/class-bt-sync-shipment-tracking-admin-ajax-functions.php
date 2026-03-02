@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 
 class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
     private $shiprocket;
@@ -16,6 +18,43 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
         $this->nimbuspost = $nimbuspost;
         $this->manual = $manual;
         $this->fship = $fship;
+    }
+
+    public function save_package_dimensions(){
+        $resp = array(
+            "status" => false,
+            "message" => ''
+        );
+
+        if(empty($order_id = sanitize_text_field($_POST['order_id']))){
+            $resp['message'] = 'Invalid order id.';
+            wp_send_json($resp);
+            wp_die();
+        }
+
+        try {
+            if (isset($_POST['package_length'])) {
+                Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_package_length', sanitize_text_field($_POST['package_length']));
+            }
+            if (isset($_POST['package_width'])) {
+                Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_package_width', sanitize_text_field($_POST['package_width']));
+            }
+            if (isset($_POST['package_height'])) {
+                Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_package_height', sanitize_text_field($_POST['package_height']));
+            }
+            if (isset($_POST['package_weight'])) {
+                Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_package_weight', sanitize_text_field($_POST['package_weight']));
+            }
+            $resp['status'] = true;
+            $resp['message'] = 'Package dimensions saved.';
+        }
+        catch(Exception $e) {
+            $resp["message"] = $e->getMessage();
+            $resp["status"] = false;
+        }
+
+        wp_send_json($resp);
+        wp_die();
     }
 
     public function bt_sync_now_shyplite(){
@@ -114,6 +153,20 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
         }
 
         try {
+            // Save optional package dimensions/weight if provided (stored in store units)
+            if (isset($_POST['package_length'])) {
+                Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_package_length', sanitize_text_field($_POST['package_length']));
+            }
+            if (isset($_POST['package_width'])) {
+                Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_package_width', sanitize_text_field($_POST['package_width']));
+            }
+            if (isset($_POST['package_height'])) {
+                Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_package_height', sanitize_text_field($_POST['package_height']));
+            }
+            if (isset($_POST['package_weight'])) {
+                Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_package_weight', sanitize_text_field($_POST['package_weight']));
+            }
+
             Bt_Sync_Shipment_Tracking::bt_sst_delete_order_meta($order_id, '_bt_shipment_tracking' );//fix to delete old shipment data so that new awb number can take effect.
             Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_awb', sanitize_text_field($awb_number ));
             bt_force_sync_order_tracking($order_id);
@@ -172,13 +225,34 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
     }
 
     public function bt_tracking_manual(){
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            wp_send_json( array( 'status' => false, 'response' => 'Permission denied.' ) );
+            wp_die();
+        }
+
+        $order_id = isset($_POST['order_id']) ? sanitize_text_field($_POST['order_id']) : '';
+        $fields = array(
+            'awb_number',
+            'courier_name',
+            'etd',
+            'shipping_status',
+            'current_pincode',
+            'current_address',
+            'current_country',
+            'tracking_link',
+        );
+        $sanitized = array();
+        foreach ($fields as $field) {
+            $sanitized[$field] = isset($_POST[$field]) ? sanitize_text_field($_POST[$field]) : '';
+        }
+
         $resp = array(
             "status" => false,
             "response" => ''
         );
 
         try {
-            $resp["response"] = $this->manual->update_data(sanitize_text_field($_POST['order_id']), $_POST);
+            $resp["response"] = $this->manual->update_data($order_id, $sanitized);
             $resp["status"] = true;
         }
         catch(Exception $e) {

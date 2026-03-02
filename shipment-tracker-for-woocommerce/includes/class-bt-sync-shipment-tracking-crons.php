@@ -1,5 +1,7 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 class Bt_Sync_Shipment_Tracking_Crons {
 
     const BT_MINUTELY_JOB="bt_minutely_job";
@@ -18,8 +20,9 @@ class Bt_Sync_Shipment_Tracking_Crons {
     private $fship;
     private $courierkaro;
     private $proship;
+    private $ithink;
 
-	public function __construct($shiprocket,$shyplite,$nimbuspost_new,$shipmozo,$licenser,$delhivery, $fship, $courierkaro, $proship) {
+	public function __construct($shiprocket,$shyplite,$nimbuspost_new,$shipmozo,$licenser,$delhivery, $fship, $courierkaro, $proship, $ithink) {
 		$this->shiprocket = $shiprocket;
         $this->shipmozo = $shipmozo;
         $this->nimbuspost_new = $nimbuspost_new;
@@ -28,7 +31,7 @@ class Bt_Sync_Shipment_Tracking_Crons {
         $this->delhivery = $delhivery;
         $this->fship = $fship;
         $this->courierkaro = $courierkaro;
-        $this->proship = $proship;
+        $this->ithink = $ithink;
     }
     
     public function schedule_recurring_events(){
@@ -67,6 +70,15 @@ class Bt_Sync_Shipment_Tracking_Crons {
             if(empty($bt_shipment_tracking) || empty($bt_shipment_tracking->current_status) || stripos($bt_shipment_tracking->current_status, "delivered") === false){
                 $objs = $this->shiprocket->update_order_shipment_status($o);
                 //error_log("synced shiprocket: " . json_encode($objs));
+            }
+        }
+    }
+    private function sync_ithink_shipments(){
+        $orderids = $this->get_orders('ithink');
+        foreach($orderids as $o){
+            $bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($o);
+            if(empty($bt_shipment_tracking) || empty($bt_shipment_tracking->current_status) || stripos($bt_shipment_tracking->current_status, "delivered") === false){
+                $objs = $this->ithink->update_order_shipment_status($o->get_id());
             }
         }
     }
@@ -237,6 +249,13 @@ class Bt_Sync_Shipment_Tracking_Crons {
             $bt_sst_shiprocket_cron_schedule=carbon_get_theme_option( 'bt_sst_shiprocket_cron_schedule' );
             if( $bt_sst_shiprocket_cron_schedule==$cron_freq){
                 $this->sync_shiprocket_shipments();
+            }
+        }
+        if(is_array($enabled_shipping_providers) && in_array('ithink',$enabled_shipping_providers)){
+            $settings = get_option('ithink_logistics_settings');
+            $cron_schedule  = isset($settings['cron_schedule']) ? $settings['cron_schedule'] : '';
+            if( $cron_schedule==$cron_freq){
+                $this->sync_ithink_shipments();
             }
         }
         if(is_array($enabled_shipping_providers) && in_array('delhivery',$enabled_shipping_providers)){

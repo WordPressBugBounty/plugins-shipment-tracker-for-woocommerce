@@ -55,6 +55,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 	private $ekart;
 	private $courierkaro;
 	private $proship;
+	private $ithink;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -63,7 +64,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct($plugin_name, $version, $shiprocket, $shyplite, $nimbuspost, $manual, $licenser, $shipmozo, $nimbuspost_new, $delhivery, $ship24, $fship, $ekart, $courierkaro, $proship)
+	public function __construct($plugin_name, $version, $shiprocket, $shyplite, $nimbuspost, $manual, $licenser, $shipmozo, $nimbuspost_new, $delhivery, $ship24, $fship, $ekart, $courierkaro, $proship, $ithink)
 	{
 
 		$this->plugin_name = $plugin_name;
@@ -81,6 +82,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 		$this->ekart = $ekart;
 		$this->courierkaro = $courierkaro;
 		$this->proship = $proship;
+		$this->ithink = $ithink;
 	}
 
 
@@ -157,7 +159,8 @@ class Bt_Sync_Shipment_Tracking_Admin
 			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-sms-setting" || 
 			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-timer" || 
 			$current_screen->id == "toplevel_page_bt-shipment-tracking"||
-			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-help-support"
+			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-help-support"||
+			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-ithink-logistics"
 			)) {
 			$script_data = array(
 
@@ -173,6 +176,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 				"test_conn_fship_nonce" => wp_create_nonce('api_call_for_fship_test_connection'),
 				"test_conn_ekart_nonce" => wp_create_nonce('api_call_for_ekart_test_connection'),
 				"test_conn_ship24_nonce" => wp_create_nonce('api_call_for_ship24_test_connection'),
+				"test_conn_ithink_nonce" => wp_create_nonce('api_call_for_ithink_test_connection'),
 				"test_conn_nimbuspost_nonce" => wp_create_nonce('api_check_for_nimbuspost_test_connection'),
 				"test_conn_proship_nonce" => wp_create_nonce('api_call_for_proship_test_connection'),
 				"buy_credit_balance_nonce" => wp_create_nonce('buy_credit_balance'),
@@ -331,6 +335,16 @@ class Bt_Sync_Shipment_Tracking_Admin
 					$order = wc_get_order($order_id);
 					$order->add_order_note('Added schedule to push this order to delhivery.' . "\n\n- Shipment tracker for woocommerce", false);
 					wp_schedule_single_event(time() + 1, 'bt_push_order_to_proship', array($order_id));
+
+				}
+			}else if ($bt_shipping_provider == "ithink") {
+				$settings = get_option('ithink_logistics_settings');
+				$bt_sst_ithink_push_order_method_is_automatic = isset($settings['auto_push']) ? $settings['auto_push'] : '0';
+				$is_premium = $this->licenser->is_license_active();
+				if ($bt_sst_ithink_push_order_method_is_automatic == 1 && $is_premium) {
+					$order = wc_get_order($order_id);
+					$order->add_order_note('Added schedule to push this order to delhivery.' . "\n\n- Shipment tracker for woocommerce", false);
+					wp_schedule_single_event(time() + 1, 'bt_push_order_to_ithink', array($order_id));
 
 				}
 			}
@@ -637,7 +651,21 @@ class Bt_Sync_Shipment_Tracking_Admin
 				}
 
 			} else {
-				$order->add_order_note("Failed to push order to Delhivery, please verify api credentials." . "\n\n- Shipment tracker for woocommerce", false);
+				$remarks = 'Unknown error';
+				if (isset($push_resp['packages']) && is_array($push_resp['packages']) && !empty($push_resp['packages'])) {
+					if (isset($push_resp['packages'][0]['remarks'])) {
+						$remarks = $push_resp['packages'][0]['remarks'];
+					}
+
+				} elseif (isset($push_resp['rmk'])) {
+					$remarks = $push_resp['rmk'];
+				}
+				$order->add_order_note(
+					"Failed to push order to Delhivery, got error response from delhivery: '" 
+					. json_encode($remarks) . "'" 
+					. "\n\n- Shipment tracker for woocommerce",
+					false
+				);
 				$order->add_order_note("Response from Delhivery Push api: " . json_encode($push_resp) . "\n\n- Shipment tracker for woocommerce", false);
 			}
 		} catch (Exception $e) {
@@ -800,6 +828,80 @@ class Bt_Sync_Shipment_Tracking_Admin
 		} catch (Exception $e) {
 			error_log(
 				'Proship push error for order ' . $order_id . ': ' . $e->getMessage()
+			);
+		}
+	}
+	public function push_order_to_ithink($order_id)
+	{
+		try {
+			$order = wc_get_order($order_id);
+
+			$existing_awb = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta(
+				$order_id,
+				'_bt_ithink_waybill_no',
+				true
+			);
+
+			if (!empty($existing_awb)) {
+				$order->add_order_note(
+					'Delivery already assigned. Waybill No: ' . $existing_awb . "\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+				return;
+			}
+
+			$order->add_order_note(
+				'Pushing order to iThink: ' . $order_id . "\n\n- Shipment tracker for WooCommerce",
+				false
+			);
+
+			$push_resp = $this->ithink->create_forward_order($order_id);
+
+			if (empty($push_resp) || !isset($push_resp['waybill'] )) {
+				$order->add_order_note(
+					'Failed to push order to iThink. Empty or invalid response.' . "\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+				return;
+			}
+
+			if ($push_resp['status']==="error") {
+				$error_msg = $push_resp['remark'];
+
+				$order->add_order_note(
+					"Failed to push order to iThink: {$error_msg}\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+				return;
+			}
+
+			if (!empty($push_resp['waybill'])) {
+				$awb = $push_resp['waybill'];
+				// Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_proship_new_label_url', $push_resp['result']['label_url']);
+
+				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta(
+					$order_id,
+					'_bt_ithink_waybill_no',
+					$awb
+				);
+				Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipping_awb', $awb);
+
+				$order->add_order_note(
+					"Order pushed to iThink successfully. Waybill No: {$awb}\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+
+				bt_force_sync_order_tracking($order_id);
+			} else {
+				$order->add_order_note(
+					'Order created but AWB number not received from iThink.' . "\n\n- Shipment tracker for WooCommerce",
+					false
+				);
+			}
+
+		} catch (Exception $e) {
+			error_log(
+				'iThink push error for order ' . $order_id . ': ' . $e->getMessage()
 			);
 		}
 	}
@@ -1120,7 +1222,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 		if (!$bt_shipping_provider || ($bt_shipping_provider == 'manual' && $shipping_mode_is_manual_or_ship24 == "manual")) {
 			include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/bt-shipment-tracking-manual-metabox.php';
-		} else if ($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite' || $bt_shipping_provider == 'nimbuspost' || $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo' || $bt_shipping_provider == 'nimbuspost_new' || $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24 == "ship24" || $bt_shipping_provider == "fship" || $bt_shipping_provider == "ekart" || $bt_shipping_provider == "courierkaro" || $bt_shipping_provider == "proship") {
+		} else if ($bt_shipping_provider == 'shiprocket' || $bt_shipping_provider == 'shyplite' || $bt_shipping_provider == 'nimbuspost' || $bt_shipping_provider == 'xpressbees' || $bt_shipping_provider == 'shipmozo' || $bt_shipping_provider == 'nimbuspost_new' || $bt_shipping_provider == 'delhivery' || $shipping_mode_is_manual_or_ship24 == "ship24" || $bt_shipping_provider == "fship" || $bt_shipping_provider == "ekart" || $bt_shipping_provider == "courierkaro" || $bt_shipping_provider == "proship"|| $bt_shipping_provider == "ithink") {
 			$order_id = isset($_GET['post']) ? $_GET['post'] : sanitize_text_field($_GET['id']);
 			include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/bt-shipment-tracking-metabox.php';
 		}
@@ -1364,6 +1466,27 @@ class Bt_Sync_Shipment_Tracking_Admin
 			);
 		}
 		// $response = "idfugdf";
+		wp_send_json($response);
+		die();
+	}
+	public function api_call_for_ithink_test_connection()
+	{
+		$nonce = sanitize_text_field($_GET["value"]);
+		if (!wp_verify_nonce($nonce, 'api_call_for_ithink_test_connection')) {
+		}
+		$response = array(
+			"status" => false,
+			"data" => null,
+			"message" => "Test Connection Failed. Please verify api credentials and try again."
+		);
+		$api_call = $this->ithink->ithink_test_connection();
+		if ($api_call === true) {
+			$response = array(
+				"status" => true,
+				"data" => null,
+				"message" => "Test Connection Successful. Great work!!"
+			);
+		}
 		wp_send_json($response);
 		die();
 	}
@@ -2450,6 +2573,13 @@ class Bt_Sync_Shipment_Tracking_Admin
 			wp_safe_redirect($current_page);
 		} else if (isset($_GET['bt_push_to_shipmozo']) && $_GET['bt_push_to_shipmozo'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
 			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
+			$order = wc_get_order($order_id);
+			if ($order) {
+				$order->add_order_note(
+					'Manual push to Shipmozo triggered by admin.' . "\n\n- Shipment tracker for woocommerce",
+					false
+				);
+			}
 			$this->push_order_to_shipmozo($order_id);
 			unset($_GET['bt_push_to_shipmozo']);
 			global $pagenow;
@@ -2494,6 +2624,13 @@ class Bt_Sync_Shipment_Tracking_Admin
 			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
 			$getresponce = $this->push_order_to_proship($order_id);
 			unset($_GET['bt_push_to_proship']);
+			global $pagenow;
+			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
+			wp_safe_redirect($current_page);
+		}else if (isset($_GET['bt_push_to_ithink']) && $_GET['bt_push_to_ithink'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
+			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
+			$getresponce = $this->push_order_to_ithink($order_id);
+			unset($_GET['bt_push_to_ithink']);
 			global $pagenow;
 			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
 			wp_safe_redirect($current_page);
@@ -3371,6 +3508,11 @@ class Bt_Sync_Shipment_Tracking_Admin
 			} else {
 				$resp = false;
 			}
+		} else if ($shipping_provider == 'ithink') {
+			if (isset($_POST['awbs'])) {
+				$awbs = array_map('sanitize_text_field', $_POST['awbs']);
+				$resp = $this->ithink->generate_shipping_label($awbs);
+			}
 		}
 		// else if($shipping_provider == 'nimbuspost'){
 		// $shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shiprocket_shipment_id', true );
@@ -3620,12 +3762,29 @@ class Bt_Sync_Shipment_Tracking_Admin
 		// );
 		add_submenu_page(
 			'bt-shipment-tracking',
+			'iThink Logistics - Shipment Tracker for Woocommerce',           // Page title
+			'iThink Logistics',       // Menu title
+			'manage_options',          // Capability
+			'bt-shipment-tracking-ithink-logistics',           // Menu slug
+			[$this, 'bt_shipment_tracking_ithink_logistics_callback'], // Correct way to call class method
+		);
+		add_submenu_page(
+			'bt-shipment-tracking',
 			'Premium Activation - Shipment Tracker for Woocommerce',           // Page title
 			'Activate Premium',       // Menu title
 			'manage_options',          // Capability
 			'bt-shipment-tracking-premium-activation',           // Menu slug
 			[$this, 'bt_shipment_tracking_premium_callback'], // Correct way to call class method
 		);
+
+		// add_submenu_page(
+		// 	'bt-shipment-tracking',
+		// 	'Dokan Multi Vendor - Shipment Tracker for Woocommerce',           // Page title
+		// 	'Dokan Multi Vendor',       // Menu title
+		// 	'manage_options',          // Capability
+		// 	'bt-shipment-tracking-multi-vendor',           // Menu slug
+		// 	[$this, 'bt_shipment_tracking_multi_vendor_callback'], // Correct way to call class method
+		// );
 
 		add_submenu_page(
 			'bt-shipment-tracking',
@@ -3664,6 +3823,22 @@ class Bt_Sync_Shipment_Tracking_Admin
 		wp_enqueue_style('bulma-css');
 		include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/new_settings/bt-shipment-new-settings.php';
 		// include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/new_settings/bt-shipment-help.php';
+	}
+	public function bt_shipment_tracking_ithink_logistics_callback()
+	{
+		// wp_enqueue_script('bt-shipment-new-settings-js');
+		wp_enqueue_script($this->plugin_name);
+		// $active_tab = "help_tab";
+		wp_enqueue_style('bulma-css');
+		include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/shipping_provider_pages/bt-shipment-ithink-logistic.php';
+	}
+	public function bt_shipment_tracking_multi_vendor_callback()
+	{
+		// wp_enqueue_script('bt-shipment-new-settings-js');
+		wp_enqueue_script($this->plugin_name);
+		// $active_tab = "help_tab";
+		wp_enqueue_style('bulma-css');
+		include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/new_settings/bt-shipment-dokan-multi-vendor.php';
 	}
 
 	public function bt_shipment_tracking_sms_setting()
@@ -3904,6 +4079,9 @@ function bt_force_sync_order_tracking($order_id)
 		$response = $obj->update_order_shipment_status($order_id);
 	}else if ($bt_shipping_provider == 'proship') {
 		$obj = new Bt_Sync_Shipment_Tracking_Proship();
+		$response = $obj->update_order_shipment_status($order_id);
+	}else if ($bt_shipping_provider == 'ithink') {
+		$obj = new Bt_Sync_Shipment_Tracking_Ithink();
 		$response = $obj->update_order_shipment_status($order_id);
 	}
 

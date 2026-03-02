@@ -1,6 +1,7 @@
 <?php
 use PhpUnitsOfMeasure\PhysicalQuantity\Mass;
 use PhpUnitsOfMeasure\PhysicalQuantity\Length;
+if ( ! defined( 'ABSPATH' ) ) exit;
 class Bt_Sync_Shipment_Tracking_Shipmozo {
 
     private $public_key;
@@ -49,103 +50,6 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
     }
 
     public function shipmozo_webhook_receiver($request){
-
-        /*
-          Sample Webhook data:
-          array(11) {
-            ["order_id"]=>
-            string(10) "4681GY4954"
-            ["refrence_id"]=>
-            string(4) "4954"
-            ["awb_number"]=>
-            string(14) "SPOP1000018714"
-            ["carrier"]=>
-            string(11) "Ekart 0.5KG"
-            ["delhivery_name"]=>
-            string(11) "Nidhi Watts"
-            ["delhivery_phone"]=>
-            string(10) "8432157417"
-            ["expected_delivery_date"]=>
-            NULL
-            ["shipment_type"]=>
-            string(7) "Forward"
-            ["current_status"]=>
-            string(16) "Pickup Completed"
-            ["status_time"]=>
-            string(19) "2024-03-28 09:30:32"
-            ["status_feed"]=>
-            array(1) {
-                ["scan"]=>
-                array(7) {
-                [0]=>
-                array(3) {
-                    ["date"]=>
-                    string(19) "2024-03-28 09:30:32"
-                    ["status"]=>
-                    string(24) "shipment pickup complete"
-                    ["location"]=>
-                    string(6) "Dwarka"
-                }
-                [1]=>
-                array(3) {
-                    ["date"]=>
-                    string(19) "2024-03-28 06:21:52"
-                    ["status"]=>
-                    string(23) "shipment out for pickup"
-                    ["location"]=>
-                    string(6) "Dwarka"
-                }
-                [2]=>
-                array(3) {
-                    ["date"]=>
-                    string(19) "2024-03-27 14:38:56"
-                    ["status"]=>
-                    string(7) "NON EKL"
-                    ["location"]=>
-                    string(6) "Dwarka"
-                }
-                [3]=>
-                array(3) {
-                    ["date"]=>
-                    string(19) "2024-03-27 06:52:27"
-                    ["status"]=>
-                    string(21) "Dispatched to JAI/BTS"
-                    ["location"]=>
-                    string(6) "Jaipur"
-                }
-                [4]=>
-                array(3) {
-                    ["date"]=>
-                    string(19) "2024-03-27 06:44:56"
-                    ["status"]=>
-                    string(23) "shipment out for pickup"
-                    ["location"]=>
-                    string(6) "Dwarka"
-                }
-                [5]=>
-                array(3) {
-                    ["date"]=>
-                    string(19) "2024-03-27 06:39:00"
-                    ["status"]=>
-                    string(34) "Dispached by SPO : Priyanka Mittal"
-                    ["location"]=>
-                    string(6) "Dwarka"
-                }
-                [6]=>
-                array(3) {
-                    ["date"]=>
-                    string(19) "2024-03-27 06:39:00"
-                    ["status"]=>
-                    string(25) "Expected at EKL Bamnoli1 "
-                    ["location"]=>
-                    string(6) "Dwarka"
-                }
-                }
-            }
-            }
-
-        */
-
         update_option( "shipmozo_webhook_called", time() );
         $enabled_shipping_providers = carbon_get_theme_option( 'bt_sst_enabled_shipping_providers' );
         if(is_array($enabled_shipping_providers) && in_array('shipmozo',$enabled_shipping_providers)){
@@ -175,26 +79,16 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
                             if(!empty($shipmozo_order_id)){
                                 Bt_Sync_Shipment_Tracking::bt_sst_update_order_meta($order_id, '_bt_shipmozo_order_id', $shipmozo_order_id);
                             }
-                         
-                            // $bt_sst_order_statuses_to_sync = carbon_get_theme_option( 'bt_sst_order_statuses_to_sync' );
                             $bt_sst_sync_orders_date = carbon_get_theme_option( 'bt_sst_sync_orders_date' );
-        
                             $order_status = 'wc-' . $order->get_status();
-        
-                            // if(in_array($order_status,$bt_sst_order_statuses_to_sync) || in_array('any',$bt_sst_order_statuses_to_sync)){
-        
                                 $date_created_dt = $order->get_date_created(); // Get order date created WC_DateTime Object
                                 $timezone        = $date_created_dt->getTimezone(); // Get the timezone
                                 $date_created_ts = $date_created_dt->getTimestamp(); // Get the timestamp in seconds
-        
                                 $now_dt = new WC_DateTime(); // Get current WC_DateTime object instance
                                 $now_dt->setTimezone( $timezone ); // Set the same time zone
                                 $now_ts = $now_dt->getTimestamp(); // Get the current timestamp in seconds
-        
                                 $allowed_seconds = $bt_sst_sync_orders_date * 24 * 60 * 60; // bt_sst_sync_orders_date in seconds
-        
                                 $diff_in_seconds = $now_ts - $date_created_ts; // Get the difference (in seconds)
-        
                                 if ( $diff_in_seconds <= $allowed_seconds ) {
                                     $shipment_obj = $this->init_model($request, $order_id);
                                     Bt_Sync_Shipment_Tracking_Shipment_Model::save_tracking($order_id,$shipment_obj);                           
@@ -202,20 +96,10 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
                                 }else{
                                     return "Thanks Shipmozo! Order too old.";
                                 }
-                            // }else{
-                            //     return "Thanks Shipmozo! Order status out of scope.";
-                            // }
                         }
                     }
                 }                    
             }
-
-        // ob_start();
-        // var_dump($request);
-        // $result = ob_get_clean();
-
-        // error_log($result);
-
         return "Thanks Shipmozo, but nothing got updated.";
         }
     }
@@ -560,7 +444,6 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
                         $resp = $this->get_order_tracking_by_awb_number($awb_number);
                     } else {
                         $order = wc_get_order( $order_id );
-                        $order->add_order_note('AWB missing in Shipmozo order');                    
                     }
                 } else {
                     error_log('Public or private key is missing');

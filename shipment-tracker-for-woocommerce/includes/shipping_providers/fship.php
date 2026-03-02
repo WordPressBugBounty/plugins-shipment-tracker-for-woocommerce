@@ -1,6 +1,7 @@
 <?php
 use PhpUnitsOfMeasure\PhysicalQuantity\Mass;
 use PhpUnitsOfMeasure\PhysicalQuantity\Length;
+if ( ! defined( 'ABSPATH' ) ) exit;
 class Bt_Sync_Shipment_Tracking_Fship
 {
 
