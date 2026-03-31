@@ -251,8 +251,24 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
         if(!$delhivery_shipping_mode){
             $delhivery_shipping_mode = 'Surface';
         }
+
+        $pick_up_location = carbon_get_theme_option('bt_sst_delhivery_warehouse_name');
+        $all_vendor_settings = get_option( 'bt_sst_dokan_vendor_settings', [] );
+
+        foreach ($order->get_items() as $item_id => $item) {
+            $product_id = $item->get_product_id();
+            $vendor_id = get_post_field('post_author', $product_id);
+            if ($vendor_id && isset($all_vendor_settings[$vendor_id])) {
+                $vendor_data = $all_vendor_settings[$vendor_id];
+                if (!empty($vendor_data['pickup_location'])) {
+                    $pick_up_location = $vendor_data['pickup_location'];
+                }
+            }
+            break;
+        }
+
         $phoneNumber = $this->extractPhoneNumber($order->get_billing_phone());
-        $pickup_location = carbon_get_theme_option( 'bt_sst_delhivery_warehouse_name' );
+        $pickup_location = $pick_up_location;
         $destination_postcode = $order->get_shipping_postcode();
         $get_shipping_first_name = $order->get_shipping_first_name();
         $get_shipping_last_name = $order->get_shipping_last_name();

@@ -269,11 +269,28 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
         if(false == $order = wc_get_order( $order_id )){
             return false;
         }
+
+        $pick_up_location = carbon_get_theme_option('bt_sst_shipmozo_warehouseid');
+        $all_vendor_settings = get_option( 'bt_sst_dokan_vendor_settings', [] );
+
+        foreach ($order->get_items() as $item_id => $item) {
+            $product_id = $item->get_product_id();
+            $vendor_id = get_post_field('post_author', $product_id);
+            if ($vendor_id && isset($all_vendor_settings[$vendor_id])) {
+                $vendor_data = $all_vendor_settings[$vendor_id];
+                if (!empty($vendor_data['pickup_location'])) {
+                    $pick_up_location = $vendor_data['pickup_location'];
+                }
+            }
+            break;
+        }
+
+
         $billingPhone = $order->get_billing_phone();
         $shippingPhone = $order->get_shipping_phone();
         $phoneToUse = !empty($shippingPhone) ? $shippingPhone : $billingPhone;
         $phoneNumber = $this->extractPhoneNumber($phoneToUse);
-        $warehouseid = carbon_get_theme_option('bt_sst_shipmozo_warehouseid');
+        $warehouseid = $pick_up_location;
         $destination_postcode = $order->get_shipping_postcode();
         $get_shipping_first_name = $order->get_shipping_first_name();
         $get_shipping_last_name = $order->get_shipping_last_name();
@@ -505,6 +522,33 @@ class Bt_Sync_Shipment_Tracking_Shipmozo {
             $resp = "enter public and private key";
         }
         return $resp;
+    }
+    public function get_all_pickup_locations() {
+     
+        $this->init_params();
+    
+        if (!empty($this->public_key) && !empty($this->private_key)) {
+            $url = 'https://shipping-api.com/app/api/v1/get-warehouses';
+            $args = array(
+                'headers' => array(
+                    'public-key' => $this->public_key,
+                    'private-key' => $this->private_key
+                ),
+            );
+    
+            $response = wp_remote_get($url, $args);
+            $body = wp_remote_retrieve_body($response);
+            
+            $resp = json_decode($body, true);
+            if(is_array($resp['data']) && count($resp['data'])>0){
+                return $resp["data"];
+            }else{
+               return false;
+            }
+        } else {
+            return false;
+        }
+        return false;
     }
     
 }

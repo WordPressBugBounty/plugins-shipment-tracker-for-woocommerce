@@ -560,23 +560,23 @@
 		});
 
 		// Show the popup when the button is clicked
-		$('.bt_sst_button').on('click', function () {
-			$('.bt_sst_popup').show();
-			$('.bt_sst_overlay').show();
-			if ($("#bt_sst_select_vendor #bt_sst_select").length < 1) {
-				$.post(
-					bt_sync_shipment_track_data.ajax_url,
-					{ action: 'bt_sst_get_users_list' },
-					function (res) {
-						console.log(res);
-						if (res) {
-							$("#bt_sst_select_vendor").html(res.html);
-							$(".bt_sst_vendor_pickup_location_container").html(res.html_pick_lo);
-						}
-					}
-				);
-			}
-		});
+		// $('.bt_sst_button').on('click', function () {
+		// 	$('.bt_sst_popup').show();
+		// 	$('.bt_sst_overlay').show();
+		// 	if ($("#bt_sst_select_vendor #bt_sst_select").length < 1) {
+		// 		$.post(
+		// 			bt_sync_shipment_track_data.ajax_url,
+		// 			{ action: 'bt_sst_get_users_list' },
+		// 			function (res) {
+		// 				console.log(res);
+		// 				if (res) {
+		// 					$("#bt_sst_select_vendor").html(res.html);
+		// 					$(".bt_sst_vendor_pickup_location_container").html(res.html_pick_lo);
+		// 				}
+		// 			}
+		// 		);
+		// 	}
+		// });
 
 		$('#bt_sst_set_vendor_submit').on('click', function () {
 			var vendor_user_id = $("#bt_sst_select").val();

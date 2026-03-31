@@ -140,15 +140,16 @@ class Bt_Sync_Shipment_Tracking_Ekart
 
         // Check for vendor-specific pickup location
         $pick_up_location = carbon_get_theme_option('bt_sst_ekart_pick_up_location');
+        $all_vendor_settings = get_option( 'bt_sst_dokan_vendor_settings', [] );
+
         foreach ($order->get_items() as $item_id => $item) {
             $product_id = $item->get_product_id();
             $vendor_id = get_post_field('post_author', $product_id);
-            if ( $vendor_id ) {
-                $vendor_pickup_location = get_user_meta( $vendor_id, 'vendor_pickup_location', true );
-                if ( !$vendor_pickup_location ) {
-                    $vendor_pickup_location = carbon_get_theme_option( 'bt_sst_ekart_pick_up_location' );
+            if ($vendor_id && isset($all_vendor_settings[$vendor_id])) {
+                $vendor_data = $all_vendor_settings[$vendor_id];
+                if (!empty($vendor_data['pickup_location'])) {
+                    $pick_up_location = $vendor_data['pickup_location'];
                 }
-                $pick_up_location = $vendor_pickup_location;
             }
             break;
         }

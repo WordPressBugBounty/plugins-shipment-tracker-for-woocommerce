@@ -94,18 +94,68 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
             $old_awb = $shipment_obj_old->awb;
             $old_tracking_url = $shipment_obj_old->tracking_url;
 
-            // do stuff
+            $order = wc_get_order($order_id);
+            if (!$this->can_send_event($order, $current_status, 2)) {
+				$this->log_message_history($order,$current_status, "email", 'skipped', null, 'limit reached');
+				$order->add_order_note("email message skipped (limit reached) \n\n- Shipment tracker for woocommerce.");
+				return;
+			}
+            
             if($this->should_send_msg('email', $old_status , $current_status)){
-                $this->trigger($order_id);
+                $this->trigger($order_id, $current_status);
             }
         
         }
     }
 
+    private function can_send_event($order, $event_name, $limit = 2)
+	{
+    
+		$history = $order->get_meta('_bt_message_history', true);
+		$history = is_array($history) ? $history : [];
+
+		$count = 0;
+        $event_name = strtolower(str_replace("-", "_", $event_name));
+		foreach ($history as $log) {
+            $log_event_name = isset($log['event']) ? strtolower(str_replace("-", "_", $log['event'])) : '';
+			if (
+				isset($log['event'], $log['status']) &&
+				$log_event_name === $event_name &&
+				strtolower($log['status']) === 'success'
+			) {
+				$count++;
+			}
+		}
+		return $count < $limit;
+	}
+
+    private function log_message_history($order, $event_name, $via, $status, $response_id = null, $reason = null)
+	{
+		$history = $order->get_meta('_bt_message_history', true);
+		$history = is_array($history) ? $history : [];
+
+		$history[] = [
+			'event'       => $event_name,
+			'via'         => (array) $via,
+			'status'      => $status,
+			'response_id' => $response_id,
+			'reason'      => $reason,
+			'timestamp'   => current_time('mysql'),
+		];
+
+		$order->update_meta_data('_bt_message_history', $history);
+		$order->save();
+	}
+
     private function should_send_msg($event_name, $old_status , $current_status ){
 		
 		$enabled_statuses = carbon_get_theme_option( 'bt_sst_shipment_when_to_send_messages', array() );
 		$current_status_key = strtolower( $current_status );
+        $enabled_statuses = array_map(function($status) {
+            return str_replace('_', '-', $status);
+        }, $enabled_statuses);
+
+        
 
 		if ( ! in_array( $current_status_key, (array) $enabled_statuses, true ) ) {
 			return false;
@@ -115,13 +165,14 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
 		if ( empty( $status_mode_map ) ) {
 			$status_mode_map = carbon_get_theme_option( 'bt_sst_shipment_status_mode_map', array() );
 		}
+       
 		if ( ! empty( $status_mode_map ) && isset( $status_mode_map[ $current_status_key ] ) ) {
 			if ( ! in_array( 'email', (array) $status_mode_map[ $current_status_key ], true ) ) {
 				return false;
 			}
 		} else {
 			$bt_sst_shipment_from_what_send_messages = carbon_get_theme_option( 'bt_sst_shipment_from_what_send_messages', array() );
-			if ( ! in_array( 'email', (array) $bt_sst_shipment_from_what_send_messages, true ) ) {
+            if ( ! in_array( 'email', (array) $bt_sst_shipment_from_what_send_messages, true ) ) {
 				return false;
 			}
 		}
@@ -135,7 +186,7 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
         }
 
         $selected_events = $this->get_option( 'email_events', array( 'in_transit', 'out_for_delivery', 'delivered' ) );
-        if ( ! in_array( strtolower( $current_status ), $selected_events, true ) ) {
+        if ( ! in_array( strtolower( str_replace("-", "_", $current_status) ), $selected_events, true ) ) {
             return false;
         }
 		
@@ -144,7 +195,7 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
 
    
 
-    public function trigger( $order_id ) {
+    public function trigger( $order_id, $event_name ) {
 
          if ( ! $this->is_enabled() ) {
             return;
@@ -172,7 +223,9 @@ class Bt_Sst_WC_Shipment_Email extends WC_Email{
 
         if ( ! $this->is_enabled() || ! $this->get_recipient() )
             return;
-        
+        $order = wc_get_order($order_id);
+        $this->log_message_history($order, $event_name, "email", 'success', 200);
+
         $this->object->add_order_note( "Email sent to customer: ". $this->get_recipient() . "\n\n- Shipment tracker for woocommerce", false );
 					
         // woohoo, send the email!

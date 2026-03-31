@@ -519,6 +519,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action('wp_ajax_bt_sst_update_tracking_settings',$plugin_admin, 'bt_sst_update_tracking_settings');
 		$this->loader->add_action('wp_ajax_bt_sst_get_tracking_settings_data',$plugin_admin, 'bt_sst_get_tracking_settings_data');
 		$this->loader->add_action('wp_ajax_bt_sst_get_ekart_adress_list',$plugin_admin, 'bt_sst_get_ekart_adress_list');
+		$this->loader->add_action('wp_ajax_bt_sst_get_dokan_pickup_locations', $plugin_admin, 'bt_sst_get_dokan_pickup_locations');
 
 		$this->loader->add_filter('bulk_actions-edit-shop_order', $plugin_admin,'status_orders_bulk_actions');
 		$this->loader->add_filter('bulk_actions-woocommerce_page_wc-orders', $plugin_admin,'status_orders_bulk_actions');
@@ -1313,36 +1314,6 @@ class Bt_Sync_Shipment_Tracking {
 						->set_attribute( 'readOnly', 'readOnly' )				
 						->set_help_text( '<div><a href="#"id="bt_sst_fetch_pichup_locations">Select Pickup Locations</a></div>Required. Pickup location to set while pushing order to shiprocket.
 						<br>Available at: <b>Shiprocket > Settings > Pickup Address > Manage Pickup Addresses</b>
-						<div style="margin: 10px 0;">
-							Using "Dokan Multi-Vendor Plugin"? Set Vendor wise pickup location :<br>
-							<button type="button" id="" class="button bt_sst_button">Set Vendor Pickup Locations</button>
-						</div>
-						<div id="" class="">
-							<div class="bt_sst_overlay"></div>
-							<div class="bt_sst_popup">
-							  			<span class="bt_sst_close">&times;</span>
-								        <div id="bt_sst_select_vendor" class="field">
-											<label class="label" for="bt_sst_vendor_select">Vendor Name</label>
-											<div class="control">
-											<div class="select">
-												<select id="bt_sst_vendor_select">
-												<option value="option1">Select Vendor</option>
-												</select>
-											</div>
-											</div>
-										</div>
-
-										<div class="field bt_sst_vendor_pickup_location_container">
-											<label class="label" for="bt_sst_vendor_pickup_location">Pickup Location</label>
-											<div class="control">
-												<select id="bt_sst_vendor_pickup_location">
-													<option value="" >Select Pick-Up Location</option>
-												</select>
-											</div>
-										</div>
-										<button id="bt_sst_set_vendor_submit" type="button">Save Vender</button>
-							</div>
-						</div>
 						<div class="modal" id="pickupLocationModal">
 							<div class="modal-background"></div>
 							<div class="modal-content">
@@ -1961,10 +1932,6 @@ class Bt_Sync_Shipment_Tracking {
 						->set_help_text( '
 						<div class="address_popup_container"></div>
 						<a href="#" id="bt_sst_add_ekart_address">Select Pick-up Location</a>
-						<div style="margin: 10px 0;">
-							Using "Dokan Multi-Vendor Plugin"? Set Vendor wise pickup location :<br>
-							<button type="button" id="bt_sst_fetch_ekart_pichup_locations" class="button bt_sst_button">Set Vendor Pickup Locations</button>
-						</div>
 						<div id="" class="">
 							<div class="bt_sst_overlay"></div>
 							<div class="bt_sst_popup">

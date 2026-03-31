@@ -66,6 +66,22 @@ class Bt_Sync_Shipment_Tracking_Rest_Functions{
 
             if ( ! empty( $existing_orders ) ) {
                 $order = $existing_orders[0];
+                
+                $item_name = $data['item name'];
+                $already_exists = false;
+                foreach ( $order->get_items() as $existing_item ) {
+                    if ( strtolower(trim($existing_item->get_name())) === strtolower(trim($item_name)) ) {
+                        $already_exists = true;
+                        break;
+                    }
+                }
+                if ( $already_exists ) {
+                    $order->add_order_note("APEX Webhook: Item '{$item_name}' already exists. Skipped adding.");
+                    return new WP_REST_Response([
+                        'success' => false,
+                        'message' => 'Item already exists in order'
+                    ], 200);
+                }
                 $logger->info('Existing Pending/Failed order #' . $order->get_id() . ' found for phone ' . $phone, $context);
             } else {
                 $order = wc_create_order([

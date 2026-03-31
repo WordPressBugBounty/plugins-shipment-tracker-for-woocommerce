@@ -50,6 +50,7 @@ class Bt_Sync_Shipment_Tracking_Public
 	private $fship;
 	private $ekart;
 	private $proship;
+	private $ithink;
 
 	/**
 	 * Initialize the class and set its properties.

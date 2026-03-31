@@ -160,7 +160,8 @@ class Bt_Sync_Shipment_Tracking_Admin
 			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-timer" || 
 			$current_screen->id == "toplevel_page_bt-shipment-tracking"||
 			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-help-support"||
-			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-ithink-logistics"
+			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-ithink-logistics"||
+			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-multi-vendor"
 			)) {
 			$script_data = array(
 
@@ -182,7 +183,8 @@ class Bt_Sync_Shipment_Tracking_Admin
 				"buy_credit_balance_nonce" => wp_create_nonce('buy_credit_balance'),
 				"credit_balance_details_nonce" => wp_create_nonce('credit_balance_details'),
 				"register_for_sms_nonce" => wp_create_nonce('register_for_sms'),
-				"get_sms_trial_nonce" => wp_create_nonce('get_sms_trial'),
+				"get_sms_trial_nonce"                => wp_create_nonce('get_sms_trial'),
+				"dokan_pickup_nonce"                 => wp_create_nonce('bt_sst_dokan_pickup_locations'),
 
 
 			);
@@ -2053,7 +2055,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 			// Limit check
 			if (!$this->can_send_event($order, $event_name, 1)) {
-				$this->log_message_history($order, $event_name, [], 'skipped', null, 'limit reached');
+				$this->log_message_history($order, $event_name, ["sms","whatsapp"], 'skipped', null, 'limit reached');
 				$order->add_order_note("'$event_name' message skipped (limit reached) \n\n- Shipment tracker for woocommerce.");
 				return;
 			}
@@ -3777,14 +3779,14 @@ class Bt_Sync_Shipment_Tracking_Admin
 			[$this, 'bt_shipment_tracking_premium_callback'], // Correct way to call class method
 		);
 
-		// add_submenu_page(
-		// 	'bt-shipment-tracking',
-		// 	'Dokan Multi Vendor - Shipment Tracker for Woocommerce',           // Page title
-		// 	'Dokan Multi Vendor',       // Menu title
-		// 	'manage_options',          // Capability
-		// 	'bt-shipment-tracking-multi-vendor',           // Menu slug
-		// 	[$this, 'bt_shipment_tracking_multi_vendor_callback'], // Correct way to call class method
-		// );
+		add_submenu_page(
+			'bt-shipment-tracking',
+			'Dokan Multi Vendor - Shipment Tracker for Woocommerce',           // Page title
+			'Dokan Multi Vendor',       // Menu title
+			'manage_options',          // Capability
+			'bt-shipment-tracking-multi-vendor',           // Menu slug
+			[$this, 'bt_shipment_tracking_multi_vendor_callback'], // Correct way to call class method
+		);
 
 		add_submenu_page(
 			'bt-shipment-tracking',
@@ -3834,11 +3836,94 @@ class Bt_Sync_Shipment_Tracking_Admin
 	}
 	public function bt_shipment_tracking_multi_vendor_callback()
 	{
-		// wp_enqueue_script('bt-shipment-new-settings-js');
 		wp_enqueue_script($this->plugin_name);
-		// $active_tab = "help_tab";
 		wp_enqueue_style('bulma-css');
+		// Register AJAX handler for fetching pickup locations
 		include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/new_settings/bt-shipment-dokan-multi-vendor.php';
+	}
+
+
+	public function bt_sst_get_dokan_pickup_locations()
+	{
+
+		check_ajax_referer('bt_sst_dokan_pickup_locations', 'nonce');
+
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(['message' => 'Unauthorized'], 403);
+			wp_die();
+		}
+
+		$provider = sanitize_text_field($_POST['provider'] ?? '');
+		$locations = [];
+
+		switch ($provider) {
+			case 'shiprocket':
+				$result = $this->shiprocket->get_all_pickup_locations();
+				if (!empty($result) && is_array($result)) {
+
+					foreach ($result as $loc) {
+
+						$name = $loc['pickup_location'] ?? '';
+
+						if (!empty($name)) {
+							$locations[] = [
+								'value' => $name,
+								'label' => $name . (!empty($loc['city']) ? ' (' . $loc['city'] . ')' : ''),
+							];
+						}
+					}
+				} else {
+					wp_send_json_error(['message' => is_string($result) ? $result : 'Failed to fetch locations']);
+					wp_die();
+				}
+				break;
+			case 'shipmozo':
+				$result = $this->shipmozo->get_all_pickup_locations();
+				if (!empty($result) && is_array($result)) {
+					$locations = [];
+					foreach ($result as $loc) {
+						$name = $loc['address_title'] ?? '';
+						if (!empty($name)) {
+							$locations[] = [
+								'value' => $loc['id'],
+								'label' => $name . (!empty($loc['city']) ? ' (' . $loc['city'] . ')' : ''),
+							];
+						}
+					}
+
+				} else {
+					wp_send_json_error(['message' => is_string($result) ? $result : 'Failed to fetch locations']);
+					wp_die();
+				}
+				break;
+
+			case 'ekart':
+				$result = $this->ekart->get_addresses_list();
+				if (!empty($result) && is_array($result)) {
+					$locations = [];
+					foreach ($result as $loc) {
+						$name = $loc['alias'] ?? '';
+						if (!empty($name)) {
+							$locations[] = [
+								'value' => $name,
+								'label' => $name,
+							];
+						}
+					}
+
+				} else {
+					wp_send_json_error(['message' => is_string($result) ? $result : 'Failed to fetch locations']);
+					wp_die();
+				}
+				break;
+			default:
+				// For other providers not yet integrated, return empty
+				$locations = [];
+				break;
+		}
+
+		wp_send_json_success(['locations' => $locations]);
+		wp_die();
 	}
 
 	public function bt_shipment_tracking_sms_setting()
