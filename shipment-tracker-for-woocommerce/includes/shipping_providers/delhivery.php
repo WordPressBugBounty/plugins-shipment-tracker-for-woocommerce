@@ -362,7 +362,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
             }
         }
         if($total_products>1){
-            $product_description =  $product_description . " & " . $total_products-1 . " other item(s).";
+            $product_description =  $product_description . " & " . ($total_products - 1) . " other item(s).";
         }
         $postData['shipments'][0]['quantity'] =   $total_qty;
         $postData['shipments'][0]['products_desc'] =   $product_description;

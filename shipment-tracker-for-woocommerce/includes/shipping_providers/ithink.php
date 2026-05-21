@@ -355,7 +355,7 @@ class Bt_Sync_Shipment_Tracking_Ithink {
             $weight,
             $product_mrp,
             $order_type,
-            $payment_method,
+            $payment_method
         ) {
         $this->init_params();
         if (empty($this->access_token) || empty($this->secret_key)) {
