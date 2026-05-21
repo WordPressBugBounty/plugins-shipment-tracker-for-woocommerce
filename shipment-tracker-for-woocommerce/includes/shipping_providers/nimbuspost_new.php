@@ -306,7 +306,7 @@ class Bt_Sync_Shipment_Tracking_Nimbuspost_New {
       
 
         $so = array(
-            "order_number"=> $order->get_id(),
+            "order_number"=> apply_filters( 'bt_sst_push_order_number', $order->get_id(), $order ),
             "shipping_charges"=> $order->get_total_shipping(),
             "payment_type"=> $order->get_payment_method()=="cod"?"cod":"prepaid",
             "discount"=> $order->get_total_discount(),

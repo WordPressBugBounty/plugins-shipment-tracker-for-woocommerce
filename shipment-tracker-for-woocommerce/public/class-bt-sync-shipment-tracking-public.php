@@ -652,7 +652,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					}
 					$check_error_for_hide_show_ponbox["data"] = true;
 				} else {
-					$bt_sst_message_text_template = "Delivery not available. Try a different pincode or contact support.";
+					$bt_sst_message_text_template = apply_filters('bt_sst_delivery_not_available_message', "Delivery not available. Try a different pincode or contact support.");
 				}
 			} else if ($pickup_data_provider == 'shipmozo') {
 
@@ -784,7 +784,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					}
 					$check_error_for_hide_show_ponbox["data"] = true;
 				} else {
-					$bt_sst_message_text_template = "Delivery not available. Try a different pincode or contact support.";
+					$bt_sst_message_text_template = apply_filters('bt_sst_delivery_not_available_message', "Delivery not available. Try a different pincode or contact support.");
 				}
 			} else if ($pickup_data_provider == 'nimbuspost_new') {
 
@@ -900,7 +900,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					$check_error_for_hide_show_ponbox["data"] = true;
 
 				} else {
-					$bt_sst_message_text_template = "Delivery not available. Try a different pincode or contact support.";
+					$bt_sst_message_text_template = apply_filters('bt_sst_delivery_not_available_message', "Delivery not available. Try a different pincode or contact support.");
 				}
 			} else if ($pickup_data_provider == 'delhivery') {
 				$express_tat = null;
@@ -993,7 +993,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					}
 					$check_error_for_hide_show_ponbox["data"] = true;
 				} else {
-					$bt_sst_message_text_template = "Delivery not available. Try a different pincode or contact support.";
+					$bt_sst_message_text_template = apply_filters('bt_sst_delivery_not_available_message', "Delivery not available. Try a different pincode or contact support.");
 				}
 				$city = $delivery_pincode;
 				$city_data = $this->delhivery->get_locality($delivery_pincode);
@@ -1076,7 +1076,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					}
 					$check_error_for_hide_show_ponbox["data"] = true;
 				} else {
-					$bt_sst_message_text_template = "Delivery not available. Try a different pincode or contact support.";
+					$bt_sst_message_text_template = apply_filters('bt_sst_delivery_not_available_message', "Delivery not available. Try a different pincode or contact support.");
 				}
 				$city = $delivery_pincode;
 				$city_data = $this->fship->get_pincode_serviceability($pickup_pin, $delivery_pincode);
@@ -1199,7 +1199,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					}
 					$check_error_for_hide_show_ponbox["data"] = true;
 				} else {
-					$bt_sst_message_text_template = "Delivery not available. Try a different pincode or contact support.";
+					$bt_sst_message_text_template = apply_filters('bt_sst_delivery_not_available_message', "Delivery not available. Try a different pincode or contact support.");
 				}
 				$city = $delivery_pincode;
 				$city_data = $this->ekart->get_locality($delivery_pincode);
@@ -1316,7 +1316,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					}
 					$check_error_for_hide_show_ponbox["data"] = true;
 				} else {
-					$bt_sst_message_text_template = "Delivery not available. Try a different pincode or contact support.";
+					$bt_sst_message_text_template = apply_filters('bt_sst_delivery_not_available_message', "Delivery not available. Try a different pincode or contact support.");
 				}
 				$city = $delivery_pincode;
 				// $city_data = $this->delhivery->get_locality($delivery_pincode);
@@ -1427,7 +1427,7 @@ class Bt_Sync_Shipment_Tracking_Public
 					}
 					$check_error_for_hide_show_ponbox["data"] = true;
 				} else {
-					$bt_sst_message_text_template = "Delivery not available. Try a different pincode or contact support.";
+					$bt_sst_message_text_template = apply_filters('bt_sst_delivery_not_available_message', "Delivery not available. Try a different pincode or contact support.");
 				}
 				$city = $delivery_pincode;
 				// $city_data = $this->delhivery->get_locality($delivery_pincode);

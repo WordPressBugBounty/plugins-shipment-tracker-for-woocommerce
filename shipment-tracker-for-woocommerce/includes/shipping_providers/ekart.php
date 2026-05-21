@@ -154,8 +154,8 @@ class Bt_Sync_Shipment_Tracking_Ekart
             break;
         }
 
-        $order_number = (String)$order->get_id();
-        $invoice_number = (String)$order->get_id();
+        $order_number = (String) apply_filters( 'bt_sst_push_order_number', $order->get_id(), $order );
+        $invoice_number = (String) apply_filters( 'bt_sst_push_order_number', $order->get_id(), $order );
         $invoice_date = $order->get_date_created()->date('Y-m-d');
 
         $consignee_name = $order->get_shipping_first_name() . ' ' . $order->get_shipping_last_name();

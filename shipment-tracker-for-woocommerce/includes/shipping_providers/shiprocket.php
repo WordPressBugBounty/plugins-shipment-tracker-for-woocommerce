@@ -600,7 +600,7 @@ class Bt_Sync_Shipment_Tracking_Shiprocket {
         }
        
         $so = array(
-            "order_id"=> $order->get_id(),
+            "order_id"=> apply_filters( 'bt_sst_push_order_number', $order->get_id(), $order ),
             "order_date"=> $order->get_date_created()->date("Y-m-d H:i:s"),
             "pickup_location"=> $vendor_pickup_location,
             "comment"=> $order->get_customer_note(),

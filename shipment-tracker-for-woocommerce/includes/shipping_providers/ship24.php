@@ -173,7 +173,7 @@ class Bt_Sync_Shipment_Tracking_Ship24 {
         return false;
     }
     public function create_tracker_for_ship24_tracking($awb_number, $order) {
-        $order_id = $order->get_id();
+        $order_id = apply_filters( 'bt_sst_push_order_number', $order->get_id(), $order );
         $corier_name = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shipping_ship24_corier_name', true );
 		$corier_code = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shipping_ship24_corier_code', true );
         $ship_refrence = $order_id;

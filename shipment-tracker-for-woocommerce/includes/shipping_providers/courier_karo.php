@@ -129,6 +129,8 @@ class Bt_Sync_Shipment_Tracking_CourierKaro {
         $order = wc_get_order($order_id);
         if (!$order) return false;
 
+        $order_id = apply_filters( 'bt_sst_push_order_number', $order_id, $order );
+
         $shipping_postcode = $order->get_shipping_postcode();
         $shipping_first_name = $order->get_shipping_first_name();
         $shipping_last_name = $order->get_shipping_last_name();

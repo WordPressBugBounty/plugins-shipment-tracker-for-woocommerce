@@ -163,7 +163,7 @@ class Bt_Sync_Shipment_Tracking_Ithink {
             "data" => [
                 "shipments" => [
                     [
-                        "order"             => (string)$order->get_order_number(),
+                        "order"             => (string) apply_filters( 'bt_sst_push_order_number', $order->get_order_number(), $order ),
                         "sub_order"         => "",
                         "order_date"        => $order->get_date_created()->format("Y-m-d H:i:s"),
                         "total_amount"      => (float)$order->get_total(),

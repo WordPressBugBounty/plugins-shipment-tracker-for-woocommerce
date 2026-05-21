@@ -2190,12 +2190,19 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 		foreach ($history as $log) {
 			$status = strtolower($log['status'] ?? 'unknown');
-			$color = match ($status) {
-				'success' => 'color:#00a32a;font-weight:600;',   // green
-				'failed'  => 'color:#d63638;font-weight:600;',   // red
-				'skipped' => 'color:#cc9900;font-weight:600;',   // orange
-				default   => 'color:#50575e;font-weight:600;',   // grey
-			};
+			switch ($status) {
+				case 'success':
+					$color = 'color:#00a32a;font-weight:600;';
+					break;
+				case 'failed':
+					$color = 'color:#d63638;font-weight:600;';
+					break;
+				case 'skipped':
+					$color = 'color:#cc9900;font-weight:600;';
+					break;
+				default:
+					$color = 'color:#50575e;font-weight:600;';
+			}
 
 			echo '<tr>';
 			echo '<td>' . esc_html($log['event'] ?? '-') . '</td>';

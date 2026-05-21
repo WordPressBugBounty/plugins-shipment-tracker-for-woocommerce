@@ -211,11 +211,11 @@ class Bt_Sync_Shipment_Tracking_Proship {
 
             "invoice_value"     => (float) $order->get_total(),
             "cod_amount"        => $order->get_payment_method() === 'cod' ? (float) $order->get_total() : 0,
-            "client_order_id"   => (string) $order->get_id(),
+            "client_order_id"   => (string) apply_filters( 'bt_sst_push_order_number', $order->get_id(), $order ),
             "is_reverse"        => false,
             "invoice_number"    => $order->get_order_number(),
             "payment_mode"      => $order->get_payment_method() === 'cod' ? 'COD' : 'PREPAID',
-            "reference"         => 'WC-' . $order->get_id(),
+            "reference"         => 'WC-' . apply_filters( 'bt_sst_push_order_number', $order->get_id(), $order ),
         ];
     }
 

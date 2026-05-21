@@ -298,7 +298,7 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
                     "state" => $get_shipping_state,
                     "country" => $get_shipping_country,
                     "phone" => $phoneNumber,
-                    "order" => $order->get_id(),
+                    "order" => apply_filters( 'bt_sst_push_order_number', $order->get_id(), $order ),
                     "payment_mode" => $order->get_payment_method()=="cod"?"COD":"PREPAID",
                     "return_pin" => "",
                     "return_city" => "",
