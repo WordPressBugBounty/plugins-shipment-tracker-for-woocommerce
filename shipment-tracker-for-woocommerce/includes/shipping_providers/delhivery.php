@@ -608,8 +608,8 @@ class Bt_Sync_Shipment_Tracking_Delhivery {
 
         $order_ids = [];
 
-        if ( ! empty( $shipment['orderId'] ) ) {
-            $order_ids[] = intval( $shipment['orderId'] );
+        if ( ! empty( $shipment['ReferenceNo'] ) ) {
+            $order_ids[] = intval( $shipment['ReferenceNo'] );
         }
 
         if ( ! empty( $shipment['AWB'] ) ) {

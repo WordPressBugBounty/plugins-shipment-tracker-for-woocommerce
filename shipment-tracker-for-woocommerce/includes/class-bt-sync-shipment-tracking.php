@@ -81,6 +81,7 @@ class Bt_Sync_Shipment_Tracking {
 	private $proship;
 	private $courierkaro;
 	private $ithink;
+	private $shipway;
 
 	/**
 	 * Define the core functionality of the plugin.
@@ -295,6 +296,7 @@ class Bt_Sync_Shipment_Tracking {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/shipmozo.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/delhivery.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/fship.php';
+        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/shipway.php';
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/shyplite.php';
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/nimbuspost.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/shipping_providers/nimbuspost_new.php';
@@ -326,6 +328,7 @@ class Bt_Sync_Shipment_Tracking {
         $this->ship24 = new Bt_Sync_Shipment_Tracking_Ship24();
 		$this->licenser = new Bt_Licenser();
 		$this->fship = new Bt_Sync_Shipment_Tracking_Fship();
+		$this->shipway = new Bt_Sync_Shipment_Tracking_Shipway();
 		$this->ekart = new Bt_Sync_Shipment_Tracking_Ekart();
 		$this->courierkaro = new Bt_Sync_Shipment_Tracking_CourierKaro();
 		$this->proship = new Bt_Sync_Shipment_Tracking_Proship();
@@ -341,7 +344,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_cron_events() {
 
-		$this->crons = new Bt_Sync_Shipment_Tracking_Crons($this->shiprocket,$this->shyplite,$this->nimbuspost_new,$this->shipmozo, $this->licenser, $this->delhivery, $this->fship, $this->courierkaro, $this->proship, $this->ithink);
+		$this->crons = new Bt_Sync_Shipment_Tracking_Crons($this->shiprocket,$this->shyplite,$this->nimbuspost_new,$this->shipmozo, $this->licenser, $this->delhivery, $this->fship, $this->courierkaro, $this->proship, $this->ithink, $this->shipway);
 
 		$this->loader->add_action( Bt_Sync_Shipment_Tracking_Crons::BT_MINUTELY_JOB, $this->crons, 'minutely_job');
 		$this->loader->add_action( Bt_Sync_Shipment_Tracking_Crons::BT_15MINS_JOB, $this->crons, 'bt_every_15_minutes_job');
@@ -360,7 +363,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_rest_apis() {
 
-		$rest = new Bt_Sync_Shipment_Tracking_Rest( $this->get_plugin_name(), $this->get_version(), $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->xpressbees, $this->shipmozo, $this->nimbuspost_new, $this->ship24, $this->ekart, $this->courierkaro, $this->delhivery, $this->proship);
+		$rest = new Bt_Sync_Shipment_Tracking_Rest( $this->get_plugin_name(), $this->get_version(), $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->xpressbees, $this->shipmozo, $this->nimbuspost_new, $this->ship24, $this->ekart, $this->courierkaro, $this->delhivery, $this->proship, $this->shipway);
 
 		//shiprocket webhook & apis
 		$this->loader->add_action( 'rest_api_init', $rest, 'rest_shiprocket_webhook');
@@ -370,6 +373,9 @@ class Bt_Sync_Shipment_Tracking {
 
 		//shipmozo webhook & apis
 		$this->loader->add_action( 'rest_api_init', $rest, 'rest_shipmozo_webhook');
+
+		//shipway webhook & apis
+		$this->loader->add_action( 'rest_api_init', $rest, 'rest_shipway_webhook');
 
 		//shyplite
 		$this->loader->add_action( 'rest_api_init', $rest, 'rest_shyplite');
@@ -427,7 +433,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Bt_Sync_Shipment_Tracking_Admin( $this->get_plugin_name(), $this->get_version(),$this->shiprocket,$this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->shipmozo, $this->nimbuspost_new, $this->delhivery, $this->ship24, $this->fship, $this->ekart, $this->courierkaro, $this->proship, $this->ithink);
+		$plugin_admin = new Bt_Sync_Shipment_Tracking_Admin( $this->get_plugin_name(), $this->get_version(),$this->shiprocket,$this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->shipmozo, $this->nimbuspost_new, $this->delhivery, $this->ship24, $this->fship, $this->ekart, $this->courierkaro, $this->proship, $this->ithink, $this->shipway);
 		$this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_admin, 'custom_dokan_order_details', 10, 1 );
 		$this->loader->add_action('carbon_fields_save_post',$plugin_admin, 'update_woocommerce_data_on_carbon_fields_save', 10, 3);
 		$this->loader->add_action( 'woocommerce_order_status_changed',$plugin_admin, 'woocommerce_order_status_changed_of_shipment_tracker', 10, 3 );
@@ -468,9 +474,10 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'bt_push_order_to_courierkaro', $plugin_admin, 'push_order_to_courierkaro',10,3);
 		$this->loader->add_action( 'bt_push_order_to_proship', $plugin_admin, 'push_order_to_proship',10,3);
 		$this->loader->add_action( 'bt_push_order_to_ithink', $plugin_admin, 'push_order_to_ithink',10,3);
+		$this->loader->add_action( 'bt_push_order_to_shipway', $plugin_admin, 'push_order_to_shipway',10,3);
 		$this->loader->add_action( 'bt_push_order_to_nimbuspost', $plugin_admin, 'push_order_to_nimbuspost',10,3);
 
-		$ajax_functions = new Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions($this->crons, $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->delhivery, $this->ship24, $this->fship, $this->ekart, $this->proship);
+		$ajax_functions = new Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions($this->crons, $this->shiprocket, $this->shyplite, $this->nimbuspost, $this->manual, $this->licenser, $this->delhivery, $this->ship24, $this->fship, $this->ekart, $this->proship, $this->shipway);
 		$this->loader->add_action( 'wp_ajax_sync_now_shyplite', $ajax_functions, 'bt_sync_now_shyplite',10,2);
 
         $this->loader->add_action('wp_ajax_force_sync_tracking',$ajax_functions, 'force_sync_tracking');
@@ -493,6 +500,7 @@ class Bt_Sync_Shipment_Tracking {
 		$this->loader->add_action( 'wp_ajax_api_call_for_test_connection', $plugin_admin, 'api_call_for_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_delhivery_test_connection', $plugin_admin, 'api_call_for_delhivery_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_fship_test_connection', $plugin_admin, 'api_call_for_fship_test_connection' );
+		$this->loader->add_action( 'wp_ajax_api_call_for_shipway_test_connection', $plugin_admin, 'api_call_for_shipway_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_proship_test_connection', $plugin_admin, 'api_call_for_proship_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_ekart_test_connection', $plugin_admin, 'api_call_for_ekart_test_connection' );
 		$this->loader->add_action( 'wp_ajax_api_call_for_ship24_test_connection', $plugin_admin, 'api_call_for_ship24_test_connection' );
@@ -2148,6 +2156,63 @@ class Bt_Sync_Shipment_Tracking {
 							
 			) );
 		}
+		if(is_array($enabled_shipping_providers) && in_array('shipway',$enabled_shipping_providers)){
+			$shipway_webhook_time = get_option('shipway_webhook_called', 'never');
+			if($shipway_webhook_time!="never"){ 
+				$shipway_webhook_time = date('Y-m-d H:i:s', $shipway_webhook_time);
+			}
+			$container = $container->add_tab( __( 'Shipway (Premium Only)' ), array(
+					Field::make( 'html', 'bt_sst_shipway_webhook_html', __( 'Shipway Webhook URL' ) )
+						->set_html(
+							sprintf( '
+									<b>Shipway Webhook URL: (Login to Shipway &rarr; Navigate to Track &rarr; Click on Tracking Webhooks &rarr; Add the URL) </b> 
+									<p>'.get_site_url(null, '/wp-json/bt-sync-shipment-tracking-shipway/v1.0.0/webhook_receiver').'<a href="#" class="bt_sst_copy_link" > Copy Link</a> </p>
+									<p>Last Webhook Called On: '.$shipway_webhook_time.'</p>
+								')
+						),
+					Field::make( 'text', 'bt_sst_shipway_email', __( 'Shipway Account Email' ) )
+						->set_help_text( 'Enter your Shipway account registered email.' ),
+					Field::make( 'text', 'bt_sst_shipway_licencekey', __( 'License Key' ) )
+						->set_help_text( ' 
+							<a target="_blank" href="https://app.shipway.com/merchant.php?dispatch=profiles.update">[Click here to get License Key]</a>
+							' ),
+					Field::make( 'text', 'bt_sst_shipway_pickup_pincode', __( 'Pickup Pincode' ) )
+						->set_help_text( 'Enter pincode of your warehouse/pickup point.' ),
+					Field::make( 'html', 'bt_sst_test_connection_shipway', __( 'Help HTML' ) )
+						->set_html(
+						sprintf('
+							<button type="button" class="button" id="api_test_connection_btn_shipway">Test Connection</button><br>
+							<em class="cf-field__help">Please click "Save Changes" to save api credentials before testing the connection</em>
+							<div id="api_test_connection_modal_shipway" class="modal">
+								<div class="modal-background"></div>
+								<div class="modal-card">
+									<header class="modal-card-head">
+									<p id="api_tc-m-content_shipway" class="modal-content"></p>
+									<button type="button" id="api_tc_m_close_btn_shipway" class="delete" aria-label="close"></button>
+									</header>
+								</div>
+							</div>
+						')),
+					Field::make( 'select', 'bt_sst_shipway_cron_schedule', __( 'Sync Tracking every' ) )
+						->add_options( 
+							array(
+								'never'=>'never',
+								'15mins'=>'15 mins',
+								'1hour'=>'1 hour',
+								'4hours'=>'4 hours',
+								'24hours'=>'24 hours'
+								) 
+						)
+						->set_help_text( 'Tracking information will be periodically synced from Shipway at this interval.' ),
+					Field::make( 'checkbox', 'bt_sst_shipway_push_orders', __( 'Automatically Push Orders to Shipway') )
+						->set_classes( 'title is-6' )
+						->set_help_text( 'Plugin will automatically push "processing" orders to Shipway. Make sure that the weight and dimensions are correctly set for every product.' )
+						->set_option_value( '1' )
+						->set_default_value( '0' ),
+					Field::make( 'html', 'bt_sst_shipway_premium_overlay_1', __( 'Help HTML' ) )
+						->set_html($premium_overlay),
+			) );
+		}
 		$add_corier_popup_html = file_get_contents(plugin_dir_path( dirname( __FILE__ ) )  . 'admin/partials/bt-shipment-tracker-get-and-save-couriers.php');
 
 		if(is_array($enabled_shipping_providers) && in_array('manual',$enabled_shipping_providers)){
@@ -2547,6 +2612,7 @@ class Bt_Sync_Shipment_Tracking {
 					'ekart' => 'Ekart',
 					'proship' => 'Proship',
 					'ithink' => 'iThink Logistic',
+					'shipway' => 'Shipway',
 					
 					
 					
@@ -2665,6 +2731,19 @@ class Bt_Sync_Shipment_Tracking {
 						'value' => 'ekart',
 					)
 				) ),
+				Field::make( 'text', 'bt_sst_shipway_fall_back_rate', __( 'Fall Back Rate (Per 500gm)' ) )
+				->set_attribute( 'type', 'number' )
+				->set_help_text( 'Fallback rate is used when no courier is available between any pickup/delivery combination. Leave it empty if you do not want to use any fallback rate.' )
+				->set_conditional_logic( array(
+					array(
+						'field' => 'bt_sst_select_courier_company',
+						'value' => true,
+					),
+					array(
+						'field' => 'bt_sst_courier_rate_provider',
+						'value' => 'shipway',
+					)
+				) ),
 			
 			Field::make( 'text', 'bt_sst_nimbuspost_new_fall_back_rate', __( 'Fall Back Rate (Per 500gm)' ) )
 				->set_attribute( 'type', 'number' )
@@ -2727,7 +2806,7 @@ class Bt_Sync_Shipment_Tracking {
 					array(
 						'field' => 'bt_sst_courier_rate_provider',
 						'compare' => 'IN',
-						'value' => array('shiprocket','shipmozo','delhivery','proship','ithink'),
+						'value' => array('shiprocket','shipmozo','delhivery','proship','ithink','shipway'),
 					)
 				) ),
 			Field::make( 'text', 'bt_sst_shipment_processing_days', __( 'Processing Days' ) )
@@ -2745,7 +2824,7 @@ class Bt_Sync_Shipment_Tracking {
 					array(
 						'field' => 'bt_sst_courier_rate_provider',
 						'compare' => 'IN',
-						'value' => array('shiprocket','shipmozo'),
+						'value' => array('shiprocket','shipmozo','shipway'),
 					)
 				) ),
 			Field::make( 'checkbox', 'bt_sst_show_secure_shipment_rates', __( 'Show secure shipment rates for order above 2500/-.') )
@@ -2914,7 +2993,7 @@ class Bt_Sync_Shipment_Tracking {
 	 */
 	private function define_public_hooks() {
 
-		$plugin_public = new Bt_Sync_Shipment_Tracking_Public( $this->get_plugin_name(), $this->get_version() ,$this->shiprocket, $this->shipmozo, $this->nimbuspost_new, $this->licenser, $this->delhivery, $this->fship, $this->ekart, $this->proship, $this->ithink);
+		$plugin_public = new Bt_Sync_Shipment_Tracking_Public( $this->get_plugin_name(), $this->get_version() ,$this->shiprocket, $this->shipmozo, $this->nimbuspost_new, $this->licenser, $this->delhivery, $this->fship, $this->ekart, $this->proship, $this->ithink, $this->shipway);
 
 		// $pincode_checker_location_hook = carbon_get_theme_option( 'bt_sst_pincode_checker_location' );
 		// $this->loader->add_action( 'dokan_order_detail_after_order_general_details',$plugin_public, 'custom_dokan_order_details', 10, 1 );

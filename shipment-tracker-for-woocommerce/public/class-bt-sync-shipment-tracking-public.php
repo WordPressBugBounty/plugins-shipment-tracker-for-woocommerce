@@ -51,6 +51,7 @@ class Bt_Sync_Shipment_Tracking_Public
 	private $ekart;
 	private $proship;
 	private $ithink;
+	private $shipway;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -59,7 +60,7 @@ class Bt_Sync_Shipment_Tracking_Public
 	 * @param      string    $plugin_name       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct($plugin_name, $version, $shiprocket, $shipmozo, $nimbuspost_new, $licenser, $delhivery, $fship, $ekart, $proship, $ithink)
+	public function __construct($plugin_name, $version, $shiprocket, $shipmozo, $nimbuspost_new, $licenser, $delhivery, $fship, $ekart, $proship, $ithink, $shipway = null)
 	{
 
 		$this->plugin_name = $plugin_name;
@@ -73,6 +74,7 @@ class Bt_Sync_Shipment_Tracking_Public
 		$this->ekart = $ekart;
 		$this->proship = $proship;
 		$this->ithink = $ithink;
+		$this->shipway = $shipway;
 	}
 
 	/**
@@ -1851,6 +1853,17 @@ class Bt_Sync_Shipment_Tracking_Public
 			$total_cost += $price * $quantity;
 		}
 
+		$log_data = [
+			'time' => date('Y-m-d H:i:s'),
+			'is_premium' => $this->licenser->should_activate_premium_features(),
+			'allow_to_choose' => carbon_get_theme_option("bt_sst_select_courier_company"),
+			'delivery_pincode' => isset($package['destination']['postcode']) ? $package['destination']['postcode'] : 'not set',
+			'delivery_country' => isset($package['destination']['country']) ? $package['destination']['country'] : 'not set',
+			'rate_provider' => carbon_get_theme_option("bt_sst_courier_rate_provider"),
+			'shipway_pickup_pincode' => carbon_get_theme_option("bt_sst_shipway_pickup_pincode"),
+		];
+		file_put_contents(plugin_dir_path(__FILE__) . 'debug_rates.log', json_encode($log_data, JSON_PRETTY_PRINT) . "\n", FILE_APPEND);
+
 		$push_resp = [];
 		if (!is_cart() && !is_checkout()) {
 			//	return $rates;
@@ -3338,6 +3351,139 @@ class Bt_Sync_Shipment_Tracking_Public
 				}
 			}
 		
+
+		} else if ($bt_sst_courier_rate_provider == 'shipway') {
+
+			$cart_totals = $this->get_cart_weight_and_dimentions();
+
+			$weight_in_kg = $cart_totals['total_weight_kg'];
+			$length_in_cms = $cart_totals['total_length_cm'];
+			$breadth_in_cms = $cart_totals['total_width_cm'];
+			$height_in_cms = $cart_totals['total_height_cm'];
+			$declared_value = $cart_totals['declared_value'];
+
+			if ($weight_in_kg < 0.1) {
+				$weight_in_kg = 0.1;
+			}
+			if (empty($length_in_cms) || $length_in_cms < 1) {
+				$length_in_cms = 10;
+			}
+			if (empty($breadth_in_cms) || $breadth_in_cms < 1) {
+				$breadth_in_cms = 10;
+			}
+			if (empty($height_in_cms) || $height_in_cms < 1) {
+				$height_in_cms = 10;
+			}
+
+			if ($weight_in_kg > 0) {
+
+				if (false === ($bt_sst_cached_delivery_estimates_shipway = get_transient('bt_sst_cached_delivery_estimates_shipway'))) {
+					$bt_sst_cached_delivery_estimates_shipway = array();
+				}
+				if ($delivery_country == "IN") {
+					$pickup_pincode = carbon_get_theme_option("bt_sst_shipway_pickup_pincode");
+
+					if (!empty($pickup_pincode)) {
+						$pm = $cod == 1 ? "COD" : "PREPAID";
+						$cached_pincode_key = $pickup_pincode . "_" . $delivery_pincode . "_" . $weight_in_kg . '_' . $pm;
+						if (isset($bt_sst_cached_delivery_estimates_shipway[$cached_pincode_key])) {
+							$push_resp = $bt_sst_cached_delivery_estimates_shipway[$cached_pincode_key];
+						} else {
+							$push_resp = $this->shipway->get_rate_calcultor(
+															$pickup_pincode,
+															$delivery_pincode,
+															$pm,
+															$declared_value,
+															$cod,
+															$weight_in_kg,
+															$length_in_cms,
+															$breadth_in_cms,
+															$height_in_cms);
+							if ($push_resp != null && !empty($push_resp)) {
+								$bt_sst_cached_delivery_estimates_shipway[$cached_pincode_key] = $push_resp;
+								set_transient('bt_sst_cached_delivery_estimates_shipway', $bt_sst_cached_delivery_estimates_shipway, 1 * HOUR_IN_SECONDS);
+							} else {
+								$push_resp = [];
+							}
+						}
+						$filtered_arr = isset($push_resp["rate_card"]) ? $push_resp["rate_card"] : [];
+					}
+				}
+			}
+
+			$free_shipping_rates = [];
+			foreach ($rates as $key => $r) {
+				if (strpos($key, 'free_shipping') !== false) {
+					$free_shipping_rates[$key] = $r;
+				}
+			}
+			$rates = $free_shipping_rates;
+
+			if ($delivery_country == "IN" && !empty($filtered_arr) && is_array($filtered_arr)) {
+				usort($filtered_arr, function ($a, $b) {
+					return ($a['delivery_charge'] - ($b['delivery_charge']));
+				});
+
+				foreach ($filtered_arr as $rb) {
+					$lable = $rb['courier_name'];
+					$bt_sst_shipping_duration_days = 4; // default tat fallback
+					$bt_sst_shipping_edd = new DateTime("+" . $bt_sst_shipping_duration_days . " days");
+
+					$id = 'flat_rate:shipway:' . $rb['carrier_id'];
+					$method_id = 'flat_rate';
+					$markup_cost = carbon_get_theme_option(
+						"bt_sst_markup_charges"
+					);
+					if (!$markup_cost) {
+						$markup_cost = 0;
+					}
+					if (($rb['delivery_charge'] + $markup_cost) < 0) {
+						$markup_cost = 0;
+					}
+
+					$delivery_charge = 0;
+					if ($cod == 1) {
+						$two_percent = $rb['delivery_charge'] * (2 / 100);
+						if ($two_percent > 40) {
+							$delivery_charge = $two_percent;
+						} else {
+							$delivery_charge = 40;
+						}
+					}
+					$cost = round($rb['delivery_charge'] + $markup_cost + $delivery_charge, 2);
+
+					$texes = [];
+					$delivery_date = '';
+					$processing_days = $this->bt_get_processing_days();
+					if (!$processing_days) {
+						$processing_days = carbon_get_theme_option("bt_sst_shipment_processing_days");
+					}
+					if (!$processing_days || $processing_days < 0) {
+						$processing_days = 0;
+					}
+					$delivery_date = $this->addDayswithdate($bt_sst_shipping_edd->format('Y-m-d H:i:s'), $processing_days);
+					
+					$show_delivery_date = carbon_get_theme_option("bt_sst_show_delivery_date");
+					if ($show_delivery_date == 1) {
+						$lable .= " (Edd: " . $delivery_date . ")";
+					}
+
+					$WC_Shipping_Rate = new WC_Shipping_Rate();
+
+					$WC_Shipping_Rate->add_meta_data("edd", $delivery_date);
+					$WC_Shipping_Rate->set_id($id);
+					$WC_Shipping_Rate->set_label($lable);
+					$WC_Shipping_Rate->set_method_id($method_id);
+					$WC_Shipping_Rate->set_cost($cost);
+					$WC_Shipping_Rate->set_instance_id($id);
+					$WC_Shipping_Rate->set_taxes($texes);
+					$WC_Shipping_Rate->add_meta_data('bt_sst_courier_company_name', $lable);
+					$WC_Shipping_Rate->add_meta_data('bt_sst_shipment_provider', 'shipway');
+					$WC_Shipping_Rate->add_meta_data('bt_sst_shipping_duration_days', $bt_sst_shipping_duration_days);
+					$WC_Shipping_Rate->add_meta_data('bt_sst_processing_days', $processing_days);
+					$rates[$id] = $WC_Shipping_Rate;
+				}
+			}
 
 		}
 

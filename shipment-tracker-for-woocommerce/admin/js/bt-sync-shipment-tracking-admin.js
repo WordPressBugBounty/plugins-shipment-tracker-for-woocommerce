@@ -175,6 +175,12 @@
 						jQuery(this).find('button').trigger('click');
 					}
 				});
+			} else if (company_name === 'shipway') {
+				jQuery(".cf-container__tabs-list li").each(function () {
+					if (jQuery(this).text().trim() === "Shipway") {
+						jQuery(this).find('button').trigger('click');
+					}
+				});
 			}
 			localStorage.removeItem('triggerCompanyTab');
 		}, 3000);
@@ -255,6 +261,11 @@
 			$(this).addClass('is-loading');
 			api_test_connection_ithink();
 		});
+		$(document).on('click', '#api_test_connection_btn_shipway', function (e) {
+			e.preventDefault();
+			$(this).addClass('is-loading');
+			api_test_connection_shipway();
+		});
 
 		$(document).on('click', '#btn-bt-sync-now-shyplite', function (e) {
 			e.preventDefault();
@@ -316,6 +327,7 @@
 		  nimbuspost: 'Nimbuspost (OLD)',
 		  checkout: 'Checkout Page',
 		  ekart: 'Ekart',
+		  shipway: 'Shipway',
 		};
 		
 		const buttonText = typeToButtonMap[type];
@@ -363,6 +375,10 @@
 			$('#api_test_connection_modal_ship24').removeClass('is-active');
 			$('#api_test_connection_modal_ship24').css('display', 'none');
 
+		});
+		$(document).on('click', '#api_tc_m_close_btn_shipway', function (e) {
+			$('#api_test_connection_modal_shipway').removeClass('is-active');
+			$('#api_test_connection_modal_shipway').css('display', 'none');
 		});
 		$(document).on('click', '#api_tc_m_close_btn_proship', function (e) {
 			$('#api_test_connection_modal_proship').removeClass('is-active');
@@ -1038,6 +1054,19 @@
 				$('#api_test_connection_modal_ithink').css('display', 'flex');
 				$('#api_test_connection_btn_ithink').removeClass('is-loading');
 
+			}
+		)
+	}
+	function api_test_connection_shipway() {
+		var nonce = bt_sync_shipment_track_data.test_conn_shipway_nonce;
+		$.get(
+			bt_sync_shipment_track_data.ajax_url,
+			{ action: 'api_call_for_shipway_test_connection', value: nonce },
+			function (res) {
+				$('#api_tc-m-content_shipway').html(res.message);
+				$('#api_test_connection_modal_shipway').addClass('is-active');
+				$('#api_test_connection_modal_shipway').css('display', 'flex');
+				$('#api_test_connection_btn_shipway').removeClass('is-loading');
 			}
 		)
 	}

@@ -149,6 +149,14 @@ class Bt_Sync_Shipment_Tracking_Shipment_Model{
                 return "https://tracking.proship.in/?searchBy=waybill&ref_awb_number=" . $this->awb;
             }else if($this->shipping_provider=="ekart"){
                 return "https://www.ekartlogistics.com/ekartlogistics-web/shipmenttrack/" . $this->awb;
+            }else if($this->shipping_provider=="shipway"){
+                $tracking_page_id = get_option( '_bt_sst_tracking_page' );
+                if($tracking_page_id ){
+                    $link = get_permalink( $tracking_page_id );
+                    $separator = (strpos($link, '?') !== false) ? '&' : '?';
+                    return $link . $separator . 'order=' . $this->order_id;
+                }
+                return '#';
             }
 
         }

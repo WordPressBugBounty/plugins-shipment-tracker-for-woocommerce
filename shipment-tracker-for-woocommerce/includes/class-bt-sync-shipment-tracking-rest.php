@@ -41,6 +41,7 @@ class Bt_Sync_Shipment_Tracking_Rest {
     private $rest_route_courierkaro;
     private $rest_route_delhivery;
     private $rest_route_proship;
+    private $rest_route_shipway;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -49,7 +50,7 @@ class Bt_Sync_Shipment_Tracking_Rest {
 	 * @param      string    $plugin_name       The name of the plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version, $shiprocket, $shyplite, $nimbuspost, $manual, $xpressbees, $shipmozo, $nimbuspost_new, $ship24, $ekart, $courierkaro, $delhivery, $proship = null ) {
+	public function __construct( $plugin_name, $version, $shiprocket, $shyplite, $nimbuspost, $manual, $xpressbees, $shipmozo, $nimbuspost_new, $ship24, $ekart, $courierkaro, $delhivery, $proship = null, $shipway = null ) {
 
         require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-bt-sync-shipment-tracking-rest-functions.php';
 
@@ -67,8 +68,9 @@ class Bt_Sync_Shipment_Tracking_Rest {
         $this->rest_route_delhivery = "bt-sync-shipment-tracking-delhivery";
         $this->rest_route_courierkaro = "bt-sync-shipment-tracking-courierkaro";
         $this->rest_route_proship = "bt-sync-shipment-tracking-proship";
+        $this->rest_route_shipway = "bt-sync-shipment-tracking-shipway";
 
-        $this->rest_functions = new Bt_Sync_Shipment_Tracking_Rest_Functions($shiprocket,$shyplite,$nimbuspost, $manual, $xpressbees,$shipmozo,$nimbuspost_new, $ship24, $ekart, $courierkaro, $delhivery, $proship);
+        $this->rest_functions = new Bt_Sync_Shipment_Tracking_Rest_Functions($shiprocket,$shyplite,$nimbuspost, $manual, $xpressbees,$shipmozo,$nimbuspost_new, $ship24, $ekart, $courierkaro, $delhivery, $proship, $shipway);
     }
 
     public function rest_shiprocket_webhook(){
@@ -223,6 +225,14 @@ class Bt_Sync_Shipment_Tracking_Rest {
         register_rest_route( $this->rest_route_courierkaro . '/' . $this->version , 'webhook_receiver', array(
             'methods' => 'POST',
             'callback' => array($this->rest_functions,"courierkaro_webhook_receiver"),
+            'permission_callback' => '__return_true',
+        ));
+    }
+
+    public function rest_shipway_webhook(){
+        register_rest_route( $this->rest_route_shipway . '/' . $this->version , 'webhook_receiver', array(
+            'methods' => 'POST',
+            'callback' => array($this->rest_functions,"shipway_webhook_receiver"),
             'permission_callback' => '__return_true',
         ));
     }

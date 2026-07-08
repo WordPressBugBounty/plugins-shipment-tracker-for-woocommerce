@@ -21,8 +21,9 @@ class Bt_Sync_Shipment_Tracking_Crons {
     private $courierkaro;
     private $proship;
     private $ithink;
+    private $shipway;
 
-	public function __construct($shiprocket,$shyplite,$nimbuspost_new,$shipmozo,$licenser,$delhivery, $fship, $courierkaro, $proship, $ithink) {
+	public function __construct($shiprocket,$shyplite,$nimbuspost_new,$shipmozo,$licenser,$delhivery, $fship, $courierkaro, $proship, $ithink, $shipway) {
 		$this->shiprocket = $shiprocket;
         $this->shipmozo = $shipmozo;
         $this->nimbuspost_new = $nimbuspost_new;
@@ -31,7 +32,9 @@ class Bt_Sync_Shipment_Tracking_Crons {
         $this->delhivery = $delhivery;
         $this->fship = $fship;
         $this->courierkaro = $courierkaro;
+        $this->proship = $proship;
         $this->ithink = $ithink;
+        $this->shipway = $shipway;
     }
     
     public function schedule_recurring_events(){
@@ -131,6 +134,16 @@ class Bt_Sync_Shipment_Tracking_Crons {
             $bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($o);
             if(empty($bt_shipment_tracking) || empty($bt_shipment_tracking->current_status) || stripos($bt_shipment_tracking->current_status, "delivered") === false){
                 $objs = $this->proship->update_order_shipment_status($o);
+            }
+        }
+    }
+
+    private function sync_shipway_shipments(){
+        $orderids = $this->get_orders('shipway');
+        foreach($orderids as $o){
+            $bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($o);
+            if(empty($bt_shipment_tracking) || empty($bt_shipment_tracking->current_status) || stripos($bt_shipment_tracking->current_status, "delivered") === false){
+                $objs = $this->shipway->update_order_shipment_status($o);
             }
         }
     }
@@ -276,6 +289,12 @@ class Bt_Sync_Shipment_Tracking_Crons {
             $bt_sst_proship_cron_schedule = carbon_get_theme_option( 'bt_sst_proship_cron_schedule' );
             if( $bt_sst_proship_cron_schedule == $cron_freq ){
                 $this->sync_proship();
+            }
+        }
+        if(is_array($enabled_shipping_providers) && in_array('shipway',$enabled_shipping_providers)){
+            $bt_sst_shipway_cron_schedule = carbon_get_theme_option( 'bt_sst_shipway_cron_schedule' );
+            if( $bt_sst_shipway_cron_schedule == $cron_freq ){
+                $this->sync_shipway_shipments();
             }
         }
         $bt_sst_shyplite_cron_schedule=carbon_get_theme_option( 'bt_sst_shyplite_cron_schedule' );
