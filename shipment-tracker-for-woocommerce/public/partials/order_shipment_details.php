@@ -1,3 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <div>
     <?php
         $bt_sst_shipment_info_show_fields = carbon_get_theme_option( 'bt_sst_shipment_info_show_fields' );

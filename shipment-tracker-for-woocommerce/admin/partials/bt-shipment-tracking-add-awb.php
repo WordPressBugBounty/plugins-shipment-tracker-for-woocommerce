@@ -1,3 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <div id="bt_sst_check_already_exist">
 <div id="bt_sst_awbPopup" class="bt_sst_popup">
     <div class="bt_sst_popup-content">
@@ -61,6 +66,7 @@ foreach ($coriure_name as $key => $courier) {
                     dataType: "json",
                     data: {
                         'status': true,
+                        'security': bt_sync_shipment_track_data.save_order_awb_nonce,
                         'action': 'get_coriers_name_for_ship24'
                     },
                     success: function (response) {
@@ -123,7 +129,8 @@ foreach ($coriure_name as $key => $courier) {
                         'order_id': '<?php echo esc_js($order_id); ?>',
                         'awb_number': current_awb,
                         'corier_code': corier_code,
-                        'corier_name': corier_name,                       
+                        'corier_name': corier_name,
+                        'security': bt_sync_shipment_track_data.save_order_awb_nonce,
                         'action': 'save_order_awb_number'
                     }, success: function (response) {
                         window.location.reload();

@@ -1,3 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <div class="fl-module-subscribe-form snipcss-oLzae obscure-5eL1eW3kd obscure-1wJ5wR9d8" data-node="krpof3agj2mn">
     <div class="fl-node-content obscure-9aVJaXpd0">
         <div class="fl-subscribe-form-name-show fl-form obscure-n0E90mPMb obscure-avzkvjx5A obscure-r3av3mwX0">

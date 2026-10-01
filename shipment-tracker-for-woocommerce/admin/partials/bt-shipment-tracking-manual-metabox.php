@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
    // echo json_encode($bt_shipment_tracking);exit;
     $bt_shipping_manual_tracking_url = $bt_shipment_tracking->tracking_url;
     $bt_shipment_tracking = (array)$bt_shipment_tracking;
@@ -177,14 +182,14 @@
 <input type="hidden" name="order_id" value="<?php echo esc_attr( $order_id ) ?>"/>
 <p class="form-field ">
     <label for="bt_manual_awb_number">AWB Number *</label><br>
-    <input type="text" class="short" style="" name="bt_manual_awb_number" id="bt_manual_awb_number" value="<?php echo (isset($bt_shipment_tracking['awb'])&& !empty($bt_shipment_tracking['awb'])) ? $bt_shipment_tracking['awb'] : $awb_n; ?>" placeholder="<?php echo esc_attr($awb_n) ?>">
+    <input type="text" class="short" style="" name="bt_manual_awb_number" id="bt_manual_awb_number" value="<?php echo esc_attr( (isset($bt_shipment_tracking['awb']) && !empty($bt_shipment_tracking['awb'])) ? $bt_shipment_tracking['awb'] : $awb_n ); ?>" placeholder="<?php echo esc_attr($awb_n) ?>">>
 </p>
 <p class="form-field ">
     <label for="bt_manual_awb_number_coriure">Courier *</label><br>
     <select style="min-width:80%" class="bt_manual_awb_number_coriure" name="bt_manual_awb_number_coriure">
-        <option value="<?php echo isset($bt_shipment_tracking['courier_name']) && !empty($bt_shipment_tracking['courier_name']) ? $bt_shipment_tracking['courier_name'] : ''; ?>" 
+        <option value="<?php echo esc_attr( isset($bt_shipment_tracking['courier_name']) && !empty($bt_shipment_tracking['courier_name']) ? $bt_shipment_tracking['courier_name'] : '' ); ?>" 
             selected>
-            <?php echo !empty($bt_shipment_tracking['courier_name']) ? $bt_shipment_tracking['courier_name'] : 'Select Courier Company'; ?>
+            <?php echo !empty($bt_shipment_tracking['courier_name']) ? esc_html($bt_shipment_tracking['courier_name']) : 'Select Courier Company'; ?>
         </option>
         <option value="">Loading....</option>
     </select> 
@@ -268,6 +273,7 @@ include plugin_dir_path(__FILE__).'bt-shipment-tracker-get-and-save-couriers.php
                 'shipping_status': jQuery('#bt_manual_shipping_status').val(),
                 'etd': jQuery('#bt_manual_etd').val(),
                 'tracking_link': jQuery('#bt_manual_tracking_link').val(),
+                'security': (typeof bt_sync_shipment_track_data !== 'undefined' ? bt_sync_shipment_track_data.save_order_awb_nonce : '<?php echo wp_create_nonce('save_order_awb_nonce'); ?>'),
                 'action': 'bt_tracking_manual'
             }, success: function (response) {
                 jQuery('#bt_manual_save').removeClass("disabled");
@@ -349,11 +355,12 @@ include plugin_dir_path(__FILE__).'bt-shipment-tracker-get-and-save-couriers.php
                 url: '<?php echo esc_url(admin_url('admin-ajax.php')); ?>',
                 type: 'POST',
                 data: {
+                    security: (typeof bt_sync_shipment_track_data !== 'undefined' ? bt_sync_shipment_track_data.save_order_awb_nonce : '<?php echo wp_create_nonce('save_order_awb_nonce'); ?>'),
                     action: 'load_coriures_name_for_manual'
                 },
                 success: function(response) {
                     // Parse the JSON response
-                    var data = JSON.parse(response);
+                    var data = (typeof response === 'string') ? JSON.parse(response) : response;
 
                     // Group companies by region_coverage
                     var groupedData = {};

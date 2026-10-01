@@ -1,3 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <div id="bt-sst-premium-notice" class="notice notice-info is-dismissible bt-sst-premium-notice">
     <p >
         <div class='content'>

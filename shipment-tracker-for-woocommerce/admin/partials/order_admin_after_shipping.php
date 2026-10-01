@@ -1,4 +1,9 @@
-<?php 
+<?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+ 
 if(isset($order_id)){
     $bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($order_id);
     $bt_shipping_provider = $bt_shipment_tracking->shipping_provider;
@@ -11,61 +16,58 @@ if(isset($order_id)){
 <div>
     <?php if($bt_shipping_provider=="shiprocket" && wc_get_order( $order_id )->has_status('processing')) : 
         global $pagenow;
-        $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET,array("bt_push_to_shiprocket"=>true)))));    
-      //  $current_page .= http_build_query(array("bt_push_to_shiprocket"=>true))
+        $current_page = wp_nonce_url(admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET,array("bt_push_to_shiprocket"=>true))))), 'bt_push_order_' . $order_id);    
     ?>
         <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
     
     <?php elseif($bt_shipping_provider=="shipmozo" && wc_get_order( $order_id )->has_status('processing')) : 
     global $pagenow;
-    $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET,array("bt_push_to_shipmozo"=>true)))));    
-    //  $current_page .= http_build_query(array("bt_push_to_shiprocket"=>true))
+    $current_page = wp_nonce_url(admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET,array("bt_push_to_shipmozo"=>true))))), 'bt_push_order_' . $order_id);    
     ?>
      <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
     <?php elseif($bt_shipping_provider=="nimbuspost_new" && wc_get_order( $order_id )->has_status('processing')) : 
     global $pagenow;
-    $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET,array("bt_push_to_nimbuspost_new"=>true)))));    
-    //  $current_page .= http_build_query(array("bt_push_to_shiprocket"=>true))
+    $current_page = wp_nonce_url(admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET,array("bt_push_to_nimbuspost_new"=>true))))), 'bt_push_order_' . $order_id);    
     ?>
      <a href="<?php echo esc_url($current_page) ?>">Push Now</a> 
 
      <?php elseif($bt_shipping_provider == "delhivery" && wc_get_order($order_id)->has_status('processing')): 
     global $pagenow;
-    $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_delhivery" => true)))));    
+    $current_page = wp_nonce_url(admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_delhivery" => true))))), 'bt_push_order_' . $order_id);    
 ?>
     <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
 
      <?php elseif($bt_shipping_provider == "ekart" && wc_get_order($order_id)->has_status('processing')): 
     global $pagenow;
-    $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_ekart" => true)))));    
+    $current_page = wp_nonce_url(admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_ekart" => true))))), 'bt_push_order_' . $order_id);    
 ?>
     <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
 
      <?php elseif($bt_shipping_provider == "fship" && wc_get_order($order_id)->has_status('processing')): 
     global $pagenow;
-    $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_fship" => true)))));    
+    $current_page = wp_nonce_url(admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_fship" => true))))), 'bt_push_order_' . $order_id);    
 ?>
     <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
 
      <?php elseif($bt_shipping_provider == "courierkaro" && wc_get_order($order_id)->has_status('processing')): 
     global $pagenow;
-    $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_courierkaro" => true)))));    
+    $current_page = wp_nonce_url(admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_courierkaro" => true))))), 'bt_push_order_' . $order_id);    
 ?>
     <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
 
      <?php elseif($bt_shipping_provider == "proship" && wc_get_order($order_id)->has_status('processing')): 
     global $pagenow;
-    $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_proship" => true)))));    
+    $current_page = wp_nonce_url(admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_proship" => true))))), 'bt_push_order_' . $order_id);    
 ?>
     <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
      <?php elseif($bt_shipping_provider == "ithink" && wc_get_order($order_id)->has_status('processing')): 
     global $pagenow;
-    $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_ithink" => true)))));    
+    $current_page = wp_nonce_url(admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_ithink" => true))))), 'bt_push_order_' . $order_id);    
 ?>
     <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
      <?php elseif($bt_shipping_provider == "shipway" && wc_get_order($order_id)->has_status('processing')): 
     global $pagenow;
-    $current_page = admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_shipway" => true)))));    
+    $current_page = wp_nonce_url(admin_url(sprintf($pagenow . '?%s', http_build_query(array_merge($_GET, array("bt_push_to_shipway" => true))))), 'bt_push_order_' . $order_id);    
 ?>
     <a href="<?php echo esc_url($current_page) ?>">Push Now</a>
      <?php endif ?>

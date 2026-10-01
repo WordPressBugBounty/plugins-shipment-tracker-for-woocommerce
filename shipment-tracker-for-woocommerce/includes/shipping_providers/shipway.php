@@ -271,20 +271,25 @@ class Bt_Sync_Shipment_Tracking_Shipway {
         );
     }
 
-    public function update_order_shipment_status($order_id) {
+    public function update_order_shipment_status($order_id, $awb = null) {
         $resp = null;
-        if (!empty($awb_number = Bt_Sync_Shipment_Tracking_Shipment_Model::get_awb_by_order_id($order_id))) {
-            $resp = $this->get_order_tracking_by_awb_number($awb_number);
+        if (empty($awb)) {
+            $awb = Bt_Sync_Shipment_Tracking_Shipment_Model::get_awb_by_order_id($order_id);
+        }
+        if (!empty($awb)) {
+            $resp = $this->get_order_tracking_by_awb_number($awb);
         }
         if (!empty($resp) && isset($resp['response']) && is_array($resp['response'])) {
-            $shipment_obj = $this->init_model($resp['response'], $order_id);
-            Bt_Sync_Shipment_Tracking_Shipment_Model::save_tracking($order_id, $shipment_obj);
-            return $shipment_obj;
+            $shipment_obj = $this->init_model($resp['response'], $order_id, $awb);
+            if ($shipment_obj && !empty($shipment_obj->awb)) {
+                Bt_Sync_Shipment_Tracking_Shipment_Model::save_tracking($order_id, $shipment_obj);
+                return $shipment_obj;
+            }
         }
         return null;
     }
 
-    public function init_model($data, $order_id) {
+    public function init_model($data, $order_id, $awb = null) {
         $obj = new Bt_Sync_Shipment_Tracking_Shipment_Model();
         $obj->order_id = $order_id;
         $obj->shipping_provider = 'shipway';
@@ -294,7 +299,11 @@ class Bt_Sync_Shipment_Tracking_Shipway {
             $tracking = isset($data[0]) ? $data[0] : $data;
             if (isset($tracking['tracking_details'])) {
                 $details = $tracking['tracking_details'];
-                $obj->awb = sanitize_text_field($tracking['awb'] ?? '');
+                $parsed_awb = sanitize_text_field($tracking['awb'] ?? '');
+                if (empty($parsed_awb) && !empty($awb)) {
+                    $parsed_awb = sanitize_text_field($awb);
+                }
+                $obj->awb = $parsed_awb;
                 
                 $status = $details['shipment_status'] ?? 'unknown';
                 $obj->current_status = Bt_Sync_Shipment_Tracking_Shipment_Model::convert_string_to_slug(sanitize_text_field($status));
@@ -342,14 +351,18 @@ class Bt_Sync_Shipment_Tracking_Shipway {
             if (!empty($data['order_id'])) {
                 $order_ids[] = $data['order_id'];
             }
+            if (!empty($data['order_number'])) {
+                $order_ids[] = $data['order_number'];
+            }
             if (!empty($data['api_input']['order_id'])) {
                 $order_ids[] = $data['api_input']['order_id'];
             }
             if (!empty($data['api_input']['extra_fields']['ReferenceNo'])){
                 $order_ids[] = $data['api_input']['extra_fields']['ReferenceNo'];
             }
-            if (isset($data["awbno"]) && !empty($data["awbno"])){
-                $awb_number = $data["awbno"];
+
+            $awb_number = $data['awbno'] ?? $data['awb'] ?? $data['awb_number'] ?? $data['tracking_number'] ?? $data['api_input']['awbno'] ?? $data['api_input']['awb'] ?? '';
+            if (!empty($awb_number)){
                 if (!empty($awb_order_ids = Bt_Sync_Shipment_Tracking_Shipment_Model::get_orders_by_awb_number($awb_number))){
                     foreach ($awb_order_ids as $awb_order_id) {
                         if (!in_array($awb_order_id, $order_ids)){
@@ -358,6 +371,7 @@ class Bt_Sync_Shipment_Tracking_Shipway {
                     }
                 }
             }
+
             if (!empty($order_ids) && is_array($order_ids)){
                 foreach ($order_ids as $order_id) {
                     if (!empty($order_id)){
@@ -372,8 +386,30 @@ class Bt_Sync_Shipment_Tracking_Shipway {
                             $allowed_seconds = $bt_sst_sync_orders_date * 24 * 60 * 60;
                             $diff_in_seconds = $now_ts - $date_created_ts;
                             if ( $diff_in_seconds <= $allowed_seconds ) {
+                                // 1. If webhook payload already contains full tracking_details, initialize model directly
+                                if (isset($data['tracking_details']) || (isset($data[0]) && isset($data[0]['tracking_details']))) {
+                                    $shipment_obj = $this->init_model($data, $order_id, $awb_number);
+                                    if ($shipment_obj && !empty($shipment_obj->awb)) {
+                                        Bt_Sync_Shipment_Tracking_Shipment_Model::save_tracking($order_id, $shipment_obj);
+                                        return "Thanks Shipway! Record updated.";
+                                    }
+                                }
+
+                                // 2. Perform live sync via API (same logic as manual 'Sync Now' click)
+                                $order_awb = !empty($awb_number) ? $awb_number : Bt_Sync_Shipment_Tracking_Shipment_Model::get_awb_by_order_id($order_id);
+                                if (!empty($order_awb)) {
+                                    $shipment_obj = $this->update_order_shipment_status($order_id, $order_awb);
+                                    if ($shipment_obj && !empty($shipment_obj->awb)) {
+                                        return "Thanks Shipway! Record updated.";
+                                    }
+                                }
+
+                                // 3. Fallback: Parse webhook payload without overwriting existing data
                                 $shipment_obj = $this->init_model_from_webhook($data, $order_id);
-                                Bt_Sync_Shipment_Tracking_Shipment_Model::save_tracking($order_id,$shipment_obj);
+                                if ($shipment_obj && !empty($shipment_obj->awb)) {
+                                    Bt_Sync_Shipment_Tracking_Shipment_Model::save_tracking($order_id, $shipment_obj);
+                                    return "Thanks Shipway! Record updated.";
+                                }
                                 return "Thanks Shipway! Record updated.";
                             }else{
                                 return "Thanks Shipway! Order too old.";
@@ -388,45 +424,73 @@ class Bt_Sync_Shipment_Tracking_Shipway {
     }
 
     public function init_model_from_webhook($data, $order_id) {
+        $existing = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($order_id);
+
         $obj = new Bt_Sync_Shipment_Tracking_Shipment_Model();
         $obj->order_id = $order_id;
         $obj->shipping_provider = 'shipway';
         $obj->courier_name = 'Shipway';
-        $obj->awb = sanitize_text_field($data['awbno'] ?? $data['api_input']['awbno'] ?? '');
 
-        if (!empty($data['carrier'])) {
-            $obj->courier_name = sanitize_text_field($data['carrier']);
+        $awb = sanitize_text_field($data['awbno'] ?? $data['awb'] ?? $data['awb_number'] ?? $data['tracking_number'] ?? $data['api_input']['awbno'] ?? $data['api_input']['awb'] ?? '');
+        if (empty($awb) && $existing instanceof Bt_Sync_Shipment_Tracking_Shipment_Model && !empty($existing->awb)) {
+            $awb = $existing->awb;
+        }
+        $obj->awb = $awb;
+
+        $carrier = '';
+        if (!empty($data['courier_name'])) {
+            $carrier = sanitize_text_field($data['courier_name']);
+        } elseif (!empty($data['carrier_name'])) {
+            $carrier = sanitize_text_field($data['carrier_name']);
+        } elseif (!empty($data['carrier'])) {
+            $carrier = sanitize_text_field($data['carrier']);
         } elseif (!empty($data['api_input']['carrier'])) {
-            $obj->courier_name = sanitize_text_field($data['api_input']['carrier']);
+            $carrier = sanitize_text_field($data['api_input']['carrier']);
+        } elseif ($existing instanceof Bt_Sync_Shipment_Tracking_Shipment_Model && !empty($existing->courier_name) && $existing->courier_name !== 'Shipway') {
+            $carrier = $existing->courier_name;
+        }
+        if (!empty($carrier)) {
+            $obj->courier_name = $carrier;
         }
         
-        $obj->etd = sanitize_text_field($data['expected_delivery_date'] ?? $data['api_input']['expected_delivery_date'] ?? '');
+        $etd = sanitize_text_field($data['expected_delivery_date'] ?? $data['api_input']['expected_delivery_date'] ?? $data['edd'] ?? '');
+        if (empty($etd) && $existing instanceof Bt_Sync_Shipment_Tracking_Shipment_Model && !empty($existing->etd)) {
+            $etd = $existing->etd;
+        }
+        $obj->etd = $etd;
 
-        $status = $data['api_input']['current_status_desc'] ?? $data['api_input']['current_status'] ?? $data['scans_current_status'] ?? $data['current_status'] ?? 'unknown';
-        $obj->current_status = Bt_Sync_Shipment_Tracking_Shipment_Model::convert_string_to_slug(sanitize_text_field($status));
+        $status = $data['api_input']['current_status_desc'] ?? $data['api_input']['current_status'] ?? $data['scans_current_status'] ?? $data['current_status'] ?? $data['status'] ?? $data['shipment_status'] ?? '';
+        if (empty($status) && $existing instanceof Bt_Sync_Shipment_Tracking_Shipment_Model && !empty($existing->current_status)) {
+            $obj->current_status = $existing->current_status;
+        } else {
+            $obj->current_status = Bt_Sync_Shipment_Tracking_Shipment_Model::convert_string_to_slug(sanitize_text_field($status ?: 'unknown'));
+        }
 
         $scans = [];
-        $raw_scans = $data['api_input']['scans'] ?? [];
-        if (is_array($raw_scans)) {
-            // Normalize associative arrays with numeric-string keys into a sequential array
+        $raw_scans = $data['api_input']['scans'] ?? $data['scans'] ?? $data['activities'] ?? [];
+        if (is_array($raw_scans) && !empty($raw_scans)) {
             $raw_scans_norm = array_values($raw_scans);
             foreach ($raw_scans_norm as $act) {
                 $scans[] = [
-                    'date' => sanitize_text_field($act['time'] ?? ''),
-                    'activity' => sanitize_text_field($act['status'] ?? ''),
+                    'date' => sanitize_text_field($act['time'] ?? $act['date'] ?? ''),
+                    'activity' => sanitize_text_field($act['status'] ?? $act['activity'] ?? $act['message'] ?? ''),
                     'location' => sanitize_text_field($act['location'] ?? ''),
                 ];
             }
+        }
+        if (empty($scans) && $existing instanceof Bt_Sync_Shipment_Tracking_Shipment_Model && !empty($existing->scans)) {
+            $scans = $existing->scans;
         }
         $obj->scans = $scans;
 
         if (strtolower($obj->current_status) == "delivered" && empty($obj->delivery_date)) {
             $obj->delivery_date = date('Y-m-d');
+        } elseif ($existing instanceof Bt_Sync_Shipment_Tracking_Shipment_Model && !empty($existing->delivery_date)) {
+            $obj->delivery_date = $existing->delivery_date;
         }
 
         return $obj;
     }
-
     public function get_rate_calcultor($pickup_pincode, $delivery_pincode, $pm, $declared_value, $cod, $weight_in_kg, $length_in_cms = '', $breadth_in_cms = '', $height_in_cms = '') {
         $this->init_params();
 

@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
   if ($_SERVER["REQUEST_METHOD"] == "POST") {
       $form_data = [
           'bt_sst_quill_editer_html' => isset($_POST['bt_sst_quill_editer_html']) ? wp_kses_post($_POST['bt_sst_quill_editer_html']) : '',

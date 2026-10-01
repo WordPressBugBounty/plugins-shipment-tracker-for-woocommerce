@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
     $payment_redirect_url = admin_url( "admin.php?page=".sanitize_text_field($_GET["page"] ));
     $api = get_option('register_for_sms_apy_key');
 ?>

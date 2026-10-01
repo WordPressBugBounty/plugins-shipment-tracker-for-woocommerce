@@ -1,15 +1,15 @@
 === Shipment Tracker for Woocommerce ===
 Contributors: amitmital
 Donate link: https://pmny.in/6JB4CzvwowVL
-Tags: shiprocket, nimbuspost, xpressbees, shipmozo, delhivery, order tracking, shipment tracking, tracking page 
+Tags: shipment tracking, order tracking, shiprocket, delhivery, tracking page
 Requires at least: 4.6
-Tested up to: 6.9
-Stable tag: trunk
+Tested up to: 7.1
+Stable tag: 1.5.7
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Add awb# to orders, create tracking page, send tracking info via sms & email. Works best with Shiprocket, Shipmozo, Delhivery & Nimbuspost. 🇮🇳 Proudly Made in India 🇮🇳
+Add AWB tracking to orders, create custom tracking pages, and send shipment updates via SMS & email for WooCommerce stores.
 
 == Description ==
 
@@ -790,6 +790,10 @@ The tracking page adheres to strict privacy standards to ensure the security of 
 
 
 == Changelog ==
+= 1.5.7 - 2026.09.26 =
+1. Security Fix: Enforce manage_options capability check and strict nonce verification on handle_stw_wizard_form_data_save AJAX action.
+2. Security Fix: Require publish_pages capability for automatic tracking page creation and restrict configuration settings to strict allowlisted inputs.
+3. Security Hardening: Comprehensive security review across all AJAX endpoints, admin actions, and order pushes with capability validation and CSRF protection.
 = 1.4.24.10 - 2025.05.13 =
 1. WhatsApp Notifications
 = 1.4.23.1 - 2024.11.22 =

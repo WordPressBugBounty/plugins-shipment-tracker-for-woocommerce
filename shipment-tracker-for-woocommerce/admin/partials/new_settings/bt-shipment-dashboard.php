@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
     $all_providers = BT_SHIPPING_PROVIDERS;
 ?>
 <div class="box quick-settings">

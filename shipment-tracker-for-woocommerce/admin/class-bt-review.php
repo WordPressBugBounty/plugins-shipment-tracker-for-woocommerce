@@ -1,5 +1,10 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+
 /**
  * Class for admin notice requesting plugin review.
  *
@@ -144,7 +149,7 @@ class Bt_Sync_Shipment_Tracking_Review {
 				<h4>That's awesome 🤩</h4>
 				<p>If you find this plugin useful, please spare a minute to give a 5 star review on wordpress. It gives us motivation to prioritize the plugin development. More importantly, your review will help other users in their plugin-installation decisions.</p>
 				<p>
-					<a href="https://wordpress.org/support/plugin/shipment-tracker-for-woocommerce/reviews/?filter=5#new-post" class="bt-sst-dismiss-review-notice bt-sst-review-out" target="_blank" rel="noopener noreferrer">
+					<a href="https://wordpress.org/support/plugin/shipment-tracker-for-woocommerce/reviews/#new-post" class="bt-sst-dismiss-review-notice bt-sst-review-out" target="_blank" rel="noopener noreferrer">
 						<?php esc_html_e( 'Ok, you deserve it', $plugin_info['Name'] ); ?>
 					</a><br>
 					<a href="#" class="bt-sst-dismiss-review-notice" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Nope, maybe later', $plugin_info['Name'] ); ?></a><br>

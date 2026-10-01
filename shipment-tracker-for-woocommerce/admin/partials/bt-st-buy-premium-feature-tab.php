@@ -1,3 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <nav class="panel">
   <div class="panel-block">
     <div class="columns" style="width:100%">

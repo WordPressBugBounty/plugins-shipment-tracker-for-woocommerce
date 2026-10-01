@@ -1,1 +1,6 @@
-<?php include plugin_dir_path(dirname(__FILE__)) . '../partials/bt-st-buy-premium-feature-tab.php'; ?>
+<?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+ include plugin_dir_path(dirname(__FILE__)) . '../partials/bt-st-buy-premium-feature-tab.php'; ?>

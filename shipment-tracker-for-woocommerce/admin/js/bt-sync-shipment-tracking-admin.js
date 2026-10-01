@@ -187,7 +187,7 @@
 
 		jQuery(document).on('change', 'input[name="carbon_fields_compact_input[_bt_sst_message_text_template]"]', function () {
 			var selectedValue = $(this).val();
-			let timeline_img_url = bt_sync_shipment_track_data.plugin_public_url + 'images/shipping timeline.png';
+			let timeline_img_url = bt_sync_shipment_track_data.plugin_public_url + 'images/shipping-timeline.png';
 			const replacements = {
 				'#min_date#': 'Oct 08, 2024',
 				'#max_date#': 'Oct 08, 2024',
@@ -468,10 +468,10 @@
 					dynamic_shipping_methods: $('input[name="stw_wizard_dsm_checker"]:checked').val(),
 					shipping_manual_or_s24: $('input[name="custom_shipping_mode"]:checked').val(),
 				};
-				$nextBtn.prop('disabled', true).text('Loading...');
-
+				var wizardNonce = $('#form-wizard input[name="stw_wizard_nonce"]').val() || (typeof bt_sync_shipment_track_data !== 'undefined' && bt_sync_shipment_track_data.stw_wizard_nonce ? bt_sync_shipment_track_data.stw_wizard_nonce : '');
 				$.post(bt_sync_shipment_track_data.ajax_url, {
 					action: "handle_stw_wizard_form_data_save",
+					security: wizardNonce,
 					data: formData,
 				})
 					.done(function (data) {
@@ -859,6 +859,7 @@
 			region_coverage: jQuery('#bt_sst_manual_courier_region_coverage').val(),
 			company_url: jQuery('#bt_sst_manual_courier_company_url').val(),
 			tracking_url: jQuery('#bt_sst_manual_courier_tracking_url').val(),
+			security: (typeof bt_sync_shipment_track_data !== 'undefined' ? (bt_sync_shipment_track_data.save_order_awb_nonce || bt_sync_shipment_track_data.settings_nonce) : ''),
 			action: 'bt_sst_save_manul_coriure_name',
 		};
 
@@ -973,8 +974,7 @@
 	}
 
 	function api_test_connection_delh() {
-		// console.log(bt_sync_shipment_track_data.test_conn_nonce);		
-		var nonce = bt_sync_shipment_track_data.test_conn_nonce;
+		var nonce = bt_sync_shipment_track_data.test_conn_delhivery_nonce || bt_sync_shipment_track_data.test_conn_nonce;
 		$.get(
 			bt_sync_shipment_track_data.ajax_url,
 			{ action: 'api_call_for_delhivery_test_connection', value: nonce },
@@ -1029,8 +1029,7 @@
 		)
 	}
 	function api_test_connection_ship24() {
-		// console.log(bt_sync_shipment_track_data.test_conn_nonce);		
-		var nonce = bt_sync_shipment_track_data.test_conn_nonce;
+		var nonce = bt_sync_shipment_track_data.test_conn_ship24_nonce || bt_sync_shipment_track_data.test_conn_nonce;
 		$.get(
 			bt_sync_shipment_track_data.ajax_url,
 			{ action: 'api_call_for_ship24_test_connection', value: nonce },
@@ -1044,7 +1043,7 @@
 		)
 	}
 	function api_test_connection_ithink() {
-		var nonce = bt_sync_shipment_track_data.test_conn_nonce;
+		var nonce = bt_sync_shipment_track_data.test_conn_ithink_nonce || bt_sync_shipment_track_data.test_conn_nonce;
 		$.get(
 			bt_sync_shipment_track_data.ajax_url,
 			{ action: 'api_call_for_ithink_test_connection', value: nonce },
@@ -1198,7 +1197,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 
 	function api_nimbuspost_test_connection() {
-		var nonce = bt_sync_shipment_track_data.test_conn_nonce;
+		var nonce = bt_sync_shipment_track_data.test_conn_nimbuspost_nonce || bt_sync_shipment_track_data.test_conn_nonce;
 		// alert(bt_sync_shipment_track_data.ajax_url);
 		// console.log(bt_sync_shipment_track_data.ajax_url);		
 
@@ -1226,8 +1225,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 
 	function credit_balance_details() {
-
-		var nonce = bt_sync_shipment_track_data.test_conn_nonce;
+		var nonce = bt_sync_shipment_track_data.credit_balance_details_nonce || bt_sync_shipment_track_data.test_conn_nonce;
 		$.get(
 			bt_sync_shipment_track_data.ajax_url,
 			{ action: 'credit_balance_details', value: nonce },

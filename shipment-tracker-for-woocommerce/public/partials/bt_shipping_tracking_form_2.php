@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 $pickup_pincode = ''; 
 $currentPin = "";
 $delivery_pincode = "";
@@ -478,6 +483,38 @@ if(empty($bt_sst_review_subheading_text)){
                                             
                                             <td><?php echo htmlspecialchars($scan['message']); ?></td>
                                             <td><?php echo htmlspecialchars($scan['location']); ?></td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </table>
+                                </div>
+                            </div>
+                        <?php }else if($shipping_provider=="shipway" && isset($tracking['tracking_data']['scans']) && sizeof($tracking['tracking_data']['scans'])>0){ ?>
+                            <div class="bt_sst_tracking_product_trackong">
+                            <input type="checkbox" id="toggle" class="bt_sst_toggle-checkbox">
+                            <label for="toggle" class="bt_sst_toggle-label">Show More</label>
+    
+                            <div class="bt_sst_toggle-content">
+                                <table>
+                                    <tr>
+                                        <th>Date:</th>
+                                        <th>Status:</th>
+                                        <th>Location:</th>
+                                    </tr>
+                                        <?php foreach ($tracking['tracking_data']['scans'] as $scan) : 
+                                        $scan_date = '';
+                                        if (!empty($scan['date'])) {
+                                            try {
+                                                $dateandtime_obj = new DateTime($scan['date']);
+                                                $scan_date = $dateandtime_obj->format('F j Y');
+                                            } catch (Exception $e) {
+                                                $scan_date = htmlspecialchars($scan['date']);
+                                            }
+                                        }
+                                        ?>
+                                        <tr>
+                                            <td><?php echo $scan_date; ?></td>
+                                            <td><?php echo htmlspecialchars($scan['activity'] ?? $scan['status'] ?? $scan['message'] ?? ''); ?></td>
+                                            <td><?php echo htmlspecialchars($scan['location'] ?? ''); ?></td>
                                         </tr>
                                         <?php endforeach; ?>
                                     </table>

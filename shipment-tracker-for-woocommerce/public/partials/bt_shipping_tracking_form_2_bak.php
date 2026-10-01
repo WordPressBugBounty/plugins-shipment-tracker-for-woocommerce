@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
   $last_four_digit = carbon_get_theme_option('bt_sst_valid_phone_no');
 
 ?>

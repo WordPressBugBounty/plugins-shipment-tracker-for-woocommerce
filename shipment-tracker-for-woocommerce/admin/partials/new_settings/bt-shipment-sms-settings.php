@@ -1,5 +1,10 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+
 $selected_messages = carbon_get_theme_option('bt_sst_shipment_when_to_send_messages', array());
 // var_dump($selected_messages); die;
 $woocommerce_email_settings_url = admin_url('admin.php?page=wc-settings&tab=email&section=bt_sst_wc_shipment_email');
@@ -332,7 +337,7 @@ include plugin_dir_path(dirname(__FILE__)) . '../partials/new_settings/popup.php
 							<h5 class="title is-6">Try SMS:</h5>
 							<div class="columns">
 								<div class="column is-narrow">
-									<img src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__))) . '../images/official dlt telemarketer.png'; ?>"
+									<img src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__))) . '../images/official-dlt-telemarketer.png'; ?>"
 										alt="SMS Sending" style="width: 100px; height: auto;">
 								</div>
 								<div class="column ">
@@ -394,7 +399,7 @@ include plugin_dir_path(dirname(__FILE__)) . '../partials/new_settings/popup.php
 					<h5 class="title is-6">Try WhatsApp:</h5>
 					<div class="columns">
 						<div class="column is-narrow">
-							<img src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__))) . '../images/official whatsapp tech provider.png'; ?>"
+							<img src="<?php echo esc_url(plugin_dir_url(dirname(__FILE__))) . '../images/official-whatsapp-tech-provider.png'; ?>"
 								alt="SMS Sending" style="width: 100px; height: auto;">
 						</div>
 						<div class="column ">

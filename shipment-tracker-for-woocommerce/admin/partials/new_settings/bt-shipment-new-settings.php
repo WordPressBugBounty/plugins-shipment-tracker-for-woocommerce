@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 $check_active_registration = get_option('register_for_sms_apy_key');
 $check_skip_or_not = get_option('bt_sst_check_skip_or_not');
 $shipment_setting_url = admin_url('admin.php?page=crb_carbon_fields_container_shipment_tracking.php');

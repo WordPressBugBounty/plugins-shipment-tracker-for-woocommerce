@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
     $allowed_tags = array(
         'a'      => array(
             'href'  => array(),

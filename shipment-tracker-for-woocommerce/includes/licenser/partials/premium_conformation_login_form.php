@@ -1,3 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <div class="card">
     <header class="card-header">
         <p class="card-header-title title is-5">

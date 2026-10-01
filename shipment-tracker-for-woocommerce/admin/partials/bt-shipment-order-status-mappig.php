@@ -1,3 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <style>
     /* Table Styling */
 .bt_sst_status_mapping_table {

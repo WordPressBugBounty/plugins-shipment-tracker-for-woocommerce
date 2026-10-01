@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
   $public_dir_url = plugin_dir_url(dirname(__FILE__));
 ?>
 <div class="snipcss0-0-0-1 snipcss-GDYrP obscure-kzaezq7Gp" style="position:relative;margin:0px;padding:20px;background-attachment:scroll !important;">

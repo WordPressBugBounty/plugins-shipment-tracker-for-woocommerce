@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use PhpUnitsOfMeasure\PhysicalQuantity\Mass;
 use PhpUnitsOfMeasure\PhysicalQuantity\Length;
 
@@ -1853,16 +1858,18 @@ class Bt_Sync_Shipment_Tracking_Public
 			$total_cost += $price * $quantity;
 		}
 
-		$log_data = [
-			'time' => date('Y-m-d H:i:s'),
-			'is_premium' => $this->licenser->should_activate_premium_features(),
-			'allow_to_choose' => carbon_get_theme_option("bt_sst_select_courier_company"),
-			'delivery_pincode' => isset($package['destination']['postcode']) ? $package['destination']['postcode'] : 'not set',
-			'delivery_country' => isset($package['destination']['country']) ? $package['destination']['country'] : 'not set',
-			'rate_provider' => carbon_get_theme_option("bt_sst_courier_rate_provider"),
-			'shipway_pickup_pincode' => carbon_get_theme_option("bt_sst_shipway_pickup_pincode"),
-		];
-		file_put_contents(plugin_dir_path(__FILE__) . 'debug_rates.log', json_encode($log_data, JSON_PRETTY_PRINT) . "\n", FILE_APPEND);
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG && function_exists( 'wc_get_logger' ) ) {
+			$log_data = [
+				'time' => gmdate('Y-m-d H:i:s'),
+				'is_premium' => $this->licenser->should_activate_premium_features(),
+				'allow_to_choose' => carbon_get_theme_option("bt_sst_select_courier_company"),
+				'delivery_pincode' => isset($package['destination']['postcode']) ? $package['destination']['postcode'] : 'not set',
+				'delivery_country' => isset($package['destination']['country']) ? $package['destination']['country'] : 'not set',
+				'rate_provider' => carbon_get_theme_option("bt_sst_courier_rate_provider"),
+				'shipway_pickup_pincode' => carbon_get_theme_option("bt_sst_shipway_pickup_pincode"),
+			];
+			wc_get_logger()->debug( wp_json_encode( $log_data ), array( 'source' => 'bt-sync-shipment-tracking' ) );
+		}
 
 		$push_resp = [];
 		if (!is_cart() && !is_checkout()) {

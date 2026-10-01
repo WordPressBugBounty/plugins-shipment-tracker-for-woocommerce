@@ -1,3 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 
     <!-- Modal -->
     <div class="bt_sst_setup_guide modal" id="form-wizard-modal">
@@ -33,6 +38,7 @@
 
                 <!-- Form Wizard Steps -->
                 <form id="form-wizard">
+                    <?php wp_nonce_field('handle_stw_wizard_form_data_save', 'stw_wizard_nonce'); ?>
                     <!-- Step 1 -->
                     <div class="wizard-step active welcome1">
                         <h6 class="is-size-6">

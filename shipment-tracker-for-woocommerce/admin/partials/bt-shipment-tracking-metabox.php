@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if (!$order_id) {
     $order_id = isset($_GET['post']) ? $_GET['post'] : sanitize_text_field($_GET['id']);
 }
@@ -175,6 +180,7 @@ $coriure_name = get_option('_bt_sst_ship24_active_courier_companies');
                 dataType: "json",
                 data: {
                     'order_id': '<?php echo esc_js($order_id); ?>',
+                    'security': bt_sync_shipment_track_data.save_order_awb_nonce,
                     'action': 'force_sync_tracking'
                 }, success: function (response) {
 
@@ -209,6 +215,7 @@ $coriure_name = get_option('_bt_sst_ship24_active_courier_companies');
                 data: {
                     'awbs': ['<?php echo $get_awb_no; ?>'],
                     'order_id': '<?php echo esc_js($order_id); ?>',
+                    'security': bt_sync_shipment_track_data.save_order_awb_nonce,
                     'action': 'download_label_pdf'
                 }, success: function (response) {
                     jQuery('#dawnload_able_pdf').removeClass("disabled");
@@ -265,6 +272,7 @@ $coriure_name = get_option('_bt_sst_ship24_active_courier_companies');
                     data: {
                         'order_id': '<?php echo esc_js($order_id); ?>',
                         'awb_number': awb_number,
+                        'security': bt_sync_shipment_track_data.save_order_awb_nonce,
                         'action': 'save_order_awb_number'
                     }, success: function (response) {
                         jQuery('#add_awb_number').removeClass("disabled");
@@ -292,6 +300,7 @@ $coriure_name = get_option('_bt_sst_ship24_active_courier_companies');
                     dataType: "json",
                     data: {
                         'status': true,
+                        'security': bt_sync_shipment_track_data.save_order_awb_nonce,
                         'action': 'get_coriers_name_for_ship24'
                     },
                     success: function (response) {
@@ -356,6 +365,7 @@ $coriure_name = get_option('_bt_sst_ship24_active_courier_companies');
                     'awb_number': current_awb,
                     'corier_code': corier_code,
                     'corier_name': corier_name,
+                    'security': bt_sync_shipment_track_data.save_order_awb_nonce,
                     'action': 'save_order_awb_number'
                 }, success: function (response) {
                     jQuery("#bt_sst_awbPopup").hide();
@@ -388,6 +398,7 @@ $coriure_name = get_option('_bt_sst_ship24_active_courier_companies');
                     'package_width': jQuery('#bt_package_width_metabox').val(),
                     'package_height': jQuery('#bt_package_height_metabox').val(),
                     'package_weight': jQuery('#bt_package_weight_metabox').val(),
+                    'security': bt_sync_shipment_track_data.save_order_awb_nonce,
                     'action': 'save_package_dimensions'
                 }, success: function (response) {
                     jQuery('#save_package_dims').text('Save Package Dimensions').prop('disabled', false);

@@ -21,6 +21,13 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
     }
 
     public function save_package_dimensions(){
+        // Security: capability + nonce check (mirrors bt_tracking_manual gate added in 1.5.3.3)
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            wp_send_json( array( 'status' => false, 'message' => 'Permission denied.' ) );
+            wp_die();
+        }
+        check_ajax_referer( 'save_order_awb_nonce', 'security' );
+
         $resp = array(
             "status" => false,
             "message" => ''
@@ -58,6 +65,10 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
     }
 
     public function bt_sync_now_shyplite(){
+        if (!current_user_can('manage_woocommerce') && !current_user_can('manage_options')) {
+            wp_send_json( array( 'status' => false, 'message' => 'Permission denied.' ) );
+            wp_die();
+        }
         $obj = $this->crons->sync_shyplite_shipments();
 
         $resp = array(
@@ -69,6 +80,16 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
     }
 
     public function force_sync_tracking(){
+        if (!current_user_can('manage_woocommerce') && !current_user_can('edit_shop_orders')) {
+            wp_send_json( array( 'status' => false, 'response' => 'Permission denied.' ) );
+            wp_die();
+        }
+        $security = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '');
+        if (!wp_verify_nonce($security, 'save_order_awb_nonce') && !wp_verify_nonce($security, 'api_call_for_sync_order_by_order_id')) {
+            wp_send_json( array( 'status' => false, 'response' => 'Security check failed.' ) );
+            wp_die();
+        }
+
         $resp = array(
             "status" => false,
             "response" => ''
@@ -104,6 +125,13 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
     }
 
     public function save_order_awb_number(){
+        // Security: capability + nonce check (mirrors bt_tracking_manual gate added in 1.5.3.3)
+        if ( ! current_user_can( 'manage_woocommerce' ) ) {
+            wp_send_json( array( 'status' => false, 'response' => 'Permission denied.' ) );
+            wp_die();
+        }
+        check_ajax_referer( 'save_order_awb_nonce', 'security' );
+
         $resp = array(
             "status" => false,
             "response" => ''
@@ -118,7 +146,7 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
             wp_die();
         }
 
-        if(empty($awb_number = $_POST['awb_number'])){
+        if(empty($awb_number = sanitize_text_field($_POST['awb_number']))){
             $resp = array(
                 "status" => false,
                 "response" => 'Invalid AWB number.'
@@ -229,6 +257,11 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
             wp_send_json( array( 'status' => false, 'response' => 'Permission denied.' ) );
             wp_die();
         }
+        $security = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '');
+        if (!wp_verify_nonce($security, 'save_order_awb_nonce')) {
+            wp_send_json( array( 'status' => false, 'response' => 'Security check failed.' ) );
+            wp_die();
+        }
 
         $order_id = isset($_POST['order_id']) ? sanitize_text_field($_POST['order_id']) : '';
         $fields = array(
@@ -265,6 +298,10 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
     }
 
     public function post_customer_feedback_to_sever() {
+        if (!current_user_can('manage_options') && !current_user_can('manage_woocommerce')) {
+            wp_send_json_error( array( 'message' => 'Permission denied.' ), 403 );
+            wp_die();
+        }
         $current_user = wp_get_current_user();
         $body = array(
             'your-message'    => sanitize_text_field($_POST['feedback']),
@@ -320,6 +357,16 @@ class Bt_Sync_Shipment_Tracking_Admin_Ajax_Functions{
 
 
     function bt_shipment_data_callback() {
+        if (!current_user_can('manage_woocommerce') && !current_user_can('manage_options')) {
+            wp_send_json_error( array( 'message' => 'Permission denied.' ), 403 );
+            wp_die();
+        }
+        $security = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '');
+        if ($security && !wp_verify_nonce($security, 'bt_sst_settings_nonce') && !wp_verify_nonce($security, 'save_order_awb_nonce')) {
+            wp_send_json_error( array( 'message' => 'Security check failed.' ), 403 );
+            wp_die();
+        }
+
         // Initialize response array
         $response = array(
             'orders_received_last_7_days' => 0,

@@ -488,12 +488,10 @@ class Bt_Sync_Shipment_Tracking {
         $this->loader->add_action('wp_ajax_save_package_dimensions',$ajax_functions, 'save_package_dimensions');
         $this->loader->add_action('wp_ajax_post_customer_feedback_to_sever',$ajax_functions, 'post_customer_feedback_to_sever');
 
-		$this->loader->add_action('wp_ajax_create_and_add_tracking_page',$ajax_functions, 'create_and_add_tracking_page');
+		$this->loader->add_action('wp_ajax_create_and_add_tracking_page', $plugin_admin, 'create_and_add_tracking_page');
 		/**Check user data for premium features of plugin on checkout tab */
-		$this->loader->add_action('wp_ajax_get_coriers_name_for_ship24', $plugin_admin,'get_coriers_name_for_ship24');  // For logged-in users
-		$this->loader->add_action('wp_ajax_nopriv_get_coriers_name_for_ship24', $plugin_admin, 'get_coriers_name_for_ship24'); 
-		// $this->loader->add_action('wp_ajax_stw_wizard_form_data_save', $plugin_admin, 'handle_stw_wizard_form_data_save');
-		$this->loader->add_action('wp_ajax_handle_stw_wizard_form_data_save',$plugin_admin,  'handle_stw_wizard_form_data_save'); // For non-logged in users
+		$this->loader->add_action('wp_ajax_get_coriers_name_for_ship24', $plugin_admin, 'get_coriers_name_for_ship24');  // For logged-in admin users
+		$this->loader->add_action('wp_ajax_handle_stw_wizard_form_data_save', $plugin_admin, 'handle_stw_wizard_form_data_save');
 		
 		$this->loader->add_action( 'wp_ajax_download_label_pdf', $plugin_admin, 'download_label_pdf' );
 		$this->loader->add_action( 'wp_ajax_check_user_data_for_premium_features', $plugin_admin, 'check_user_data_for_premium_features' );

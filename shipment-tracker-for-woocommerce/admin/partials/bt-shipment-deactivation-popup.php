@@ -1,3 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <!-- The Modal -->
 <div id="bt-st-deactivation_popup" class="bt_st_deactivation_popup">
 

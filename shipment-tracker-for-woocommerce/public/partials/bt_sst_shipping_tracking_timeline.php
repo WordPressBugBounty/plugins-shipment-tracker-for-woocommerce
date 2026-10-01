@@ -1,3 +1,8 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <div class="bt_sst_shipping_timeline_order_tracking">
     <div class="step">
         <img width="30px"

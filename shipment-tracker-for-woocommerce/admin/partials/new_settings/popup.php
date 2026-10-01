@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
     // echo $check_skip_or_not; die;
     $class_is_active = "";
     if(!$check_active_registration && $check_skip_or_not===false){
@@ -109,7 +114,7 @@
             "<?php echo admin_url('admin-ajax.php'); ?>",
             {
                 action: 'register_for_sms',
-                value: 'register_for_sms',
+                value: '<?php echo wp_create_nonce('register_for_sms'); ?>',
                 first_name: first_name,
                 user_mobile: user_mobile
             },
@@ -135,6 +140,7 @@
             dataType: 'json',
             data: {
                 action: 'update_check_skip_or_not',
+                nonce: '<?php echo wp_create_nonce('update_check_skip_or_not'); ?>'
             },
             success: function (res) {
                 if (res.success) {

@@ -1,5 +1,10 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -163,17 +168,18 @@ class Bt_Sync_Shipment_Tracking_Admin
 			$current_screen->id == "toplevel_page_bt-shipment-tracking"||
 			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-help-support"||
 			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-ithink-logistics"||
-			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-multi-vendor"
+			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-multi-vendor" ||
+			$current_screen->id == "shipment-tracking_page_bt-shipment-tracking-developer"
 			)) {
 			$script_data = array(
 
 				"ajax_url" => admin_url('admin-ajax.php'),
 				"plugin_public_url" => plugin_dir_url(__FILE__),
 				"is_premium_active" => $this->licenser->get_license(),
-				"test_conn_nonce" => wp_create_nonce('api_call_for_test_connection'),
+					"test_conn_nonce" => wp_create_nonce('api_call_for_test_connection'),
 				"sync_order_nonce" => wp_create_nonce('api_call_for_sync_order_by_order_id'),
 				"show_st_popup" => wp_create_nonce('get_st_form_with_data'),
-				"create_tracking_page" => wp_create_nonce('get_st_form_with_data'),
+				"create_tracking_page" => wp_create_nonce('create_and_add_tracking_page'),
 				"test_conn_shipmozo_nonce" => wp_create_nonce('api_call_for_shipmozo_test_connection'),
 				"test_conn_delhivery_nonce" => wp_create_nonce('api_call_for_delhivery_test_connection'),
 				"test_conn_fship_nonce" => wp_create_nonce('api_call_for_fship_test_connection'),
@@ -188,10 +194,15 @@ class Bt_Sync_Shipment_Tracking_Admin
 				"register_for_sms_nonce" => wp_create_nonce('register_for_sms'),
 				"get_sms_trial_nonce"                => wp_create_nonce('get_sms_trial'),
 				"dokan_pickup_nonce"                 => wp_create_nonce('bt_sst_dokan_pickup_locations'),
-
+				// STW-01a fix: nonce for save_order_awb_number and save_package_dimensions AJAX actions
+				"save_order_awb_nonce"               => wp_create_nonce('save_order_awb_nonce'),
+				"stw_wizard_nonce"                   => wp_create_nonce('handle_stw_wizard_form_data_save'),
+				"settings_nonce"                     => wp_create_nonce('bt_sst_settings_nonce'),
+				"admin_action_nonce"                 => wp_create_nonce('bt_sst_admin_nonce'),
 
 			);
 			wp_localize_script($this->plugin_name, 'bt_sync_shipment_track_data', $script_data);
+			wp_localize_script('bt-shipment-new-settings-js', 'bt_sync_shipment_track_data', $script_data);
 			wp_enqueue_script($this->plugin_name);
 
 		}
@@ -1322,20 +1333,25 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	function check_user_data_for_premium_features()
 	{
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
 		$response = array(
 			"status" => false,
 			"data" => null,
 			"message" => "Data not found!.."
 		);
 
-		$nonce = sanitize_text_field($_POST["value"]['nonce']);
-		// $nonce = $_REQUEST['_wpnonce'];
+		$nonce = isset($_POST["value"]['nonce']) ? sanitize_text_field($_POST["value"]['nonce']) : '';
 		if (!wp_verify_nonce($nonce, 'check_user_data_for_premium_features')) {
-			exit; // Get out of here, the nonce is rotten!
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 
-		$user = sanitize_text_field($_POST["value"]['user']);
-		$password = sanitize_text_field($_POST["value"]['password']);
+		$user = isset($_POST["value"]['user']) ? sanitize_text_field($_POST["value"]['user']) : '';
+		$password = isset($_POST["value"]['password']) ? sanitize_text_field($_POST["value"]['password']) : '';
 
 		$received_data = $this->licenser->get_premium_user_data_by_user_password($user, $password);
 
@@ -1343,7 +1359,6 @@ class Bt_Sync_Shipment_Tracking_Admin
 		if ($received_data && $received_data['status']) {
 			$status = true;
 		}
-
 
 		if (!$status) {
 			$response = array(
@@ -1366,10 +1381,16 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function api_call_for_test_connection()
 	{
-		$nonce = sanitize_text_field($_GET["value"]);
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_GET["value"]) ? sanitize_text_field($_GET["value"]) : (isset($_POST["value"]) ? sanitize_text_field($_POST["value"]) : '');
 
 		if (!wp_verify_nonce($nonce, 'api_call_for_test_connection')) {
-			exit; // Get out of here, the nonce is rotten!
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 
 		$response = array(
@@ -1418,11 +1439,16 @@ class Bt_Sync_Shipment_Tracking_Admin
 	}
 	public function api_call_for_shipmozo_test_connection()
 	{
-		$nonce = sanitize_text_field($_GET["value"]);
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
 
+		$nonce = isset($_GET["value"]) ? sanitize_text_field($_GET["value"]) : (isset($_POST["value"]) ? sanitize_text_field($_POST["value"]) : '');
 
 		if (!wp_verify_nonce($nonce, 'api_call_for_shipmozo_test_connection')) {
-			//exit; // Get out of here, the nonce is rotten!
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 
 		$response = array(
@@ -1431,12 +1457,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 			"message" => "Test Connection Failed. Please verify api credentials and try again."
 		);
 
-		//ini_set('display_errors', '1');
-		//ini_set('display_startup_errors', '1');
-
 		$api_call = $this->shipmozo->test_shipmozo();
-
-
 
 		if ($api_call == true) {
 			$response = array(
@@ -1452,20 +1473,23 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function api_call_for_delhivery_test_connection()
 	{
-		// die("rgdrg");
-		$nonce = sanitize_text_field($_GET["value"]);
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_GET["value"]) ? sanitize_text_field($_GET["value"]) : (isset($_POST["value"]) ? sanitize_text_field($_POST["value"]) : '');
 
 		if (!wp_verify_nonce($nonce, 'api_call_for_delhivery_test_connection')) {
-			// $response = "idfugdf";
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 		$response = array(
 			"status" => false,
 			"data" => null,
 			"message" => "Test Connection Failed. Please verify api credentials and try again."
 		);
-		// die("fdfrgdrg");
 		$api_call = $this->delhivery->test_delhivery();
-		// var_dump($this->delhivery);
 		if ($api_call == true) {
 			$response = array(
 				"status" => true,
@@ -1473,16 +1497,21 @@ class Bt_Sync_Shipment_Tracking_Admin
 				"message" => "Test Connection Successful. Great work!!"
 			);
 		}
-		// $response = "idfugdf";
 		wp_send_json($response);
 		die();
 	}
 	public function api_call_for_shipway_test_connection()
 	{
-		$nonce = sanitize_text_field($_GET["value"]);
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_GET["value"]) ? sanitize_text_field($_GET["value"]) : (isset($_POST["value"]) ? sanitize_text_field($_POST["value"]) : '');
 
 		if (!wp_verify_nonce($nonce, 'api_call_for_shipway_test_connection')) {
-			return;
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 		$response = array(
 			"status" => false,
@@ -1503,20 +1532,23 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function api_call_for_fship_test_connection()
 	{
-		$nonce = sanitize_text_field($_GET["value"]);
-		// var_dump($nonce); die;
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_GET["value"]) ? sanitize_text_field($_GET["value"]) : (isset($_POST["value"]) ? sanitize_text_field($_POST["value"]) : '');
 
 		if (!wp_verify_nonce($nonce, 'api_call_for_fship_test_connection')) {
-			return;
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 		$response = array(
 			"status" => false,
 			"data" => null,
 			"message" => "Test Connection Failed. Please verify api credentials and try again."
 		);
-		// die("fdfrgdrg");
 		$api_call = $this->fship->test_fship();
-		// var_dump($this->delhivery);
 		if ($api_call == true) {
 			$response = array(
 				"status" => true,
@@ -1524,16 +1556,21 @@ class Bt_Sync_Shipment_Tracking_Admin
 				"message" => "Test Connection Successful. Great work!!"
 			);
 		}
-		// $response = "idfugdf";
 		wp_send_json($response);
 		die();
 	}
 	public function api_call_for_ekart_test_connection()
 	{
-		$nonce = sanitize_text_field($_GET["value"]);
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_GET["value"]) ? sanitize_text_field($_GET["value"]) : (isset($_POST["value"]) ? sanitize_text_field($_POST["value"]) : '');
 
 		if (!wp_verify_nonce($nonce, 'api_call_for_ekart_test_connection')) {
-			return;
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 		$response = array(
 			"status" => false,
@@ -1554,19 +1591,22 @@ class Bt_Sync_Shipment_Tracking_Admin
 	}
 	public function api_call_for_ship24_test_connection()
 	{
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
 
-		$nonce = sanitize_text_field($_GET["value"]);
+		$nonce = isset($_GET["value"]) ? sanitize_text_field($_GET["value"]) : (isset($_POST["value"]) ? sanitize_text_field($_POST["value"]) : '');
 		if (!wp_verify_nonce($nonce, 'api_call_for_ship24_test_connection')) {
-			// $response = "idfugdf";
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 		$response = array(
 			"status" => false,
 			"data" => null,
 			"message" => "Test Connection Failed. Please verify api credentials and try again."
 		);
-		// die("fdfrgdrg");
 		$api_call = $this->ship24->get_coriers_name_and_test_connectin();
-		// var_dump($this->delhivery);
 		if (sizeof($api_call) > 1) {
 			$response = array(
 				"status" => true,
@@ -1574,14 +1614,20 @@ class Bt_Sync_Shipment_Tracking_Admin
 				"message" => "Test Connection Successful. Great work!!"
 			);
 		}
-		// $response = "idfugdf";
 		wp_send_json($response);
 		die();
 	}
 	public function api_call_for_ithink_test_connection()
 	{
-		$nonce = sanitize_text_field($_GET["value"]);
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_GET["value"]) ? sanitize_text_field($_GET["value"]) : (isset($_POST["value"]) ? sanitize_text_field($_POST["value"]) : '');
 		if (!wp_verify_nonce($nonce, 'api_call_for_ithink_test_connection')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 		$response = array(
 			"status" => false,
@@ -1602,9 +1648,15 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function api_call_for_proship_test_connection()
 	{
-		$nonce = sanitize_text_field($_GET["value"]);
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_GET["value"]) ? sanitize_text_field($_GET["value"]) : (isset($_POST["value"]) ? sanitize_text_field($_POST["value"]) : '');
 		if (!wp_verify_nonce($nonce, 'api_call_for_proship_test_connection')) {
-			return;
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 		$response = array(
 			"status" => false,
@@ -1626,13 +1678,17 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function api_check_for_nimbuspost_test_connection()
 	{
-		$nonce = sanitize_text_field($_GET["value"]);
-
-
-		if (!wp_verify_nonce($nonce, 'api_check_for_nimbuspost_test_connection')) {
-			//exit; // Get out of here, the nonce is rotten!
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 
+		$nonce = isset($_GET["value"]) ? sanitize_text_field($_GET["value"]) : (isset($_POST["value"]) ? sanitize_text_field($_POST["value"]) : '');
+
+		if (!wp_verify_nonce($nonce, 'api_check_for_nimbuspost_test_connection')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
 
 		$response = array(
 			"status" => false,
@@ -1640,13 +1696,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 			"message" => "Test Connection Failed... Please verify api credentials and try again."
 		);
 
-		//ini_set('display_errors', '1');
-		//ini_set('display_startup_errors', '1');
-
-
 		$api_call = $this->nimbuspost_new->test_nimbuspost();
-
-
 
 		if ($api_call == true) {
 			$response = array(
@@ -1709,12 +1759,17 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function credit_balance_details()
 	{
-		$nonce = sanitize_text_field($_GET["value"]);
-
-		if (!wp_verify_nonce($nonce, '')) {
-			//exit; // Get out of here, the nonce is rotten!
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 
+		$nonce = isset($_GET["value"]) ? sanitize_text_field($_GET["value"]) : (isset($_POST["value"]) ? sanitize_text_field($_POST["value"]) : '');
+
+		if (!wp_verify_nonce($nonce, 'credit_balance_details')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
 
 		$response = array(
 			"status" => false,
@@ -1752,7 +1807,6 @@ class Bt_Sync_Shipment_Tracking_Admin
 				);
 			}
 		}
-
 
 		wp_send_json($response);
 		die();
@@ -1833,23 +1887,26 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function register_for_sms()
 	{
-		$nonce = isset($_GET['value']) ? sanitize_text_field($_GET['value']) : '';
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_GET['value']) ? sanitize_text_field($_GET['value']) : (isset($_POST['value']) ? sanitize_text_field($_POST['value']) : (isset($_REQUEST['security']) ? sanitize_text_field($_REQUEST['security']) : ''));
 		$admin_email = isset($_GET['user_mail']) ? sanitize_email($_GET['user_mail']) : '';
 		$full_name = isset($_GET['first_name']) ? sanitize_text_field($_GET['first_name']) : '';
 		$mobile_no = isset($_GET['user_mobile']) ? sanitize_text_field($_GET['user_mobile']) : '';
 		
 		if ( ! wp_verify_nonce( $nonce, 'register_for_sms' ) ) {
-			//exit; // Get out of here, the nonce is rotten!
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
-
-		
 
 		$response = array(
 			"status" => false,
 			"data" => null,
 			"message" => "Failed to Register. Try Again"
 		);
-		
 
 		if (!$admin_email) {
 			$admin_email = get_bloginfo('admin_email');
@@ -1870,19 +1927,13 @@ class Bt_Sync_Shipment_Tracking_Admin
 		$websiteName = get_bloginfo('name');
 		$api_call = $this->signup_api($admin_email, $current_url,$websiteName, $shop_country, $full_name, $mobile_no, true, true);
 
-
-		// $api_call = $this->signup_api($admin_email, $current_url, $shop_country, $current_user, "NA", true, true);
-
-
 		if ($api_call['response_code'] == 200 && isset($api_call['data']['apiKey']) && !empty($api_call['data']['apiKey'])) {
 
 			$api = $api_call['data']['apiKey'];
 
 			update_option('register_for_sms_apy_key', $api);
 
-
 			$message = $api_call['data']['message'];
-
 
 			$response = array(
 				"status" => true,
@@ -1896,6 +1947,17 @@ class Bt_Sync_Shipment_Tracking_Admin
 	}
 	public function update_check_skip_or_not()
 	{
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			exit;
+		}
+
+		$nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_GET['security']) ? sanitize_text_field($_GET['security']) : (isset($_REQUEST['value']) ? sanitize_text_field($_REQUEST['value']) : ''));
+		if (!wp_verify_nonce($nonce, 'update_check_skip_or_not') && !wp_verify_nonce($nonce, 'bt_sst_settings_nonce') && !wp_verify_nonce($nonce, 'register_for_sms')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			exit;
+		}
+
 		update_option('bt_sst_check_skip_or_not', true);
 		wp_send_json_success('Updated successfully');
 		exit;
@@ -1904,14 +1966,18 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function get_bt_sst_email_trial()
 	{
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
 
-		$nonce = sanitize_text_field($_GET["value"]);
-		$bt_sst_test_email = sanitize_text_field($_GET["bt_sst_test_email"]);
-		$bt_sst_test_email_event = sanitize_text_field($_GET["bt_sst_test_email_event"]);
-
+		$nonce = isset($_GET["value"]) ? sanitize_text_field($_GET["value"]) : (isset($_POST["value"]) ? sanitize_text_field($_POST["value"]) : '');
+		$bt_sst_test_email = isset($_GET["bt_sst_test_email"]) ? sanitize_text_field($_GET["bt_sst_test_email"]) : '';
+		$bt_sst_test_email_event = isset($_GET["bt_sst_test_email_event"]) ? sanitize_text_field($_GET["bt_sst_test_email_event"]) : '';
 
 		if (!wp_verify_nonce($nonce, 'get_sms_trial')) {
-			exit; // Get out of here, the nonce is rotten!
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 
 		$response = array(
@@ -1939,28 +2005,9 @@ class Bt_Sync_Shipment_Tracking_Admin
 			die();
 		}
 
-
-		// Load the WooCommerce mailer
-		//  $mailer = WC()->mailer();
-
-		//  // Get all emails
-		//  $emails = $mailer->get_emails();
-
-		//  // Send the new order email
-		//  if ( ! empty( $emails ) ) {
-		// 	 foreach ( $emails as $email ) {
-		// 		 if ( $email instanceof WC_Email_New_Order ) {
-		// 			 $email->trigger( $order_id );
-		// 			 break;
-		// 		 }
-		// 	 }
-		//  }
-
-
-
 		$response1 = array(
 			"status" => true,
-			"data" => $body,
+			"data" => null,
 			"message" => "This feature is not implemented yet.."
 		);
 
@@ -1970,14 +2017,19 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function get_sms_trial()
 	{
-		$nonce = sanitize_text_field($_GET["value"]);
-		$phoneNumber = sanitize_text_field($_GET["phonenumber"]);
-		$selectValue = sanitize_text_field($_GET["selectvalue"]);
-		$via = sanitize_text_field($_GET["via"]);
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
 
+		$nonce = isset($_GET["value"]) ? sanitize_text_field($_GET["value"]) : (isset($_POST["value"]) ? sanitize_text_field($_POST["value"]) : '');
+		$phoneNumber = isset($_GET["phonenumber"]) ? sanitize_text_field($_GET["phonenumber"]) : '';
+		$selectValue = isset($_GET["selectvalue"]) ? sanitize_text_field($_GET["selectvalue"]) : '';
+		$via = isset($_GET["via"]) ? sanitize_text_field($_GET["via"]) : '';
 
 		if (!wp_verify_nonce($nonce, 'get_sms_trial')) {
-			exit; // Get out of here, the nonce is rotten!
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 		$bt_sst_sms_review_url = carbon_get_theme_option('bt_sst_sms_review_url');
 
@@ -2396,12 +2448,18 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function api_call_for_sync_order_by_order_id()
 	{
-		$nonce = sanitize_text_field($_GET['nonce']);
+		if (!current_user_can('edit_shop_orders') && !current_user_can('manage_woocommerce') && !current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_GET['nonce']) ? sanitize_text_field($_GET['nonce']) : (isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '');
 
 		if (!wp_verify_nonce($nonce, 'api_call_for_sync_order_by_order_id')) {
-			exit;
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
-		$order_id = sanitize_text_field($_GET['order_id']);
+		$order_id = isset($_GET['order_id']) ? sanitize_text_field($_GET['order_id']) : (isset($_POST['order_id']) ? sanitize_text_field($_POST['order_id']) : '');
 
 		$responsed = bt_force_sync_order_tracking($order_id);
 
@@ -2421,12 +2479,18 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function api_call_for_sync_order_shipmozo_by_order_id()
 	{
-		$nonce = sanitize_text_field($_GET['nonce']);
+		if (!current_user_can('edit_shop_orders') && !current_user_can('manage_woocommerce') && !current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_GET['nonce']) ? sanitize_text_field($_GET['nonce']) : (isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '');
 
 		if (!wp_verify_nonce($nonce, 'api_call_for_sync_order_shipmozo_by_order_id')) {
-			exit;
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
-		$order_id = sanitize_text_field($_GET['order_id']);
+		$order_id = isset($_GET['order_id']) ? sanitize_text_field($_GET['order_id']) : (isset($_POST['order_id']) ? sanitize_text_field($_POST['order_id']) : '');
 
 		bt_force_sync_order_tracking($order_id);
 
@@ -2445,6 +2509,17 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function api_call_hide_bt_sst_premium_notice()
 	{
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_REQUEST['nonce']) ? sanitize_text_field($_REQUEST['nonce']) : '';
+		if (!empty($nonce) && !wp_verify_nonce($nonce, 'bt_sst_admin_nonce')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
 		$response = array(
 			"status" => true,
 			"data" => "",
@@ -2679,85 +2754,53 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	function handle_admin_init()
 	{
+		$push_actions = array(
+			'bt_push_to_shiprocket'    => 'push_order_to_shiprocket',
+			'bt_push_to_shipmozo'      => 'push_order_to_shipmozo',
+			'bt_push_to_nimbuspost_new'=> 'push_order_to_nimbuspost',
+			'bt_push_to_delhivery'     => 'push_order_to_delhivery',
+			'bt_push_to_shipway'       => 'push_order_on_shipway',
+			'bt_push_to_fship'         => 'push_order_on_fship',
+			'bt_push_to_ekart'         => 'push_order_to_ekart',
+			'bt_push_to_courierkaro'   => 'push_order_to_courierkaro',
+			'bt_push_to_proship'       => 'push_order_to_proship',
+			'bt_push_to_ithink'        => 'push_order_to_ithink',
+		);
 
-		if (isset($_GET['bt_push_to_shiprocket']) && $_GET['bt_push_to_shiprocket'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
-			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
-			$this->push_order_to_shiprocket($order_id);
-			unset($_GET['bt_push_to_shiprocket']);
-			global $pagenow;
-			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
-			wp_safe_redirect($current_page);
-		} else if (isset($_GET['bt_push_to_shipmozo']) && $_GET['bt_push_to_shipmozo'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
-			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
-			$order = wc_get_order($order_id);
-			if ($order) {
-				$order->add_order_note(
-					'Manual push to Shipmozo triggered by admin.' . "\n\n- Shipment tracker for woocommerce",
-					false
-				);
+		foreach ($push_actions as $action_key => $method_name) {
+			if (isset($_GET[$action_key]) && $_GET[$action_key] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
+				if (!current_user_can('edit_shop_orders') && !current_user_can('manage_woocommerce') && !current_user_can('manage_options')) {
+					wp_die(__('Unauthorized user', 'bt-sync-shipment-tracking'), 403);
+				}
+				$order_id = absint(isset($_GET['post']) ? $_GET['post'] : $_GET['id']);
+				$nonce = isset($_GET['_wpnonce']) ? sanitize_text_field($_GET['_wpnonce']) : '';
+				if (!wp_verify_nonce($nonce, 'bt_push_order_' . $order_id)) {
+					wp_die(__('Security check failed', 'bt-sync-shipment-tracking'), 403);
+				}
+
+				if ($action_key === 'bt_push_to_shipmozo') {
+					$order = wc_get_order($order_id);
+					if ($order) {
+						$order->add_order_note(
+							'Manual push to Shipmozo triggered by admin.' . "\n\n- Shipment tracker for woocommerce",
+							false
+						);
+					}
+				}
+
+				if (method_exists($this, $method_name)) {
+					$this->$method_name($order_id);
+				}
+
+				unset($_GET[$action_key], $_GET['_wpnonce']);
+				global $pagenow;
+				$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
+				wp_safe_redirect($current_page);
+				exit;
 			}
-			$this->push_order_to_shipmozo($order_id);
-			unset($_GET['bt_push_to_shipmozo']);
-			global $pagenow;
-			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
-			wp_safe_redirect($current_page);
-		} else if (isset($_GET['bt_push_to_nimbuspost_new']) && $_GET['bt_push_to_nimbuspost_new'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
-			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
-			$this->push_order_to_nimbuspost($order_id);
-			unset($_GET['bt_push_to_nimbuspost_new']);
-			global $pagenow;
-			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
-			wp_safe_redirect($current_page);
-		} else if (isset($_GET['bt_push_to_delhivery']) && $_GET['bt_push_to_delhivery'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
-			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
-			$getresponce = $this->push_order_to_delhivery($order_id);
-			unset($_GET['bt_push_to_delhivery']);
-			global $pagenow;
-			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
-			wp_safe_redirect($current_page);
-		} else if (isset($_GET['bt_push_to_shipway']) && $_GET['bt_push_to_shipway'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
-			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
-			$getresponce = $this->push_order_on_shipway($order_id);
-			unset($_GET['bt_push_to_shipway']);
-			global $pagenow;
-			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
-			wp_safe_redirect($current_page);
-		} else if (isset($_GET['bt_push_to_fship']) && $_GET['bt_push_to_fship'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
-			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
-			$getresponce = $this->push_order_on_fship($order_id);
-			unset($_GET['bt_push_to_fship']);
-			global $pagenow;
-			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
-			wp_safe_redirect($current_page);
-		} else if (isset($_GET['bt_push_to_ekart']) && $_GET['bt_push_to_ekart'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
-			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
-			$getresponce = $this->push_order_to_ekart($order_id);
-			unset($_GET['bt_push_to_ekart']);
-			global $pagenow;
-			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
-			wp_safe_redirect($current_page);
-		} else if (isset($_GET['bt_push_to_courierkaro']) && $_GET['bt_push_to_courierkaro'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
-			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
-			$getresponce = $this->push_order_to_courierkaro($order_id);
-			unset($_GET['bt_push_to_courierkaro']);
-			global $pagenow;
-			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
-			wp_safe_redirect($current_page);
-		} else if (isset($_GET['bt_push_to_proship']) && $_GET['bt_push_to_proship'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
-			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
-			$getresponce = $this->push_order_to_proship($order_id);
-			unset($_GET['bt_push_to_proship']);
-			global $pagenow;
-			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
-			wp_safe_redirect($current_page);
-		}else if (isset($_GET['bt_push_to_ithink']) && $_GET['bt_push_to_ithink'] == 1 && (isset($_GET['post']) || isset($_GET['id']))) {
-			$order_id = isset($_GET['post']) ? $_GET['post'] : $_GET['id'];
-			$getresponce = $this->push_order_to_ithink($order_id);
-			unset($_GET['bt_push_to_ithink']);
-			global $pagenow;
-			$current_page = admin_url(sprintf($pagenow . '?%s', http_build_query($_GET)));
-			wp_safe_redirect($current_page);
-		} else if (is_admin() && isset($_GET['page']) && $_GET['page'] === 'crb_carbon_fields_container_shipment_tracker.php') {
+		}
+
+		if (is_admin() && isset($_GET['page']) && $_GET['page'] === 'crb_carbon_fields_container_shipment_tracker.php') {
 			wp_safe_redirect(admin_url('admin.php?page=bt-shipment-tracking'));
 			exit;
 		}
@@ -2766,10 +2809,15 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	function get_st_form_with_data()
 	{
+		if (!current_user_can('edit_shop_orders') && !current_user_can('manage_woocommerce') && !current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
 
-		$nonce = $_GET['nonce'];
+		$nonce = isset($_GET['nonce']) ? sanitize_text_field($_GET['nonce']) : (isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : (isset($_REQUEST['security']) ? sanitize_text_field($_REQUEST['security']) : ''));
 		if (!wp_verify_nonce($nonce, 'get_st_form_with_data')) {
-			exit; // Get out of here, the nonce is rotten!
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 
 		$response = array(
@@ -2827,31 +2875,49 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	function load_coriures_name_for_manual()
 	{
+		if (!current_user_can('edit_shop_orders') && !current_user_can('manage_woocommerce') && !current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
+		$nonce = isset($_REQUEST['security']) ? sanitize_text_field($_REQUEST['security']) : (isset($_REQUEST['_ajax_nonce']) ? sanitize_text_field($_REQUEST['_ajax_nonce']) : '');
+		if (!wp_verify_nonce($nonce, 'save_order_awb_nonce') && !wp_verify_nonce($nonce, 'bt_sst_settings_nonce') && !wp_verify_nonce($nonce, 'bt_tracking_manual') && !wp_verify_nonce($nonce, 'shipment-tracking_page_bt-shipment-tracking-developer')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
 		$couriers = get_option('bt_sst_manual_coriures_names_array', array());
 		$plugin_dir = plugin_dir_path(__FILE__);
 		$json_file = $plugin_dir . "custom_coriures_list.json";
 
 		if (file_exists($json_file)) {
 			$json_data = file_get_contents($json_file);
-			// echo $json_data;
 		}
 
-		// echo "<pre>"; print_r($combinecouriersd_data); die;
 		$json_data = json_decode($json_data, true);
 		if (is_array($couriers) && sizeof($couriers) > 0) {
 			$combined_data = array_merge($json_data, $couriers);
 		} else {
 			$combined_data = $json_data;
 		}
-		// echo "<pre>"; print_r($combined_data);
+
 		$combined_data = json_encode($combined_data, true);
-		// echo($combined_data); die;
 		echo $combined_data;
 		wp_die();
 	}
 
 	function bt_sst_save_new_order_status()
 	{
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			return;
+		}
+
+		$nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_POST['_ajax_nonce']) ? sanitize_text_field($_POST['_ajax_nonce']) : '');
+		if (!wp_verify_nonce($nonce, 'bt_sst_settings_nonce') && !wp_verify_nonce($nonce, 'shipment-tracking_page_bt-shipment-tracking-developer')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			return;
+		}
 
 		// Validate and sanitize input data
 		if (empty($_POST['data']['title']) || empty($_POST['data']['slug'])) {
@@ -2997,56 +3063,65 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	function bt_sst_update_status_mapping()
 	{
-		//$is_premium = $this->licenser->is_license_active();
-		//if ($is_premium) {
-			$order_status_key = sanitize_text_field($_POST['shipping_data']['shippingValue']);
-			$shipping_status_Key = sanitize_text_field($_POST['shipping_data']['shippingKey']);
-			$updated_order_and_shipp_status_keys_array = get_option('bt_sst_order_and_shipp_status_keys_array', array());
-			if (empty($order_status_key)) {
-				unset($updated_order_and_shipp_status_keys_array[$shipping_status_Key]);
-			} else {
-				$updated_order_and_shipp_status_keys_array[$shipping_status_Key] = $order_status_key;
-			}
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			return;
+		}
 
-			$result = update_option('bt_sst_order_and_shipp_status_keys_array', $updated_order_and_shipp_status_keys_array);
-			wp_send_json_success(array('message' => 'Updated Status Successfully'));
-		//} else {
-		//	wp_send_json_error(array('message' => 'Upgrade to premium version to activate custom order status mapping.'));
-		//}
+		$nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_POST['_ajax_nonce']) ? sanitize_text_field($_POST['_ajax_nonce']) : '');
+		if (!wp_verify_nonce($nonce, 'bt_sst_settings_nonce') && !wp_verify_nonce($nonce, 'shipment-tracking_page_bt-shipment-tracking-developer')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			return;
+		}
 
+		$order_status_key = isset($_POST['shipping_data']['shippingValue']) ? sanitize_text_field($_POST['shipping_data']['shippingValue']) : '';
+		$shipping_status_Key = isset($_POST['shipping_data']['shippingKey']) ? sanitize_text_field($_POST['shipping_data']['shippingKey']) : '';
+		$updated_order_and_shipp_status_keys_array = get_option('bt_sst_order_and_shipp_status_keys_array', array());
+		if (empty($order_status_key)) {
+			unset($updated_order_and_shipp_status_keys_array[$shipping_status_Key]);
+		} else {
+			$updated_order_and_shipp_status_keys_array[$shipping_status_Key] = $order_status_key;
+		}
 
+		$result = update_option('bt_sst_order_and_shipp_status_keys_array', $updated_order_and_shipp_status_keys_array);
+		wp_send_json_success(array('message' => 'Updated Status Successfully'));
 	}
+
 	function bt_sst_remove_status_mapping()
 	{
-		//$is_premium = $this->licenser->is_license_active();
-		//if ($is_premium) {
-			$shipping_status_Key = sanitize_text_field($_POST['shipping_key']);
-			$updated_order_and_shipp_status_keys_array = get_option('bt_sst_order_and_shipp_status_keys_array', array());
-			$order_status_key = "";
-			if ($shipping_status_Key && isset($updated_order_and_shipp_status_keys_array[$shipping_status_Key])) {
-				$order_status_key = $updated_order_and_shipp_status_keys_array[$shipping_status_Key];
-				unset($updated_order_and_shipp_status_keys_array[$shipping_status_Key]);
-			}
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			return;
+		}
 
-			$order_status_array = get_option('bt_sst_order_status_list', array());
-			foreach ($order_status_array as $order_status) {
-				// Validate required fields
-				if ('wc-' . $order_status['slug'] == $order_status_key) {
-					$key = array_search($order_status, $order_status_array);
-					if ($key !== false) {
-						unset($order_status_array[$key]);
-						$result2 = update_option('bt_sst_order_status_list', $order_status_array);
-					}
+		$nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_POST['_ajax_nonce']) ? sanitize_text_field($_POST['_ajax_nonce']) : '');
+		if (!wp_verify_nonce($nonce, 'bt_sst_settings_nonce') && !wp_verify_nonce($nonce, 'shipment-tracking_page_bt-shipment-tracking-developer')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			return;
+		}
+
+		$shipping_status_Key = isset($_POST['shipping_key']) ? sanitize_text_field($_POST['shipping_key']) : '';
+		$updated_order_and_shipp_status_keys_array = get_option('bt_sst_order_and_shipp_status_keys_array', array());
+		$order_status_key = "";
+		if ($shipping_status_Key && isset($updated_order_and_shipp_status_keys_array[$shipping_status_Key])) {
+			$order_status_key = $updated_order_and_shipp_status_keys_array[$shipping_status_Key];
+			unset($updated_order_and_shipp_status_keys_array[$shipping_status_Key]);
+		}
+
+		$order_status_array = get_option('bt_sst_order_status_list', array());
+		foreach ($order_status_array as $order_status) {
+			// Validate required fields
+			if ('wc-' . $order_status['slug'] == $order_status_key) {
+				$key = array_search($order_status, $order_status_array);
+				if ($key !== false) {
+					unset($order_status_array[$key]);
+					$result2 = update_option('bt_sst_order_status_list', $order_status_array);
 				}
 			}
+		}
 
-			$result = update_option('bt_sst_order_and_shipp_status_keys_array', $updated_order_and_shipp_status_keys_array);
-			wp_send_json_success(array('message' => 'Remove Status Successfully'));
-		//} else {
-		//	wp_send_json_error(array('message' => 'Upgrade to premium version to activate custom order status mapping.'));
-		//}
-
-
+		$result = update_option('bt_sst_order_and_shipp_status_keys_array', $updated_order_and_shipp_status_keys_array);
+		wp_send_json_success(array('message' => 'Remove Status Successfully'));
 	}
 
 	function status_orders_bulk_actions($bulk_actions)
@@ -3075,20 +3150,26 @@ class Bt_Sync_Shipment_Tracking_Admin
 			}
 		}
 
-
-
 		return $redirect_to;
 	}
 
-
-
-
 	function bt_sst_save_manual_coriure_name()
 	{
-		$company_name = sanitize_text_field($_POST['company_name']);
-		$region_coverage = sanitize_text_field($_POST['region_coverage']);
-		$company_url = esc_url_raw($_POST['company_url']);
-		$tracking_url = esc_url_raw($_POST['tracking_url']);
+		if (!current_user_can('manage_options') && !current_user_can('manage_woocommerce') && !current_user_can('edit_shop_orders')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
+		$nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_POST['_ajax_nonce']) ? sanitize_text_field($_POST['_ajax_nonce']) : '');
+		if (!wp_verify_nonce($nonce, 'save_order_awb_nonce') && !wp_verify_nonce($nonce, 'bt_sst_settings_nonce') && !wp_verify_nonce($nonce, 'shipment-tracking_page_bt-shipment-tracking-developer')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
+		$company_name = isset($_POST['company_name']) ? sanitize_text_field($_POST['company_name']) : '';
+		$region_coverage = isset($_POST['region_coverage']) ? sanitize_text_field($_POST['region_coverage']) : '';
+		$company_url = isset($_POST['company_url']) ? esc_url_raw($_POST['company_url']) : '';
+		$tracking_url = isset($_POST['tracking_url']) ? esc_url_raw($_POST['tracking_url']) : '';
 
 		$couriers = get_option('bt_sst_manual_coriures_names_array', array());
 		$plugin_dir = plugin_dir_path(__FILE__);
@@ -3162,6 +3243,17 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	function bt_sst_get_users_list()
 	{
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_POST['_ajax_nonce']) ? sanitize_text_field($_POST['_ajax_nonce']) : '');
+		if (!wp_verify_nonce($nonce, 'bt_sst_settings_nonce') && !wp_verify_nonce($nonce, 'shipment-tracking_page_bt-shipment-tracking-developer')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
 		if (isset($_POST['task']) && sanitize_text_field($_POST['task']) === 'get_pick_up_location') {
 			$pick_up_locations = $this->shiprocket->get_all_pickup_locations();
 			$html_pick_lo = '<label for="bt_sst_vendor_pickup_location" class="label">Pickup Location</label>';
@@ -3266,6 +3358,17 @@ class Bt_Sync_Shipment_Tracking_Admin
 	}
 	function bt_sst_set_users_list()
 	{
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_POST['_ajax_nonce']) ? sanitize_text_field($_POST['_ajax_nonce']) : '');
+		if (!wp_verify_nonce($nonce, 'bt_sst_settings_nonce') && !wp_verify_nonce($nonce, 'shipment-tracking_page_bt-shipment-tracking-developer')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
 		if (isset($_POST['vendor_pickup_location']) && isset($_POST['vendor_user_id'])) {
 			$vendor_pickup_location = sanitize_text_field($_POST['vendor_pickup_location']);
 			$vendor_user_id = sanitize_text_field($_POST['vendor_user_id']);
@@ -3280,8 +3383,18 @@ class Bt_Sync_Shipment_Tracking_Admin
 	}
 	function bt_sst_check_users_list()
 	{
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_POST['_ajax_nonce']) ? sanitize_text_field($_POST['_ajax_nonce']) : '');
+		if (!wp_verify_nonce($nonce, 'bt_sst_settings_nonce') && !wp_verify_nonce($nonce, 'shipment-tracking_page_bt-shipment-tracking-developer')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
 		$current_user_id = get_current_user_id();
-		// var_dump($current_user_id); die;
 		if (isset($_POST['vendor_user_id'])) {
 			$vendor_user_id = sanitize_text_field($_POST['vendor_user_id']);
 
@@ -3301,10 +3414,16 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	function create_and_add_tracking_page()
 	{
-		$nonce = sanitize_text_field($_GET['nonce']);
+		if (!current_user_can('manage_options') || !current_user_can('publish_pages')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
 
-		if (!wp_verify_nonce($nonce, 'create_and_add_tracking_page')) {
-			exit;
+		$nonce = isset($_GET['nonce']) ? sanitize_text_field($_GET['nonce']) : (isset($_REQUEST['security']) ? sanitize_text_field($_REQUEST['security']) : '');
+
+		if (!wp_verify_nonce($nonce, 'create_and_add_tracking_page') && !wp_verify_nonce($nonce, 'get_st_form_with_data')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
 		}
 
 		$response = array(
@@ -3583,20 +3702,26 @@ class Bt_Sync_Shipment_Tracking_Admin
 	// 	}
 
 	// 	// Close cURL resource, and free up system resources.
-	// 	curl_close($ch);
-
-	// 	return  $response ;
-
+	// 	return  $response;
 	// }
 
 	function download_label_pdf()
 	{
+		if (!current_user_can('edit_shop_orders') && !current_user_can('manage_woocommerce') && !current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
+		$nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_POST['_ajax_nonce']) ? sanitize_text_field($_POST['_ajax_nonce']) : '');
+		if (!wp_verify_nonce($nonce, 'shipment-tracking_page_bt-shipment-tracking-developer') && !wp_verify_nonce($nonce, 'save_order_awb_nonce') && !wp_verify_nonce($nonce, 'bt_sst_settings_nonce')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
 		$order_id = sanitize_text_field($_POST['order_id']);
 		$bt_shipment_tracking = Bt_Sync_Shipment_Tracking_Shipment_Model::get_tracking_by_order_id($order_id);
 		$shipping_provider = $bt_shipment_tracking->shipping_provider;
 
-		//  var_dump($shipping_provider); die;
-		// $shipping_provider = 'delhivery';
 		if ($shipping_provider == 'delhivery') {
 			if (isset($_POST['awbs'])) {
 				$awb_number = array_map('sanitize_text_field', $_POST['awbs']);
@@ -3605,11 +3730,9 @@ class Bt_Sync_Shipment_Tracking_Admin
 		} else if ($shipping_provider == 'shiprocket') {
 			$shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_shiprocket_shipment_id', true);
 			if (isset($_POST['awbs'])) {
-				// $shipments_ids = $_POST['awbs'];
 				$resp = $this->shiprocket->get_order_label_by_shipment_id([$shipments_ids]);
 			}
 		} else if ($shipping_provider == 'shipmozo') {
-			// $shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shiprocket_shipment_id', true );
 			if (isset($_POST['awbs'])) {
 				$awbs = array_map('sanitize_text_field', $_POST['awbs']);
 				$resp = $this->shipmozo->get_order_label_by_awb_numbers_shipmozo($awbs);
@@ -3617,9 +3740,6 @@ class Bt_Sync_Shipment_Tracking_Admin
 		} else if ($shipping_provider == 'nimbuspost_new') {
 			$nimbuspost_new_label_url = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_nimbuspost_new_label_url', true);
 			if ($nimbuspost_new_label_url) {
-				// $awbs = $_POST['awbs'];
-				// var_dump($awbs);
-				// $resp = $this->nimbuspost_new->get_order_label_by_order_ids();
 				$resp = array($nimbuspost_new_label_url);
 			} else {
 				$resp = false;
@@ -3637,59 +3757,55 @@ class Bt_Sync_Shipment_Tracking_Admin
 				$resp = $this->ithink->generate_shipping_label($awbs);
 			}
 		}
-		// else if($shipping_provider == 'nimbuspost'){
-		// $shipments_ids = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta( $order_id, '_bt_shiprocket_shipment_id', true );
-		// if (isset($_POST['awbs'])){
-		// $awbs = $_POST['awbs'];
-		// var_dump($awbs);
-		// $resp = $this->nimbuspost->get_order_label_by_order_ids();
-		// }
-		// }
+
 		wp_send_json($resp);
 		wp_die();
 	}
+
 	function handle_stw_wizard_form_data_save()
 	{
-		if (isset($_POST['data'])) {
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission: manage_options required', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
+		$nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : (isset($_POST['_ajax_nonce']) ? sanitize_text_field($_POST['_ajax_nonce']) : (isset($_POST['stw_wizard_nonce']) ? sanitize_text_field($_POST['stw_wizard_nonce']) : '')));
+		if (!wp_verify_nonce($nonce, 'handle_stw_wizard_form_data_save')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
+		if (isset($_POST['data']) && is_array($_POST['data'])) {
 			$wizard_post_data = array_map('sanitize_text_field', $_POST['data']);
 
-			$w_shipping_company = $wizard_post_data['shipping_company'];
-			$w_create_tracking_page = $wizard_post_data['create_tracking_page'];
-			$w_enable_location_map = $wizard_post_data['enable_location_map'];
-			$w_enable_rating_bar = $wizard_post_data['enable_rating_bar'];
-			$w_etd_checker = $wizard_post_data['etd_checker'];
-			$w_dynamic_shipping_method = $wizard_post_data['dynamic_shipping_methods'];
-			$shipping_manual_or_s24 = $wizard_post_data['shipping_manual_or_s24'];
+			$allowed_companies = array('delhivery', 'shiprocket', 'nimbuspost', 'nimbuspostnew', 'nimbuspost_new', 'xpressbees', 'shipmozo', 'manual', 'fship', 'ekart', 'courierkaro', 'proship', 'ithink', 'shipway');
+			$w_shipping_company = isset($wizard_post_data['shipping_company']) && in_array($wizard_post_data['shipping_company'], $allowed_companies, true) ? $wizard_post_data['shipping_company'] : 'manual';
+
+			$allowed_manual_modes = array('manual', 'ship24', 'ship24.com');
+			$shipping_manual_or_s24 = isset($wizard_post_data['shipping_manual_or_s24']) && in_array($wizard_post_data['shipping_manual_or_s24'], $allowed_manual_modes, true) ? $wizard_post_data['shipping_manual_or_s24'] : 'manual';
+
+			$w_create_tracking_page = (isset($wizard_post_data['create_tracking_page']) && $wizard_post_data['create_tracking_page'] === 'yes') ? 'yes' : 'no';
+			$w_enable_location_map = (isset($wizard_post_data['enable_location_map']) && $wizard_post_data['enable_location_map'] === 'true') ? 'true' : 'false';
+			$w_enable_rating_bar = (isset($wizard_post_data['enable_rating_bar']) && $wizard_post_data['enable_rating_bar'] === 'true') ? 'true' : 'false';
+			$w_etd_checker = (isset($wizard_post_data['etd_checker']) && $wizard_post_data['etd_checker'] === 'yes') ? 'yes' : 'no';
+			$w_dynamic_shipping_method = (isset($wizard_post_data['dynamic_shipping_methods']) && $wizard_post_data['dynamic_shipping_methods'] === 'yes') ? 'yes' : 'no';
 
 			$base_pincode = WC()->countries->get_base_postcode();
 
-			// set shipping provide 
+			// set shipping provider 
 			$w_shipping_company_arra = array($w_shipping_company);
 			carbon_set_theme_option('bt_sst_enabled_shipping_providers', $w_shipping_company_arra);
 
-			//defauld shipping provide
+			// default shipping provider
 			carbon_set_theme_option('bt_sst_default_shipping_provider', $w_shipping_company);
 
-			// if($w_create_tracking_page=="yes"){
-			// 	$page_title = 'Shipment Tracking';
-			// 	$page_check = get_page_by_title($page_title);
-			// 	if (!isset($page_check->ID)) {
-			// 		$new_page = array(
-			// 			'post_title'     => $page_title,
-			// 			'post_content'   => '[bt_shipping_tracking_form_2]',
-			// 			'post_status'    => 'publish',
-			// 			'post_type'      => 'page',
-			// 			'post_author'    => get_current_user_id(),
-			// 		);
-
-			// 		$page_id = wp_insert_post($new_page);
-			// 		// return $page_id;
-			// 	}
-			// 	$page_id = $page_check->ID;
-			// 	carbon_set_theme_option('bt_sst_tracking_page', $page_id);
-			// }
 			$page_id = "";
 			if ($w_create_tracking_page == "yes") {
+				if (!current_user_can('publish_pages')) {
+					wp_send_json_error(array('message' => __('Unauthorized permission: publish_pages required', 'bt-sync-shipment-tracking')), 403);
+					wp_die();
+				}
+
 				$page_title = 'Shipment Tracking';
 				$args = array(
 					'post_type' => 'page',
@@ -3702,8 +3818,8 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 				if (empty($page_check)) {
 					$new_page = array(
-						'post_title' => sanitize_text_field($page_title), // Sanitize title
-						'post_content' => '[bt_shipping_tracking_form_2]',  // Shortcode or content
+						'post_title' => sanitize_text_field($page_title),
+						'post_content' => '[bt_shipping_tracking_form_2]',
 						'post_status' => 'publish',
 						'post_type' => 'page',
 						'post_author' => get_current_user_id(),
@@ -3712,7 +3828,9 @@ class Bt_Sync_Shipment_Tracking_Admin
 				} else {
 					$page_id = $page_check[0]->ID;
 				}
-				carbon_set_theme_option('bt_sst_tracking_page', $page_id);
+				if (!is_wp_error($page_id) && $page_id) {
+					carbon_set_theme_option('bt_sst_tracking_page', $page_id);
+				}
 			}
 
 			if ($w_enable_location_map == "true") {
@@ -3811,26 +3929,35 @@ class Bt_Sync_Shipment_Tracking_Admin
 				}
 			}
 		}
-		// update_option("bt_sst_check_wizard_active", "active");
 
 		$wizard_post_datasite_url = get_permalink($page_id);
 		$wizard_post_data['tracking_page_url'] = $wizard_post_datasite_url;
-		if ($w_shipping_company == "manual" && $shipping_manual_or_s24 == "ship24.com") {
+		if (isset($w_shipping_company) && $w_shipping_company == "manual" && isset($shipping_manual_or_s24) && $shipping_manual_or_s24 == "ship24.com") {
 			$wizard_post_data['shipping_company'] = 'ship24';
 		}
-		$data = $wizard_post_data;
+		$data = isset($wizard_post_data) ? $wizard_post_data : array();
 		wp_send_json($data);
 		wp_die();
 	}
 
 	function get_coriers_name_for_ship24()
 	{
+		if (!current_user_can('manage_woocommerce') && !current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
 
-		if ($_POST['status']) {
+		$nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : (isset($_POST['_ajax_nonce']) ? sanitize_text_field($_POST['_ajax_nonce']) : '');
+		if (!wp_verify_nonce($nonce, 'shipment-tracking_page_bt-shipment-tracking-developer') && !wp_verify_nonce($nonce, 'save_order_awb_nonce') && !wp_verify_nonce($nonce, 'bt_sst_settings_nonce')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
+		if (!empty($_POST['status'])) {
 			$response = $this->ship24->get_coriers_name_and_test_connectin();
 			wp_send_json_success($response);
 		}
-		return "faild";
+		wp_send_json_error(array('message' => __('Failed to fetch couriers', 'bt-sync-shipment-tracking')));
 		wp_die();
 	}
 
@@ -4066,6 +4193,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 		wp_enqueue_script('angular-toastr-js');
 		wp_enqueue_script('unpkg-js');
 		wp_enqueue_script('quill-js');
+		wp_enqueue_script($this->plugin_name);
 		wp_enqueue_script('bt-shipment-new-settings-js');
 		include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/new_settings/bt-shipment-new-settings.php';
 	}
@@ -4081,6 +4209,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 		wp_enqueue_script('angular-toastr-js');
 		wp_enqueue_script('unpkg-js');
 		wp_enqueue_script('quill-js');
+		wp_enqueue_script($this->plugin_name);
 		wp_enqueue_script('bt-shipment-new-settings-js');
 		include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/new_settings/bt-shipment-new-settings.php';
 
@@ -4096,6 +4225,7 @@ class Bt_Sync_Shipment_Tracking_Admin
 		wp_enqueue_script('angular-toastr-js');
 		wp_enqueue_script('unpkg-js');
 		wp_enqueue_script('quill-js');
+		wp_enqueue_script($this->plugin_name);
 		wp_enqueue_script('bt-shipment-new-settings-js');
 		include plugin_dir_path(dirname(__FILE__)) . 'admin/partials/new_settings/bt-shipment-new-settings.php';
 
@@ -4103,6 +4233,17 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function bt_sst_get_tracking_settings_data()
 	{
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
+		$nonce = isset($_REQUEST['security']) ? sanitize_text_field($_REQUEST['security']) : '';
+		if (!wp_verify_nonce($nonce, 'bt_sst_settings_nonce')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-bt-sync-shipment-setting-update-core.php';
 
 		$shipment_setting_obj = new Class_bt_sync_shipment_setting_update_core();
@@ -4143,10 +4284,28 @@ class Bt_Sync_Shipment_Tracking_Admin
 
 	public function bt_sst_update_tracking_settings()
 	{
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
+		$nonce = isset($_POST['security']) ? sanitize_text_field($_POST['security']) : '';
+		if (!wp_verify_nonce($nonce, 'bt_sst_settings_nonce')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-bt-sync-shipment-setting-update-core.php';
 		$shipment_setting_obj = new Class_bt_sync_shipment_setting_update_core();
 		$type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : '';
 		$value = isset($_POST['value']) ? sanitize_text_field($_POST['value']) : '';
+
+		if ($value === 'create_tracking_page') {
+			if (!current_user_can('publish_pages')) {
+				wp_send_json_error(array('message' => __('Unauthorized permission: publish_pages required', 'bt-sync-shipment-tracking')), 403);
+				wp_die();
+			}
+		}
 
 		$res = [];
 
@@ -4206,11 +4365,33 @@ class Bt_Sync_Shipment_Tracking_Admin
 	}
 
 	function bt_remove_license_callback() {
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
+		$nonce = isset($_REQUEST['security']) ? sanitize_text_field($_REQUEST['security']) : '';
+		if (!empty($nonce) && !wp_verify_nonce($nonce, 'bt_sst_settings_nonce') && !wp_verify_nonce($nonce, 'bt_sst_admin_nonce')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			wp_die();
+		}
+
 		delete_option('bt_sst_is_premium');
 		wp_send_json_success(['message' => 'License removed successfully.']);
 	}
 
 	public function bt_sst_get_ekart_adress_list(){
+		if (!current_user_can('manage_options')) {
+			wp_send_json_error(array('message' => __('Unauthorized permission', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
+		$nonce = isset($_REQUEST['security']) ? sanitize_text_field($_REQUEST['security']) : (isset($_REQUEST['_ajax_nonce']) ? sanitize_text_field($_REQUEST['_ajax_nonce']) : '');
+		if (!wp_verify_nonce($nonce, 'shipment-tracking_page_bt-shipment-tracking-developer') && !wp_verify_nonce($nonce, 'bt_sst_settings_nonce')) {
+			wp_send_json_error(array('message' => __('Invalid security token', 'bt-sync-shipment-tracking')), 403);
+			die();
+		}
+
 		$api_data = $this->ekart->get_addresses_list();
 		wp_send_json($api_data);
 		die();

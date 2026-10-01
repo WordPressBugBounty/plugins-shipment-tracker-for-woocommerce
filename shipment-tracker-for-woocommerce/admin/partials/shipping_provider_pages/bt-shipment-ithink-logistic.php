@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 $settings = get_option('ithink_logistics_settings');
 $api_key = isset($settings['api_key']) ? $settings['api_key'] : '';
 $api_secret = isset($settings['api_secret']) ? $settings['api_secret'] : '';

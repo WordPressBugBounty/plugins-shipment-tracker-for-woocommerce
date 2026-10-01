@@ -8,8 +8,9 @@ function fetchShipmentData() {
         url: bt_sync_shipment_track_data.ajax_url,
         type: 'POST',
         data: {
-        action: 'bt_shipment_data'
-    },
+            action: 'bt_shipment_data',
+            security: (typeof bt_sync_shipment_track_data !== 'undefined' ? bt_sync_shipment_track_data.settings_nonce : '')
+        },
         success: function (response) {
             if (response.success) {
                 document.getElementById('orders_received_last_x_days').innerText = response.data.orders_received_last_x_days;
@@ -182,6 +183,7 @@ function fetchShipmentData() {
             $scope.loading = true;
             var post_Data = {
                 action: "bt_sst_get_tracking_settings_data",
+                security: (typeof bt_sync_shipment_track_data !== 'undefined' ? bt_sync_shipment_track_data.settings_nonce : '')
             };
 
             $http({
@@ -224,6 +226,7 @@ function fetchShipmentData() {
 
             var postData = {
                 action: "bt_sst_update_tracking_settings",
+                security: (typeof bt_sync_shipment_track_data !== 'undefined' ? bt_sync_shipment_track_data.settings_nonce : ''),
                 type: $scope.tracking_page_status,
                 value: "create_tracking_page"
             };
@@ -256,6 +259,7 @@ function fetchShipmentData() {
 
             var postData = {
                 action: "bt_sst_update_tracking_settings",
+                security: (typeof bt_sync_shipment_track_data !== 'undefined' ? bt_sync_shipment_track_data.settings_nonce : ''),
                 type: $scope.estimate_delivery_checker,
                 value: "etd"
             };
@@ -288,6 +292,7 @@ function fetchShipmentData() {
 
             var postData = {
                 action: "bt_sst_update_tracking_settings",
+                security: (typeof bt_sync_shipment_track_data !== 'undefined' ? bt_sync_shipment_track_data.settings_nonce : ''),
                 type: $scope.timer_setting_update,
                 value: "timer"
             };
@@ -320,6 +325,7 @@ function fetchShipmentData() {
 
             var postData = {
                 action: "bt_sst_update_tracking_settings",
+                security: (typeof bt_sync_shipment_track_data !== 'undefined' ? bt_sync_shipment_track_data.settings_nonce : ''),
                 type: $scope.fetch_auto_pincode,
                 value: "fetch_auto_pincode"
             };
@@ -352,6 +358,7 @@ function fetchShipmentData() {
 
             var postData = {
                 action: "bt_sst_update_tracking_settings",
+                security: (typeof bt_sync_shipment_track_data !== 'undefined' ? bt_sync_shipment_track_data.settings_nonce : ''),
                 type: $scope.fetch_weight,
                 value: "fetch_weight"
             };
@@ -384,6 +391,7 @@ function fetchShipmentData() {
 
             var postData = {
                 action: "bt_sst_update_tracking_settings",
+                security: (typeof bt_sync_shipment_track_data !== 'undefined' ? bt_sync_shipment_track_data.settings_nonce : ''),
                 type: $scope.fetch_dynamic_ship_method,
                 value: "fetch_dynamic_ship_method"
             };
@@ -416,6 +424,7 @@ function fetchShipmentData() {
 
             var postData = {
                 action: "bt_sst_update_tracking_settings",
+                security: (typeof bt_sync_shipment_track_data !== 'undefined' ? bt_sync_shipment_track_data.settings_nonce : ''),
                 type: $scope.primary_shipping_method_setting_update,
                 value: "primary_shipping_method"
             };
@@ -448,6 +457,7 @@ function fetchShipmentData() {
 
             var postData = {
                 action: "bt_sst_update_tracking_settings",
+                security: (typeof bt_sync_shipment_track_data !== 'undefined' ? bt_sync_shipment_track_data.settings_nonce : ''),
                 type: $scope.google_api_key,
                 value: "google_api_key"
             };

@@ -1,4 +1,9 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
     $countries = WC()->countries->get_shipping_countries();
     $plugin_public_url = plugin_dir_url(dirname(__FILE__));
     $shop_country = WC()->countries->get_base_country();

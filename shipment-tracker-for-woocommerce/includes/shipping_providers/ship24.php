@@ -91,7 +91,8 @@ class Bt_Sync_Shipment_Tracking_Ship24 {
         if(isset($data["awb"])){
             $obj->awb = sanitize_text_field($data["awb"]);
             if(isset($data['shipment']["delivery"]["service"]) && !empty($data['shipment']["delivery"]["service"])){
-                $obj->courier_name = $data['shipment']["delivery"]["service"];
+                // Sanitize the service/courier string from the unsigned webhook payload (STW-01b fix)
+                $obj->courier_name = sanitize_text_field($data['shipment']["delivery"]["service"]);
             }else{
                 $obj->courier_name = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_shipping_ship24_corier_name', true );
 
@@ -119,7 +120,8 @@ class Bt_Sync_Shipment_Tracking_Ship24 {
         }else if(isset($data['tracker'])){
             $obj->awb = sanitize_text_field($data["tracker"]['trackingNumber']);
             if(isset($data['shipment']["delivery"]["service"]) && !empty($data['shipment']["delivery"]["service"])){
-                $obj->courier_name = $data['shipment']["delivery"]["service"];
+                // Sanitize the service/courier string from the unsigned webhook payload (STW-01b fix)
+                $obj->courier_name = sanitize_text_field($data['shipment']["delivery"]["service"]);
             }else{
                 $obj->courier_name = Bt_Sync_Shipment_Tracking::bt_sst_get_order_meta($order_id, '_bt_shipping_ship24_corier_name', true );
 
